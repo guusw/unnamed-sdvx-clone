@@ -17,6 +17,10 @@ public:
 	uint32 laserBorderPixels;
 	Vector2i laserTextureSize;
 
+	// The length scale based on the view distance
+	float laserLengthScale;
+	float perspectiveHeightScale;
+
 private:
 	class OpenGL* m_gl;
 

@@ -159,7 +159,7 @@ MapTime BeatmapPlayback::BarDistanceToDuration(float distance)
 float BeatmapPlayback::DurationToBarDistance(MapTime duration)
 {
 	const TimingPoint& tp = GetCurrentTimingPoint();
-	return (float)((double)duration / (tp.beatDuration * tp.measure));
+	return (float)((double)duration / (tp.beatDuration * (double)tp.measure));
 }
 float BeatmapPlayback::TimeToBarDistance(MapTime time)
 {

@@ -69,9 +69,9 @@ public:
 	const float trackWidth = 1.0f;
 	const float trackLength = 25.0f;
 	float cameraTilt = 7.0f;
-	float cameraHeight = 0.8f;
+	float cameraHeight = 00.8f;
 	// This is due to the viewing angle of the camera, objects should be longer to appear their normal size
-	float buttonHeightScale = 5.0f;
+	float perspectiveHeightScale = 5.0f;
 	const float buttonWidth = trackWidth / 6;
 	const float laserWidth = buttonWidth * 0.8f;
 	const float fxbuttonWidth = buttonWidth * 2;
@@ -112,7 +112,7 @@ public:
 			Vector3 tickPosition = Vector3(0.0f, trackLength * fLocal - trackTickLength * 0.5f, 0.01f);
 			Transform tickTransform;
 			tickTransform *= Transform::Translation(tickPosition);
-			tickTransform *= Transform::Scale({ 1.0f, buttonHeightScale, 1.0f });
+			tickTransform *= Transform::Scale({ 1.0f, perspectiveHeightScale, 1.0f });
 			rq.Draw(tickTransform, trackTickMesh, trackMaterial, params);
 		}
 	}
@@ -179,7 +179,7 @@ public:
 
 			Transform buttonTransform;
 			buttonTransform *= Transform::Translation(buttonPos);
-			float scale = buttonHeightScale;
+			float scale = perspectiveHeightScale;
 			if(obj->type == ObjectType::Hold) // Hold Note?
 			{
 				scale = (m_playback.DurationToBarDistance(mobj->hold.duration) / viewRange) / length  * trackLength;
@@ -199,11 +199,12 @@ public:
 			// Get the length of this laser segment
 			Transform laserTransform;
 			laserTransform *= Transform::Translation(Vector3{ 0.0f, trackLength * position, 0.02f + 0.02f * laser->index });
-			laserTransform *= Transform::Scale({ 1.0f, trackLength / viewRange, 1.0f });
 
 			// Set laser color
 			laserParams.SetParameter("color", laserColors[laser->index]);
 
+			m_laserTrackBuilder[laser->index]->perspectiveHeightScale = perspectiveHeightScale;
+			m_laserTrackBuilder[laser->index]->laserLengthScale = trackLength / viewRange;
 			Mesh laserMesh = m_laserTrackBuilder[laser->index]->GenerateTrackMesh(m_playback, laser);
 			if(laserMesh)
 			{
@@ -261,7 +262,7 @@ public:
 			if(hfx.rating != ScoreHitRating::Miss)
 			{
 				Vector2 hitEffectSize = Vector2(w * 1.2f, 0.0f);
-				hitEffectSize.y = CalculateTextureHeight(scoreHitTexture, hitEffectSize.x) * 4.0f;
+				hitEffectSize.y = CalculateTextureHeight(scoreHitTexture, hitEffectSize.x) * perspectiveHeightScale;
 				hitEffectSize.y *= hfx.GetRate();
 				Color c = Color::White.WithAlpha(hfx.GetRate()*hfx.GetRate());
 				DrawSprite(rq, Vector3(x, 0.05f + hitEffectSize.y * 0.5f, -0.03f), hitEffectSize, scoreHitTexture, c);
@@ -270,7 +271,7 @@ public:
 			{
 				Texture hitTexture = scoreHitTextures[(size_t)hfx.rating];
 				Vector2 hitEffectSize = Vector2(buttonWidth * 0.5f, 0.0f);
-				hitEffectSize.y = CalculateTextureHeight(hitTexture, hitEffectSize.x) * 4.0f;
+				hitEffectSize.y = CalculateTextureHeight(hitTexture, hitEffectSize.x) * perspectiveHeightScale;
 				hitEffectSize *= (hfx.GetRate() * hfx.GetRate()) + 0.5f;
 				Color c = Color::White.WithAlpha(hfx.GetRate());
 				DrawSprite(rq, Vector3(x, 0.45f + hitEffectSize.y * 0.5f, -0.03f), hitEffectSize, hitTexture, c, 0.0f);
@@ -282,7 +283,7 @@ public:
 		{
 			float pos = i * 1.0f;
 			Vector2 objectSize = Vector2(buttonWidth * 0.7f, 0.0f);
-			objectSize.y = CalculateTextureHeight(laserPointerTexture, objectSize.x) * 4.0f;
+			objectSize.y = CalculateTextureHeight(laserPointerTexture, objectSize.x) * perspectiveHeightScale;
 			DrawSprite(rq, Vector3(pos - trackWidth * 0.5f, 0.0f, 0.0f), objectSize, laserPointerTexture, laserColors[i]);
 		}
 	}
@@ -413,7 +414,7 @@ public:
 
 		// Load beatmap audio
 		String audioPath = mapPath + "\\" + mapSettings.audioFX;
-		if(!Path::FileExists(audioPath))
+		if(!Path::FileExists(audioPath) || Path::IsDirectory(audioPath))
 			audioPath = mapPath + "\\" + mapSettings.audioNoFX;
 		WString audioPathUnicode = Utility::ConvertToUnicode(audioPath);
 		m_audio = BASS_StreamCreateFile(false, *audioPathUnicode, 0, 0, BASS_UNICODE);
@@ -511,7 +512,7 @@ public:
 		{
 			m_laserTrackBuilder[i] = new LaserTrackBuilder(g_gl, i, trackWidth, laserWidth);
 			m_laserTrackBuilder[i]->laserTextureSize = laserTexture->GetSize();
-			m_laserTrackBuilder[i]->laserBorderPixels = 10;
+			m_laserTrackBuilder[i]->laserBorderPixels = 12;
 		}
 
 		if(!InitHUD())

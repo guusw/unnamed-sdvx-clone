@@ -29,6 +29,13 @@ String Path::GetTemporaryFileName(const String& path, const String& prefix)
 	assert(::GetTempFileNameA(*path, *prefix, 0, out) == TRUE);
 	return out;
 }
+
+bool Path::IsDirectory(const String& path)
+{
+	DWORD attribs = GetFileAttributesA(*path);
+	return (attribs != INVALID_FILE_ATTRIBUTES) && (attribs & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY;
+}
+
 bool Path::FileExists(const String& path)
 {
 	return PathFileExistsA(*path) == TRUE;
