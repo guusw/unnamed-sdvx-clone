@@ -47,7 +47,7 @@ class Game_Impl : public Game
 	Vector2 m_trackViewRange;
 
 	// Scoring system object
-	Scoring m_scoring;
+	//Scoring m_scoring;
 	// Beatmap playback manager (object and timing point selector)
 	BeatmapPlayback m_playback;
 
@@ -104,12 +104,15 @@ public:
 		// Draw the main beat ticks on the track
 		params.SetParameter("mainTex", trackTickTexture);
 		float range = m_trackViewRange.y - m_trackViewRange.x;
-		for(float f = ceilf(m_trackViewRange.x); f < m_trackViewRange.y; f += 1.0f)
+		float step = 0.25f;
+		float start = m_trackViewRange.x + (step - fmodf(m_trackViewRange.x, step));
+		for(float f = start; f < m_trackViewRange.y; f += step)
 		{
 			float fLocal = (f - m_trackViewRange.x) / range;
 			Vector3 tickPosition = Vector3(0.0f, trackLength * fLocal - trackTickLength * 0.5f, 0.01f);
 			Transform tickTransform;
 			tickTransform *= Transform::Translation(tickPosition);
+			tickTransform *= Transform::Scale({ 1.0f, buttonHeightScale, 1.0f });
 			rq.Draw(tickTransform, trackTickMesh, trackMaterial, params);
 		}
 	}
@@ -132,107 +135,79 @@ public:
 	Mesh fxbuttonMesh;
 	Texture fxbuttonTexture;
 	Material fxbuttonMaterial;
+	// Laser graphics resources
+	Texture laserTexture;
+	Material laserMaterial;
+	// Main object draw function
 	void DrawObjectState(RenderQueue& rq, ObjectState* obj)
 	{
 		// Calculate height based on time on current track
 		float viewRange = m_trackViewRange.y - m_trackViewRange.x;
 		float position = m_playback.TimeToBarDistance(obj->time) / viewRange;
+		float glow = 0.0f;
 
-		// Draw the buttons
-		MaterialParameterSet buttonParams;
-		buttonParams.SetParameter("mainTex", buttonTexture);
-		Vector3 buttonPos = Vector3(0.0f, trackLength * position, 0.02f);
-		for(uint32 i = 0; i < 4; i++)
+		if(obj->type == ObjectType::Single || obj->type == ObjectType::Hold)
 		{
-			const ButtonState& button = obj->buttons[i];
-			buttonPos.x = buttonTrackWidth * -0.5f + buttonWidth * i;
-			if(button.on)
+			MultiObjectState* mobj = (MultiObjectState*)obj;
+			MaterialParameterSet params;
+			Material mat;
+			Mesh mesh;
+			float width;
+			float xposition;
+			float length;
+			if(mobj->button.index < 4) // Normal button
 			{
-				Transform buttonTransform;
-				buttonTransform *= Transform::Translation(buttonPos);
-				float scale = buttonHeightScale;
-				if(button.duration != -1) // Hold Note?
-				{
-					scale = (m_playback.DurationToBarDistance(button.duration) / viewRange) / buttonLength  * trackLength;
-				}
-				buttonTransform *= Transform::Scale({ 1.0f, scale, 1.0f });
-				rq.Draw(buttonTransform, buttonMesh, trackMaterial, buttonParams);
+				width = buttonWidth;
+				xposition = buttonTrackWidth * -0.5f + width * mobj->button.index;
+				length = buttonLength;
+				mat = trackMaterial;
+				params.SetParameter("mainTex", buttonTexture);
+				mesh = buttonMesh;
 			}
+			else // FX Button
+			{
+				width = fxbuttonWidth;
+				xposition = buttonTrackWidth * -0.5f + fxbuttonWidth *(mobj->button.index -4);
+				length = fxbuttonLength;
+				mat = fxbuttonMaterial;
+				params.SetParameter("mainTex", fxbuttonTexture);
+				params.SetParameter("objectGlow", glow);
+				mesh = fxbuttonMesh;
+			}
+
+			Vector3 buttonPos = Vector3(xposition, trackLength * position, 0.02f);
+
+			Transform buttonTransform;
+			buttonTransform *= Transform::Translation(buttonPos);
+			float scale = buttonHeightScale;
+			if(obj->type == ObjectType::Hold) // Hold Note?
+			{
+				scale = (m_playback.DurationToBarDistance(mobj->hold.duration) / viewRange) / length  * trackLength;
+			}
+			buttonTransform *= Transform::Scale({ 1.0f, scale, 1.0f });
+			rq.Draw(buttonTransform, mesh, mat, params);
 		}
-
-		// Draw fx buttons
-		buttonParams.SetParameter("mainTex", fxbuttonTexture);
-		buttonParams.SetParameter("objectGlow", m_objectGlow);
-		for(uint32 i = 0; i < 2; i++)
+		else // Draw laser
 		{
-			const ButtonState& button = obj->buttons[4 + i];
+			MaterialParameterSet laserParams;
 
-			if(button.on)
-			{
-				buttonPos.x = buttonTrackWidth * -0.5f + fxbuttonWidth * i;
-				Transform buttonTransform ;
-				buttonTransform *= Transform::Translation(buttonPos);
-				float scale = buttonHeightScale;
-				float glow = 0.0f;
-				if(button.duration != -1) // Hold Note?
-				{
-					scale = (m_playback.DurationToBarDistance(button.duration) / viewRange) / fxbuttonLength  * trackLength;
-
-					// Set glow for hold fx buttons that are being held
-					if(m_scoring.currentHoldObjects[4 + i] == obj)
-					{
-						glow = m_objectGlow;
-					}
-				}
-				buttonParams.SetParameter("objectGlow", glow);
-
-				buttonTransform *= Transform::Scale({ 1.0f, scale, 1.0f });
-				rq.Draw(buttonTransform, fxbuttonMesh, fxbuttonMaterial, buttonParams);
-			}
-		}
-	}
-
-	// Laser graphics resources
-	Texture laserTexture;
-	Material laserMaterial;
-	void DrawLaserObject(RenderQueue& rq, ObjectState* obj)
-	{
-		// Calculate height based on time on current track
-		float viewRange = m_trackViewRange.y - m_trackViewRange.x;
-		float position = m_playback.TimeToBarDistance(obj->time) / viewRange;
-
-		// Draw lasers
-		MaterialParameterSet laserParams;
-		for(uint32 i = 0; i < 2; i++)
-		{
-			float glow = 0.0f;
-
-			// Add glow for lasers that are active
-			if(m_scoring.currentHoldObjects[6 + i] == obj)
-			{
-				glow = m_objectGlow;
-			}
-
+			/// TODO: Add glow for lasers that are active
 			laserParams.SetParameter("objectGlow", glow);
 			laserParams.SetParameter("mainTex", laserTexture);
-			const LaserState& laser = obj->lasers[i];
-			if(laser.duration != 0)
+			LaserObjectState* laser = (LaserObjectState*)obj;
+
+			// Get the length of this laser segment
+			Transform laserTransform;
+			laserTransform *= Transform::Translation(Vector3{ 0.0f, trackLength * position, 0.02f + 0.02f * laser->index });
+			laserTransform *= Transform::Scale({ 1.0f, trackLength / viewRange, 1.0f });
+
+			// Set laser color
+			laserParams.SetParameter("color", laserColors[laser->index]);
+
+			Mesh laserMesh = m_laserTrackBuilder[laser->index]->GenerateTrackMesh(m_playback, laser);
+			if(laserMesh)
 			{
-				// Get the length of this laser segment
-				//float segmentLength = (m_playback.DurationToBarDistance(laser.duration) / viewRange) * trackLength;
-
-				Transform laserTransform;
-				laserTransform *= Transform::Translation(Vector3{ 0.0f, trackLength * position, 0.02f + 0.02f * i });
-				laserTransform *= Transform::Scale({ 1.0f, trackLength / viewRange, 1.0f });
-
-				// Set laser color
-				laserParams.SetParameter("color", laserColors[i]);
-
-				Mesh laserMesh = m_laserTrackBuilder[i]->GenerateTrackMesh(m_playback, obj);
-				if(laserMesh)
-				{
-					rq.Draw(laserTransform, laserMesh, laserMaterial, laserParams);
-				}
+				rq.Draw(laserTransform, laserMesh, laserMaterial, laserParams);
 			}
 		}
 	}
@@ -305,7 +280,7 @@ public:
 		// Draw laser pointers
 		for(uint32 i = 0; i < 2; i++)
 		{
-			float pos = trackWidth * m_scoring.laserPositions[i];
+			float pos = i * 1.0f;
 			Vector2 objectSize = Vector2(buttonWidth * 0.7f, 0.0f);
 			objectSize.y = CalculateTextureHeight(laserPointerTexture, objectSize.x) * 4.0f;
 			DrawSprite(rq, Vector3(pos - trackWidth * 0.5f, 0.0f, 0.0f), objectSize, laserPointerTexture, laserColors[i]);
@@ -349,13 +324,9 @@ public:
 	// Processes input and Updates scoring, also handles audio timing management
 	/// TODO: Use BPM scale for view range
 	const float viewRange = 0.5f;
-	Timer timingAccuracyTimer;
-	float timingAccuracy;
 	void OnButtonHit(ObjectState* obj, uint32 buttonCode)
 	{
-		int64 delta = m_scoring.GetObjectHitDelta(obj, buttonCode);
-		ScoreHitRating rating = m_scoring.GetScoreHitRatingFromMs(delta);
-
+		ScoreHitRating rating = ScoreHitRating::Miss;
 		ButtonHitEffect& bhe = m_buttonHitEffects.Add(ButtonHitEffect(buttonCode, rating));
 	}
 	void TickGameplay(float deltaTime)
@@ -369,18 +340,16 @@ public:
 
 		const BeatmapSettings& beatmapSettings = m_beatmap->GetMapSettings();
 
-		int64 offsetCorrection = g_audio->audioLatency;
-
 		// Update beatmap playback
 		QWORD bytePos = BASS_ChannelGetPosition(m_audio, BASS_POS_BYTE);
 		double playbackPosition = BASS_ChannelBytes2Seconds(m_audio, bytePos);
-		MapTime playbackPositionMs = (int64)(playbackPosition * 1000.0);
+		MapTime playbackPositionMs = (MapTime)(playbackPosition * 1000.0);
 
 		// Apply offset correction and clamp to 0->
-		if((int64)playbackPositionMs < offsetCorrection)
+		if(playbackPositionMs < g_audio->audioLatency)
 			playbackPositionMs = 0;
 		else
-			playbackPositionMs += offsetCorrection;
+			playbackPositionMs += (MapTime)g_audio->audioLatency;
 
 		if(playbackPositionMs > beatmapSettings.offset)
 		{
@@ -405,22 +374,9 @@ public:
 		m_currentTiming = &m_playback.GetCurrentTimingPoint();
 
 		// Get objects in range
-		MapTime msViewRange = m_playback.BarDistanceToTime(viewRange);
-		// Clamp range to not influence gameplay
-		msViewRange = Math::Max(msViewRange, (MapTime)Scoring::maxEarlyHitTime);
+		MapTime msViewRange = m_playback.BarDistanceToDuration(viewRange);
 		m_currentObjectSet = m_playback.GetObjectsInRange(msViewRange);
 
-		m_scoring.laserInput[0] = GetInputLaserDir(0);
-		m_scoring.laserInput[1] = GetInputLaserDir(1);
-		m_scoring.Tick(m_currentObjectSet, playbackPositionMs, deltaTime);
-
-		// Store last frame playback time
-		if(playbackPositionMs != m_lastMapTime)
-		{
-			timingAccuracy *= 0.9f;
-			timingAccuracy += 0.1f * timingAccuracyTimer.SecondsAsFloat();
-			timingAccuracyTimer.Restart();
-		}
 		m_lastMapTime = playbackPositionMs;
 	}
 
@@ -435,23 +391,6 @@ public:
 			if(m_laserTrackBuilder[i])
 				delete m_laserTrackBuilder[i];
 		}
-	}
-	
-	/// TODO: Remove old laser render targets
-	Framebuffer fbLaser;
-	Texture fbLaserColor;
-	Vector2 laserRenderArea;
-	Vector2i laserTextureRes;
-	void CreateRenderBuffers()
-	{
-		//fbLaser = FramebufferRes::Create(g_gl);
-		//fbLaserColor = TextureRes::Create(g_gl);
-		//laserRenderArea = Vector2(trackWidth, trackLength);
-		//laserTextureRes.y = g_resolution.y;
-		//laserTextureRes.x = (int32)(laserTextureRes.y * (laserRenderArea.x / laserRenderArea.y));
-		//fbLaserColor->Init(laserTextureRes);
-		//bool ok = fbLaser->AttachTexture(fbLaserColor);
-		//assert(ok);
 	}
 
 	// Main update routine for the game logic
@@ -490,8 +429,8 @@ public:
 
 		// Playback and timing
 		m_playback = BeatmapPlayback(*m_beatmap);
-		// Scoring events
-		m_scoring.OnButtonHit.Add(this, &Game_Impl::OnButtonHit);
+		if(!m_playback.Reset())
+			return false;
 
 		// Load laser colors
 		Image laserColorPalette;
@@ -575,8 +514,6 @@ public:
 			m_laserTrackBuilder[i]->laserBorderPixels = 10;
 		}
 
-		CreateRenderBuffers();
-
 		if(!InitHUD())
 			return false;
 
@@ -622,10 +559,6 @@ public:
 		for(auto& object : m_currentObjectSet)
 		{
 			DrawObjectState(renderQueue, object);
-		}
-		for(auto& object : m_currentObjectSet)
-		{
-			DrawLaserObject(renderQueue, object);
 		}
 
 		// Use new camera for scoring overlay
@@ -716,14 +649,12 @@ public:
 		textPos.y += RenderText(guiRq, bms.title, textPos).y;
 		textPos.y += RenderText(guiRq, bms.artist, textPos).y;
 
-		int64 hitDeltaAvg = m_scoring.GetAverageHitDelta();
 		int32 renderTimeMs = (int32)(DeltaTime * 1000.0f);
 		textPos.y += RenderText(guiRq, Utility::WSprintf(L"MapTime: %i", m_lastMapTime), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::WSprintf(L"RenderTime: %i", renderTimeMs), textPos).y;
-		textPos.y += RenderText(guiRq, Utility::WSprintf(L"Average Hit Delta: %i", hitDeltaAvg), textPos, Color::White, 32).y;
-		textPos.y += RenderText(guiRq, Utility::WSprintf(L"Combo: %i", m_scoring.currentComboCounter), textPos, Color::White, 32).y;
 
 		// List recent hits and their delay
+		/*
 		Vector2 tableStart = textPos;
 		uint32 hitsShown = 0;
 		for(auto it = m_scoring.hitStats.rbegin(); it != m_scoring.hitStats.rend(); it++)
@@ -752,6 +683,7 @@ public:
 			WString text = Utility::WSprintf(L"%s %i", what, it->delta);
 			textPos.y += RenderText(guiRq, text, textPos, c).y;
 		}
+		*/
 
 		glCullFace(GL_FRONT); // Flipped culling mode for GUI
 		guiRq.Process();
@@ -812,14 +744,7 @@ public:
 	}
 	void OnButtonInput(uint32 buttonIdx, bool pressed)
 	{
-		if(pressed)
-		{
-			m_scoring.HandleButtonPress(buttonIdx);
-		}
-		else
-		{
-			m_scoring.HandleButtonRelease(buttonIdx);
-		}
+		/// TODO: Send input to score
 	}
 	void InitButtonMapping()
 	{

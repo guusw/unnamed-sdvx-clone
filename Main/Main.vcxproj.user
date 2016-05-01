@@ -3,20 +3,20 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>"D:\KShoot\songs\sdvx_infiniteinfection\aikurusi_kabocha\exh.ksh" -convertMaps</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>"D:\KShoot\songs\sdvx_infiniteinfection\c18h27no3_teamgrimoire\exh.ksh" -mute</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>"D:\KShoot\songs\sdvx_infiniteinfection\aikurusi_kabocha\exh.ksh" -convertMaps</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>"D:\KShoot\songs\sdvx_infiniteinfection\c18h27no3_teamgrimoire\exh.ksh" -mute</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>"D:\KShoot\songs\sdvx_infiniteinfection\aikurusi_kabocha\exh.ksh" -convertMaps</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>"D:\KShoot\songs\sdvx_infiniteinfection\c18h27no3_teamgrimoire\exh.ksh" -mute</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>"D:\KShoot\songs\sdvx_infiniteinfection\aikurusi_kabocha\exh.ksh" -convertMaps</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>"D:\KShoot\songs\sdvx_infiniteinfection\c18h27no3_teamgrimoire\exh.ksh" -mute</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

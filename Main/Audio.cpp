@@ -39,14 +39,26 @@ bool Audio::Init(class Window& window)
 		Log("No audio devices found", Logger::Error);
 		return false;
 	}
-	if(!BASS_Init(1, 44100, BASS_DEVICE_LATENCY, (HWND)m_window->Handle(), nullptr))
+	bool queryLatency = false;
+	DWORD flags = 0;
+	if(queryLatency)
+		flags |= BASS_DEVICE_LATENCY;
+	if(!BASS_Init(1, 44100, flags, (HWND)m_window->Handle(), nullptr))
 	{
 		Logf("Failed to open audio device \"%s\"", Logger::Error, devices[1].name);
 	}
 
-	BASS_INFO bassInfo;
-	BASS_GetInfo(&bassInfo);
-	audioLatency = bassInfo.latency;
+	if(queryLatency)
+	{
+		BASS_INFO bassInfo;
+		BASS_GetInfo(&bassInfo);
+		audioLatency = bassInfo.latency;
+	}
+	else
+	{
+		/// TODO: Store latency in config file
+		audioLatency = 32;
+	}
 	Logf("Detected audio device latency: %d", Logger::Normal, audioLatency);
 
 	return m_initialized = true;

@@ -11,4 +11,8 @@ public:
 	{
 		return find(key) != end();
 	}
+	const K& Add(const K& key)
+	{
+		return *insert(key).first;
+	}
 };

@@ -11,26 +11,12 @@ LaserTrackBuilder::LaserTrackBuilder(class OpenGL* gl, uint32 laserIndex, float 
 	m_trackWidth = trackWidth;
 	m_laserWidth = laserWidth;
 }
-Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, ObjectState* state)
+Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, LaserObjectState* laser)
 {
-	if(m_objectCache.Contains(state))
-		return m_objectCache[state];
+	if(m_objectCache.Contains(laser))
+		return m_objectCache[laser];
 
-	const LaserState& laser = state->lasers[m_laserIndex];
 	Mesh newMesh = MeshRes::Create(m_gl);
-
-	// Get following 
-	const LaserState* nextLaser = nullptr;
-	const LaserState* prevLaser = nullptr;
-	if(laser.next)
-	{
-		nextLaser = &laser.next->lasers[m_laserIndex];
-	}
-	if(laser.prev)
-	{
-		prevLaser = &laser.prev->lasers[m_laserIndex];
-	}
-
 
 	// Calculate amount to scale laser size to fit the texture border in
 	assert(laserTextureSize.x == laserTextureSize.y); // Use Square texture
@@ -41,9 +27,11 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Objec
 	float trackWidthWidthBorder = m_trackWidth + laserBorderAmount * m_laserWidth;
 	float effectiveWidth = trackWidthWidthBorder - laserWidthWithBorder;
 	float halfWidth = laserWidthWithBorder * 0.5f;
-	float length = playback.DurationToBarDistance(laser.duration);
+	float length = playback.DurationToBarDistance(laser->duration);
+	float textureBorder = 0.25f;
+	float invTextureBorder = 1.0f - textureBorder;
 
-	if(playback.IsLaserSlam(laser, state->time)) // Slam segment
+	if((laser->flags & LaserObjectState::flag_Instant) != 0) // Slam segment
 	{
 		float left, right;
 		float top = length;
@@ -52,14 +40,14 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Objec
 		bottom -= halfBorder;
 		top += halfBorder;
 		
-		left = laser.points[0] * effectiveWidth - effectiveWidth * 0.5f;
-		right = laser.points[1] * effectiveWidth - effectiveWidth * 0.5f;
+		left = laser->points[0] * effectiveWidth - effectiveWidth * 0.5f;
+		right = laser->points[1] * effectiveWidth - effectiveWidth * 0.5f;
 
 		// If corners should be placed, connecting the texture to the previous laser
-		bool cornerRight = nextLaser != nullptr;
-		bool cornerLeft = prevLaser != nullptr;
+		bool cornerRight = laser->next != nullptr;
+		bool cornerLeft = laser->prev != nullptr;
 		bool swapped = false;
-		if(laser.points[0] > laser.points[1])
+		if(laser->points[0] > laser->points[1])
 		{
 			// <------
 			std::swap(left, right);
@@ -79,13 +67,13 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Objec
 
 		Vector<MeshGenerators::SimpleVertex> verts =
 		{
-			{ { left,  top,     0.0f },{ 0.25f, 0.0f } },
-			{ { right, bottom,  0.0f },{ 0.75f, 1.0f } },
-			{ { right, top,     0.0f },{ 0.75f, 0.0f } },
+			{ { left,  top,     0.0f },{ textureBorder, textureBorder } },
+			{ { right, bottom,  0.0f },{ invTextureBorder, invTextureBorder } },
+			{ { right, top,     0.0f },{ invTextureBorder, textureBorder } },
 
-			{ { left,  top,     0.0f },{ 0.25f, 0.0f } },
-			{ { left,  bottom,  0.0f },{ 0.25f, 1.0f } },
-			{ { right, bottom,  0.0f },{ 0.75f, 1.0f } },
+			{ { left,  top,     0.0f },{ textureBorder, textureBorder } },
+			{ { left,  bottom,  0.0f },{ textureBorder, invTextureBorder } },
+			{ { right, bottom,  0.0f },{ invTextureBorder, invTextureBorder } },
 		};
 
 		// Generate corners
@@ -96,13 +84,13 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Objec
 
 			Vector<MeshGenerators::SimpleVertex> cl =
 			{
-				{ { cleft,  top,     0.0f },{ 0.0f, 0.0f } },
-				{ { cright, bottom,  0.0f },{ 0.75f, 1.0f } },
-				{ { cright, top,     0.0f },{ 0.0f, 0.0f } },
+				{ { cleft,  top,     0.0f },{ textureBorder, textureBorder } },
+				{ { cright, bottom,  0.0f },{ invTextureBorder, invTextureBorder } },
+				{ { cright, top,     0.0f },{ textureBorder, textureBorder } },
 
-				{ { cleft,  top,     0.0f },{ 0.0f, 0.0f } },
-				{ { cleft,  bottom,  0.0f },{ 0.0f, 1.0f } },
-				{ { cright, bottom,  0.0f },{ 0.75f, 1.0f } },
+				{ { cleft,  top,     0.0f },{ textureBorder, textureBorder } },
+				{ { cleft,  bottom,  0.0f },{ textureBorder, invTextureBorder } },
+				{ { cright, bottom,  0.0f },{ invTextureBorder, invTextureBorder } },
 			};
 			for(auto& v : cl)
 				verts.Add(v);
@@ -114,13 +102,13 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Objec
 
 			Vector<MeshGenerators::SimpleVertex> cl =
 			{
-				{ { cleft,  top,     0.0f },{ 0.25f, 0.0f } },
-				{ { cright, bottom,  0.0f },{ 1.0f, 1.0f } },
-				{ { cright, top,     0.0f },{ 1.0f, 0.0f } },
+				{ { cleft,  top,     0.0f },{ textureBorder, textureBorder } },
+				{ { cright, bottom,  0.0f },{ invTextureBorder, invTextureBorder } },
+				{ { cright, top,     0.0f },{ invTextureBorder, textureBorder } },
 
-				{ { cleft,  top,     0.0f },{ 0.25f, 0.0f } },
-				{ { cleft,  bottom,  0.0f },{ 0.25f, 1.0f } },
-				{ { cright, bottom,  0.0f },{ 1.0f, 1.0f } },
+				{ { cleft,  top,     0.0f },{ textureBorder, textureBorder } },
+				{ { cleft,  bottom,  0.0f },{ textureBorder, invTextureBorder } },
+				{ { cright, bottom,  0.0f },{ invTextureBorder,invTextureBorder } },
 			};
 			for(auto& v : cl)
 				verts.Add(v);
@@ -133,19 +121,19 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Objec
 	{
 		Vector2 points[2] =
 		{
-			Vector2(laser.points[0] * effectiveWidth - effectiveWidth * 0.5f, 0.0f), // Bottom
-			Vector2(laser.points[1] * effectiveWidth - effectiveWidth * 0.5f, length), // Top
+			Vector2(laser->points[0] * effectiveWidth - effectiveWidth * 0.5f, 0.0f), // Bottom
+			Vector2(laser->points[1] * effectiveWidth - effectiveWidth * 0.5f, length), // Top
 		};
 
 		Vector<MeshGenerators::SimpleVertex> verts =
 		{
-			{ { points[0].x - halfWidth, points[0].y,  0.0f },{ 0.0f, 0.75f } }, // BL
-			{ { points[0].x + halfWidth, points[0].y,  0.0f },{ 1.0f, 0.75f } }, // BR
-			{ { points[1].x + halfWidth, points[1].y,  0.0f },{ 1.0f, 0.25f } }, // TR
+			{ { points[0].x - halfWidth, points[0].y,  0.0f },{ 0.0f, invTextureBorder} }, // BL
+			{ { points[0].x + halfWidth, points[0].y,  0.0f },{ 1.0f, invTextureBorder} }, // BR
+			{ { points[1].x + halfWidth, points[1].y,  0.0f },{ 1.0f, textureBorder } }, // TR
 
-			{ { points[0].x - halfWidth, points[0].y,  0.0f },{ 0.0f, 0.25f } }, // BL
-			{ { points[1].x + halfWidth, points[1].y,  0.0f },{ 1.0f, 0.25f } }, // TR
-			{ { points[1].x - halfWidth, points[1].y,  0.0f },{ 0.0f, 0.25f } }, // TL
+			{ { points[0].x - halfWidth, points[0].y,  0.0f },{ 0.0f, invTextureBorder } }, // BL
+			{ { points[1].x + halfWidth, points[1].y,  0.0f },{ 1.0f, textureBorder } }, // TR
+			{ { points[1].x - halfWidth, points[1].y,  0.0f },{ 0.0f, textureBorder } }, // TL
 		};
 
 		newMesh->SetData(verts);
@@ -153,8 +141,7 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Objec
 	}
 
 	// Cache this mesh
-	m_objectCache.Add(state, newMesh);
-
+	m_objectCache.Add(laser, newMesh);
 	return newMesh;
 }
 void LaserTrackBuilder::Reset()
@@ -167,8 +154,8 @@ void LaserTrackBuilder::Update(MapTime newTime)
 	// Cleanup unused meshes
 	for(auto it = m_objectCache.begin(); it != m_objectCache.end();)
 	{
-		ObjectState* obj = it->first;
-		MapTime endTime = obj->time + obj->maxDuration + 1000;
+		LaserObjectState* obj = it->first;
+		MapTime endTime = obj->time + obj->duration + 1000;
 		if(newTime > endTime)
 		{
 			it = m_objectCache.erase(it);

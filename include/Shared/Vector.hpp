@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <algorithm>
 
 /* Vector class, extends std::vector */
 template<typename I>
@@ -20,5 +21,66 @@ public:
 				return true;
 		}
 		return false;
+	}
+
+	// Find first item that matches Predicate
+	template<typename Predicate>
+	I* Find(Predicate& pred)
+	{
+		for(auto& i : *this)
+		{
+			if(pred(i))
+			{
+				return &i;
+			}
+		}
+		return nullptr;
+	}
+	// Find first item that matches Predicate
+	template<typename Predicate>
+	const I* Find(Predicate& pred) const
+	{
+		for(auto& i : *this)
+		{
+			if(pred(i))
+			{
+				return &i;
+			}
+		}
+		return nullptr;
+	}
+
+	// Find all items that match Predicate
+	template<typename Predicate>
+	Vector<I*> FindAll(Predicate& pred)
+	{
+		Vector<I*> r;
+		for(auto& i : *this)
+		{
+			if(pred(i))
+			{
+				r.push_back(i);
+			}
+		}
+		return r;
+	}
+	template<typename Predicate>
+	Vector<const I*> FindAll(Predicate& pred) const
+	{
+		Vector<I*> r;
+		for(auto& i : *this)
+		{
+			if(pred(i))
+			{
+				r.push_back(i);
+			}
+		}
+		return r;
+	}
+
+	template<typename Predicate>
+	void Sort(Predicate& pred)
+	{
+		std::sort(begin(), end(), pred);
 	}
 };

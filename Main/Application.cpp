@@ -197,14 +197,14 @@ bool Application::LaunchMap(const String& mapPath)
 	}
 
 	// Check if converted map exists
-	String currentExtension = Path::GetExtension(actualMapPath);
-	String convertedPath = Path::ReplaceExtension(actualMapPath, ".fxm");
-	bool loadingConvertedMap = false;
-	if(m_allowMapConversion && currentExtension == "ksh" && Path::FileExists(convertedPath)) // Load pre-converted map instead
-	{
-		actualMapPath = convertedPath;
-		loadingConvertedMap = true;
-	}
+	//String currentExtension = Path::GetExtension(actualMapPath);
+	//String convertedPath = Path::ReplaceExtension(actualMapPath, ".fxm");
+	//bool loadingConvertedMap = false;
+	//if(m_allowMapConversion && currentExtension == "ksh" && Path::FileExists(convertedPath)) // Load pre-converted map instead
+	//{
+	//	actualMapPath = convertedPath;
+	//	loadingConvertedMap = true;
+	//}
 
 	// Load map file
 	Beatmap* newMap = new Beatmap();
@@ -223,13 +223,13 @@ bool Application::LaunchMap(const String& mapPath)
 	m_currentMap = newMap; // Loaded successfully
 
 	// Save converted map
-	if(m_allowMapConversion && !loadingConvertedMap)
-	{
-		mapFile.Close();
-		mapFile.OpenWrite(convertedPath);
-		FileWriter writer(mapFile);
-		m_currentMap->Save(writer);
-	}
+	//if(m_allowMapConversion && !loadingConvertedMap)
+	//{
+	//	mapFile.Close();
+	//	mapFile.OpenWrite(convertedPath);
+	//	FileWriter writer(mapFile);
+	//	m_currentMap->Save(writer);
+	//}
 
 	// Acquire map base path
 	String pathCanonical = Path::Canonical(actualMapPath);
@@ -267,7 +267,6 @@ Material Application::LoadMaterial(const String& name)
 	assert(ret);
 	return ret;
 }
-
 
 Transform Application::GetGUIProjection() const
 {

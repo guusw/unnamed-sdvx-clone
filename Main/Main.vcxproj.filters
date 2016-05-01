@@ -114,6 +114,9 @@
     <ClInclude Include="LaserTrackBuilder.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BeatmapObjects.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Scoring.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -191,7 +194,7 @@
     <ClCompile Include="Framebuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Scoring.cpp">
+    <ClCompile Include="BeatmapFromKSH.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -74,9 +74,10 @@ bool KShootMap::Init(BinaryStream& input)
 {
 	ProfilerScope $("Load KShootMap");
 
-	uint32_t magic = 0;
-	input.Serialize(&magic, 3);
-	if(magic != c_magic)
+	// Read Byte Order Mark
+	uint32_t bom = 0;
+	input.Serialize(&bom, 3);
+	if(bom != 0x00bfbbef) // Expected format for UTF-8
 		return false;
 
 	uint32_t lineNumber = 0;
@@ -198,8 +199,6 @@ float KShootMap::TranslateLaserChar(char c) const
 {
 	return (float)((uint32_t)c - c_laserStart) / (float)c_laserRange;
 }
-
-const uint32_t KShootMap::c_magic = 0x00bfbbef;
 const char* KShootMap::c_sep = "--";
 const uint32_t KShootMap::c_laserStart = '0';
 const uint32_t KShootMap::c_laserEnd = 'o';

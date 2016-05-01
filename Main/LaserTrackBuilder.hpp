@@ -1,5 +1,5 @@
 #pragma once
-#include "Beatmap.hpp"
+#include "BeatmapObjects.hpp"
 #include "Mesh.hpp"
 #include "Texture.hpp"
 
@@ -9,7 +9,7 @@ public:
 	LaserTrackBuilder(class OpenGL* gl, uint32 laserIndex, float trackWidth, float laserWidth);
 	void Reset();
 	void Update(MapTime newTime);
-	Mesh GenerateTrackMesh(class BeatmapPlayback& playback, ObjectState* state);
+	Mesh GenerateTrackMesh(class BeatmapPlayback& playback, LaserObjectState* state);
 	
 	TimingPoint currentTimingPoint;
 
@@ -23,5 +23,5 @@ private:
 	float m_trackWidth;
 	float m_laserWidth;
 	uint32 m_laserIndex;
-	Map<ObjectState*, Mesh> m_objectCache;
+	Map<LaserObjectState*, Mesh> m_objectCache;
 };
