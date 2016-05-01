@@ -1,28 +1,21 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
+# Compiled Products
 *.dll
-
-# Fortran module files
-*.mod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
 *.lib
-
-# Executables
 *.exe
-*.out
-*.app
+
+# Allow precompiled bass.dll versions
+!lib/bass
+
+# Intermediate Files
+intermediate
+*.pdb
+*.ilk
+*.obj
+*.iobj
+*.ipdb
+
+# Visual studio plz
+.vs
+
+# Not adding photoshop source files for textures
+*.psd

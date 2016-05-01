@@ -1,0 +1,21 @@
+#pragma once
+#include "Mesh.hpp"
+
+// Generates meshes based on certain parameters
+// generated attributes are always in the following order:
+//	- Position
+//	- Texture Coordinates
+//	- Color
+//	- Normal
+namespace MeshGenerators
+{
+	struct SimpleVertex : public VertexFormat<Vector3, Vector2>
+	{
+		SimpleVertex() = default;
+		SimpleVertex(Vector3 pos, Vector2 tex) : pos(pos), tex(tex) {};
+		Vector3 pos;
+		Vector2 tex;
+	};
+
+	Mesh Quad(OpenGL* gl, Vector2 pos, Vector2 size = Vector2(1,1));
+}
