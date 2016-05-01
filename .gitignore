@@ -16,6 +16,7 @@ intermediate
 
 # Visual studio plz
 .vs
+*.vcxproj.user
 
 # Not adding photoshop source files for textures
 *.psd
