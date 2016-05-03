@@ -25,7 +25,7 @@ public:
 		for(auto it = begin(); it != end();)
 		{
 			float durationSinceUsed = currentTime - it->second.lastUsage;
-			if(durationSinceUsed > 2.0f)
+			if(durationSinceUsed > 10.0f)
 			{
 				it = erase(it);
 				continue;

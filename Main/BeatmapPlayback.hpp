@@ -69,7 +69,8 @@ private:
 	TimingPoint** m_SelectTimingPoint(MapTime time);
 	ObjectState** m_SelectHitObject(MapTime time);
 	bool IsLastTiming(TimingPoint** obj);
-	bool IsLastObject(ObjectState** obj);
+	// End object pointer, this is not a valid pointer, but points to the element after the last element
+	bool IsEndObject(ObjectState** obj);
 
 	// Current map position of this playback object
 	MapTime m_playbackTime;

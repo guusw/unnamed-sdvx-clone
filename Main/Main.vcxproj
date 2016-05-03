@@ -24,6 +24,7 @@
     <ClCompile Include="Beatmap.cpp" />
     <ClCompile Include="BeatmapFromKSH.cpp" />
     <ClCompile Include="BeatmapPlayback.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Font.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -44,6 +45,7 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="RenderQueue.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="Scoring.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SpriteMap.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -53,6 +55,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Track.cpp" />
+    <ClCompile Include="TrackEffects.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -61,6 +65,8 @@
     <ClInclude Include="Beatmap.hpp" />
     <ClInclude Include="BeatmapObjects.hpp" />
     <ClInclude Include="BeatmapPlayback.hpp" />
+    <ClInclude Include="Camera.hpp" />
+    <ClInclude Include="Track.hpp" />
     <ClInclude Include="Framebuffer.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GL.hpp" />

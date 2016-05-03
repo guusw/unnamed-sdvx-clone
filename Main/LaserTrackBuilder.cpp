@@ -43,10 +43,13 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 	float textureBorder = (float)laserBorderPixels / laserTextureSize.x;
 	float invTextureBorder = 1.0f - textureBorder;
 
+	// The the size of the laser with compensation added for the border
+	float actualLaserWidth = m_laserWidth / laserCenterAmount;
+
 	// The width of the laser without the border
-	float laserWidthNoBorder = m_laserWidth * laserCenterAmount;
+	float laserWidthNoBorder = actualLaserWidth * laserCenterAmount;
 	// World size of a single border around a laser
-	float realBorderSize = (m_laserWidth - laserWidthNoBorder) * 0.5f;
+	float realBorderSize = (actualLaserWidth - laserWidthNoBorder) * 0.5f;
 
 	float effectiveWidth = m_trackWidth - m_laserWidth;
 	float length = playback.DurationToBarDistance(laser->duration);
@@ -178,7 +181,7 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 		float vMin = textureBorder;
 		float vMax = invTextureBorder;
 
-		float halfWidth = m_laserWidth * 0.5f;
+		float halfWidth = actualLaserWidth * 0.5f;
 		Vector<MeshGenerators::SimpleVertex> verts =
 		{
 			{ { points[0].x - halfWidth, points[0].y,  0.0f },{ uMin, vMax } }, // BL

@@ -162,3 +162,17 @@ Texture TextureRes::Create(OpenGL* gl, Image image)
 		return Texture();
 	}
 }
+
+float TextureRes::CalculateHeight(float width)
+{
+	Vector2 size = GetSize();
+	float aspect = size.y / size.x;
+	return aspect * width;
+}
+
+float TextureRes::CalculateWidth(float height)
+{
+	Vector2 size = GetSize();
+	float aspect = size.x / size.y;
+	return aspect * height;
+}

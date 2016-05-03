@@ -5,28 +5,13 @@
 #include "Image.hpp"
 #include "MeshGenerators.hpp"
 #include "Profiling.hpp"
-#include "LaserTrackBuilder.hpp"
 #include "Framebuffer.hpp"
 #include "OpenGL.hpp"
 #include "Font.hpp"
 #include "Scoring.hpp"
 #include "Audio.hpp"
+#include "Track.hpp"
 #include "bass.h"
-
-#define CheckedLoad(__stmt) if(!(__stmt)){Logf("Failed to load asset [%s]", Logger::Error, #__stmt); return false; }
-
-// Button hit effect
-struct ButtonHitEffect
-{
-	ButtonHitEffect(uint32 buttonCode, ScoreHitRating rating) : buttonCode(buttonCode), rating(rating){};
-	float GetRate() const { return time / duration; }
-	static const float duration;
-	float time = duration;
-
-	uint32 buttonCode;
-	ScoreHitRating rating;
-};
-const float ButtonHitEffect::duration = 0.5f;
 
 class Game_Impl : public Game
 {
@@ -40,20 +25,13 @@ class Game_Impl : public Game
 	// Texture of the map jacket image, if available
 	Texture m_jacketTexture;
 
-	LaserTrackBuilder* m_laserTrackBuilder[2] = { 0 };
-
-	// Visible time elements on the playfield track
-	// a single unit is 1 beat in distance
-	Vector2 m_trackViewRange;
-
 	// Scoring system object
-	//Scoring m_scoring;
+	Scoring m_scoring;
 	// Beatmap playback manager (object and timing point selector)
 	BeatmapPlayback m_playback;
 
-	// Effects
-	float m_objectGlow = 0.0f;
-	Vector<ButtonHitEffect> m_buttonHitEffects;
+	// The play field
+	Track* m_track;
 
 	// Currently active timing point
 	const TimingPoint* m_currentTiming;
@@ -63,248 +41,11 @@ class Game_Impl : public Game
 
 public:
 	// Track positioning
-	float trackTickLength;
-	float buttonLength;
-	float fxbuttonLength;
-	const float trackWidth = 1.0f;
-	const float trackLength = 25.0f;
 	float cameraTilt = 7.0f;
 	float cameraHeight = 00.8f;
-	// This is due to the viewing angle of the camera, objects should be longer to appear their normal size
-	float perspectiveHeightScale = 5.0f;
-	const float buttonWidth = trackWidth / 6;
-	const float laserWidth = buttonWidth * 0.8f;
-	const float fxbuttonWidth = buttonWidth * 2;
-	const float buttonTrackWidth = buttonWidth * 4;
 
-	// Laser color setting
-	Color laserColors[2] = {};
-
-	// Calculates the correct height for a given with and a texture as aspect ratio source
-	float CalculateTextureHeight(Texture tex, float givenWidth)
-	{
-		Vector2 size = tex->GetSize();
-		float aspect = size.y / size.x;
-		return aspect * givenWidth;
-	}
-
-	// Logic for drawing the game field
-	Mesh trackMesh;
-	Mesh trackTickMesh;
-	Material trackMaterial;
-	Texture trackTexture;
-	Texture trackTickTexture;
-	void DrawTrack(RenderQueue& rq)
-	{
-		// Base
-		MaterialParameterSet params;
-		params.SetParameter("mainTex", trackTexture);
-		rq.Draw(Transform(), trackMesh, trackMaterial, params);
-
-		// Draw the main beat ticks on the track
-		params.SetParameter("mainTex", trackTickTexture);
-		float range = m_trackViewRange.y - m_trackViewRange.x;
-		float step = 0.25f;
-		float start = m_trackViewRange.x + (step - fmodf(m_trackViewRange.x, step));
-		for(float f = start; f < m_trackViewRange.y; f += step)
-		{
-			float fLocal = (f - m_trackViewRange.x) / range;
-			Vector3 tickPosition = Vector3(0.0f, trackLength * fLocal - trackTickLength * 0.5f, 0.01f);
-			Transform tickTransform;
-			tickTransform *= Transform::Translation(tickPosition);
-			tickTransform *= Transform::Scale({ 1.0f, perspectiveHeightScale, 1.0f });
-			rq.Draw(tickTransform, trackTickMesh, trackMaterial, params);
-		}
-	}
-
-	// Draws a plane over the track
-	Material trackOverlay;
-	void DrawTrackOverlay(RenderQueue& rq, Texture texture, float heightOffset = 0.05f, float widthScale = 1.0f)
-	{
-		MaterialParameterSet params;
-		params.SetParameter("mainTex", texture);
-		Transform transform;
-		transform *= Transform::Scale({ widthScale, 1.0f, 1.0f });
-		transform *= Transform::Translation({ 0.0f, heightOffset, 0.0f });
-		rq.Draw(transform, trackMesh, trackOverlay, params);
-	}
-
-	// Button graphics resources
-	Mesh buttonMesh;
-	Texture buttonTexture;
-	Mesh fxbuttonMesh;
-	Texture fxbuttonTexture;
-	Material fxbuttonMaterial;
-	// Laser graphics resources
-	Texture laserTexture;
-	Material laserMaterial;
-	// Main object draw function
-	void DrawObjectState(RenderQueue& rq, ObjectState* obj)
-	{
-		// Calculate height based on time on current track
-		float viewRange = m_trackViewRange.y - m_trackViewRange.x;
-		float position = m_playback.TimeToBarDistance(obj->time) / viewRange;
-		float glow = 0.0f;
-
-		if(obj->type == ObjectType::Single || obj->type == ObjectType::Hold)
-		{
-			MultiObjectState* mobj = (MultiObjectState*)obj;
-			MaterialParameterSet params;
-			Material mat;
-			Mesh mesh;
-			float width;
-			float xposition;
-			float length;
-			if(mobj->button.index < 4) // Normal button
-			{
-				width = buttonWidth;
-				xposition = buttonTrackWidth * -0.5f + width * mobj->button.index;
-				length = buttonLength;
-				mat = trackMaterial;
-				params.SetParameter("mainTex", buttonTexture);
-				mesh = buttonMesh;
-			}
-			else // FX Button
-			{
-				width = fxbuttonWidth;
-				xposition = buttonTrackWidth * -0.5f + fxbuttonWidth *(mobj->button.index -4);
-				length = fxbuttonLength;
-				mat = fxbuttonMaterial;
-				params.SetParameter("mainTex", fxbuttonTexture);
-				params.SetParameter("objectGlow", glow);
-				mesh = fxbuttonMesh;
-			}
-
-			Vector3 buttonPos = Vector3(xposition, trackLength * position, 0.02f);
-
-			Transform buttonTransform;
-			buttonTransform *= Transform::Translation(buttonPos);
-			float scale = perspectiveHeightScale;
-			if(obj->type == ObjectType::Hold) // Hold Note?
-			{
-				scale = (m_playback.DurationToBarDistance(mobj->hold.duration) / viewRange) / length  * trackLength;
-			}
-			buttonTransform *= Transform::Scale({ 1.0f, scale, 1.0f });
-			rq.Draw(buttonTransform, mesh, mat, params);
-		}
-		else // Draw laser
-		{
-			MaterialParameterSet laserParams;
-
-			/// TODO: Add glow for lasers that are active
-			laserParams.SetParameter("objectGlow", glow);
-			laserParams.SetParameter("mainTex", laserTexture);
-			LaserObjectState* laser = (LaserObjectState*)obj;
-
-			// Get the length of this laser segment
-			Transform laserTransform;
-			laserTransform *= Transform::Translation(Vector3{ 0.0f, trackLength * position, 0.02f + 0.02f * laser->index });
-
-			// Set laser color
-			laserParams.SetParameter("color", laserColors[laser->index]);
-
-			m_laserTrackBuilder[laser->index]->perspectiveHeightScale = perspectiveHeightScale;
-			m_laserTrackBuilder[laser->index]->laserLengthScale = trackLength / viewRange;
-			Mesh laserMesh = m_laserTrackBuilder[laser->index]->GenerateTrackMesh(m_playback, laser);
-			if(laserMesh)
-			{
-				rq.Draw(laserTransform, laserMesh, laserMaterial, laserParams);
-			}
-		}
-	}
-
-	// Draw all the scoring related elements, like the scoring line, hit effects, laser pointers
-	Texture scoreBarTexture;
-	Texture scoreHitTexture;
-	Texture laserPointerTexture;
-	Texture scoreHitTextures[3]; // Ok, Miss, Perfect
-	Mesh centeredTrackMesh;
-	Material spriteMaterial;
-	// Draw a centered sprite at pos, relative from the track
-	void DrawSprite(RenderQueue& rq, Vector3 pos, Vector2 size, Texture tex, Color color = Color::White, float tilt = 0.0f)
-	{
-		Transform spriteTransform;
-		spriteTransform *= Transform::Translation(pos);
-		spriteTransform *= Transform::Scale({ size.x, size.y, 1.0f });
-		if(tilt != 0.0f)
-			spriteTransform *= Transform::Rotation({ tilt, 0.0f, 0.0f });
-
-		MaterialParameterSet params;
-		params.SetParameter("mainTex", tex);
-		params.SetParameter("color", color);
-		rq.Draw(spriteTransform, centeredTrackMesh, spriteMaterial, params);
-	}
-	void DrawScoringOverlay(RenderQueue& rq)
-	{
-		Vector2 barSize = Vector2(trackWidth * 1.4f, 1.0f);
-		barSize.y = CalculateTextureHeight(scoreBarTexture, barSize.x);
-
-		DrawSprite(rq, Vector3(0.0f, 0.1f, -0.03f), barSize, scoreBarTexture, Color::White, 4.0f);
-
-		// Draw button hit effect sprites
-		for(auto& hfx : m_buttonHitEffects)
-		{
-			float x = 0.0f;
-			float w = buttonWidth;
-			Color c = Color::White;
-			if(hfx.buttonCode < 4)
-			{
-				w = buttonWidth;
-				x = (-buttonWidth * 1.5f) + w * hfx.buttonCode;
-			}
-			else
-			{
-				w = buttonWidth * 2.0f;
-				x = -buttonWidth + w * (hfx.buttonCode - 4);
-				c = Color::Yellow;
-			}
-
-			if(hfx.rating != ScoreHitRating::Miss)
-			{
-				Vector2 hitEffectSize = Vector2(w * 1.2f, 0.0f);
-				hitEffectSize.y = CalculateTextureHeight(scoreHitTexture, hitEffectSize.x) * perspectiveHeightScale;
-				hitEffectSize.y *= hfx.GetRate();
-				Color c = Color::White.WithAlpha(hfx.GetRate()*hfx.GetRate());
-				DrawSprite(rq, Vector3(x, 0.05f + hitEffectSize.y * 0.5f, -0.03f), hitEffectSize, scoreHitTexture, c);
-			}
-
-			{
-				Texture hitTexture = scoreHitTextures[(size_t)hfx.rating];
-				Vector2 hitEffectSize = Vector2(buttonWidth * 0.5f, 0.0f);
-				hitEffectSize.y = CalculateTextureHeight(hitTexture, hitEffectSize.x) * perspectiveHeightScale;
-				hitEffectSize *= (hfx.GetRate() * hfx.GetRate()) + 0.5f;
-				Color c = Color::White.WithAlpha(hfx.GetRate());
-				DrawSprite(rq, Vector3(x, 0.45f + hitEffectSize.y * 0.5f, -0.03f), hitEffectSize, hitTexture, c, 0.0f);
-			}
-		}
-
-		// Draw laser pointers
-		for(uint32 i = 0; i < 2; i++)
-		{
-			float pos = i * 1.0f;
-			Vector2 objectSize = Vector2(buttonWidth * 0.7f, 0.0f);
-			objectSize.y = CalculateTextureHeight(laserPointerTexture, objectSize.x) * perspectiveHeightScale;
-			DrawSprite(rq, Vector3(pos - trackWidth * 0.5f, 0.0f, 0.0f), objectSize, laserPointerTexture, laserColors[i]);
-		}
-	}
-
-	// Ticks decay of button hit sprites, etc.
-	void TickEffects(float deltaTime) 
-	{
-		// Glow animation decay
-		m_objectGlow = m_objectGlow * (1.0f - 2.0f * deltaTime);
-
-		// Button Hit FX
-		for(auto it = m_buttonHitEffects.begin(); it != m_buttonHitEffects.end();)
-		{
-			if((it->time -= deltaTime) <= 0.0f)
-			{
-				it = m_buttonHitEffects.erase(it);
-				continue;
-			}
-			it++;
-		}
-	}
+	/// TODO: Use BPM scale for view range
+	const float viewRange = 0.5f;
 
 	// Set's up the perspective camera for track rendering
 	void SetupCamera(RenderState& rs, float viewRangeExtension = 0.0f)
@@ -314,7 +55,7 @@ public:
 
 		Transform cameraTransform;
 		float nearDistance = Math::Max(maxNearPlane, nearDistBase - viewRangeExtension);
-		float farDistance = nearDistance + trackLength + viewRangeExtension;
+		float farDistance = nearDistance + m_track->trackLength + viewRangeExtension;
 		cameraTransform *= Transform::Translation({ 0.0f, -cameraHeight, -nearDistBase });
 		cameraTransform *= Transform::Rotation({-90.0f + cameraTilt, 0.0f, 0.0f});
 
@@ -322,76 +63,8 @@ public:
 		rs.projectionTransform = ProjectionMatrix::CreatePerspective(30.0f, g_aspectRatio, nearDistance, farDistance);
 	}
 
-	// Processes input and Updates scoring, also handles audio timing management
-	/// TODO: Use BPM scale for view range
-	const float viewRange = 0.5f;
-	void OnButtonHit(ObjectState* obj, uint32 buttonCode)
-	{
-		ScoreHitRating rating = ScoreHitRating::Miss;
-		ButtonHitEffect& bhe = m_buttonHitEffects.Add(ButtonHitEffect(buttonCode, rating));
-	}
-	void TickGameplay(float deltaTime)
-	{
-		if(!m_started)
-		{
-			// Start playback of audio in first gameplay tick
-			BASS_ChannelPlay(m_audio, true);
-			m_started = true;
-		}
-
-		const BeatmapSettings& beatmapSettings = m_beatmap->GetMapSettings();
-
-		// Update beatmap playback
-		QWORD bytePos = BASS_ChannelGetPosition(m_audio, BASS_POS_BYTE);
-		double playbackPosition = BASS_ChannelBytes2Seconds(m_audio, bytePos);
-		MapTime playbackPositionMs = (MapTime)(playbackPosition * 1000.0);
-
-		// Apply offset correction and clamp to 0->
-		if(playbackPositionMs < g_audio->audioLatency)
-			playbackPositionMs = 0;
-		else
-			playbackPositionMs += (MapTime)g_audio->audioLatency;
-
-		if(playbackPositionMs > beatmapSettings.offset)
-		{
-			playbackPositionMs -= m_beatmap->GetMapSettings().offset;
-			m_playback.Update(playbackPositionMs);
-			uint32 startBeat = 0;
-
-			// Timing based object glow
-			uint32 b = m_playback.CountBeats(m_lastMapTime, playbackPositionMs - m_lastMapTime, startBeat, 2);
-			const TimingPoint& timingPoint = m_playback.GetCurrentTimingPoint();
-			if(b > 0)
-			{
-				m_objectGlow = 1.0f;
-			}
-		}
-		else
-		{
-			playbackPositionMs = 0;
-		}
-
-		// Get the current timing point
-		m_currentTiming = &m_playback.GetCurrentTimingPoint();
-
-		// Get objects in range
-		MapTime msViewRange = m_playback.BarDistanceToDuration(viewRange);
-		m_currentObjectSet = m_playback.GetObjectsInRange(msViewRange);
-
-		m_lastMapTime = playbackPositionMs;
-	}
-
-	virtual bool IsPlaying() const override
-	{
-		return m_playing;
-	}
 	~Game_Impl()
 	{
-		for(uint32 i = 0; i < 2; i++)
-		{
-			if(m_laserTrackBuilder[i])
-				delete m_laserTrackBuilder[i];
-		}
 	}
 
 	// Main update routine for the game logic
@@ -432,87 +105,14 @@ public:
 		m_playback = BeatmapPlayback(*m_beatmap);
 		if(!m_playback.Reset())
 			return false;
+		m_scoring.SetPlayback(m_playback);
+		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
 
-		// Load laser colors
-		Image laserColorPalette;
-		CheckedLoad(laserColorPalette = ImageRes::Create("textures/lasercolors.png"));
-		assert(laserColorPalette->GetSize().x >= 2);
-		laserColors[0] = laserColorPalette->GetBits()[0];
-		laserColors[1] = laserColorPalette->GetBits()[1];
-
-		// mip-mapped and anisotropicaly filtered track textures
-		CheckedLoad(trackTexture = g_application->LoadTexture("track.png"));
-		trackTexture->SetMipmaps(false);
-		trackTexture->SetFilter(true, true, 16.0f);
-		CheckedLoad(trackTickTexture = g_application->LoadTexture("tick.png"));
-		trackTickTexture->SetMipmaps(true);
-		trackTickTexture->SetFilter(true, true, 16.0f);
-		trackTickTexture->SetWrap(TextureWrap::Repeat, TextureWrap::Clamp);
-		trackTickLength = CalculateTextureHeight(trackTickTexture, buttonTrackWidth);
-
-		// Material used for buttons, lines and other simple track elements
-		CheckedLoad(trackMaterial = g_application->LoadMaterial("track"));
-		trackMaterial->opaque = false;
-
-		// Generate simple planes for the playfield track and elements
-		trackMesh = MeshGenerators::Quad(g_gl, Vector2(-trackWidth * 0.5f, 0.0f), Vector2(trackWidth, trackLength));
-		trackTickMesh = MeshGenerators::Quad(g_gl, Vector2(-buttonTrackWidth * 0.5f, 0.0f), Vector2(buttonTrackWidth, trackTickLength));
-		centeredTrackMesh = MeshGenerators::Quad(g_gl, Vector2(-0.5f, -0.5f), Vector2(1.0f, 1.0f));
-
-		// Scoring texture
-		CheckedLoad(scoreBarTexture = g_application->LoadTexture("scorebar.png"));
-		CheckedLoad(scoreHitTexture = g_application->LoadTexture("scorehit.png"));
-		scoreHitTexture->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
-		CheckedLoad(laserPointerTexture = g_application->LoadTexture("pointer.png"));
-
-		for(uint32 i = 0; i < 3; i++)
+		// Intialize track graphics
+		m_track = new Track();
+		if(!m_track->Init())
 		{
-			CheckedLoad(scoreHitTextures[i] = g_application->LoadTexture(Utility::Sprintf("score%d.png", i)));
-		}
-
-		// Sprite material
-		CheckedLoad(spriteMaterial = g_application->LoadMaterial("sprite"));
-		spriteMaterial->opaque = false;
-
-		// Load Button object
-		CheckedLoad(buttonTexture = g_application->LoadTexture("button.png"));
-		buttonTexture->SetMipmaps(true);
-		buttonTexture->SetFilter(true, true, 16.0f);
-		buttonLength = CalculateTextureHeight(buttonTexture, buttonWidth);
-		buttonMesh = MeshGenerators::Quad(g_gl, Vector2(0.0f, 0.0f), Vector2(buttonWidth, buttonLength));
-
-		// Load FX object
-		CheckedLoad(fxbuttonTexture = g_application->LoadTexture("fxbutton.png"));
-		fxbuttonTexture->SetMipmaps(true);
-		fxbuttonTexture->SetFilter(true, true, 16.0f);
-		fxbuttonLength = CalculateTextureHeight(buttonTexture, fxbuttonWidth);
-		fxbuttonMesh = MeshGenerators::Quad(g_gl, Vector2(0.0f, 0.0f), Vector2(fxbuttonWidth, fxbuttonLength));
-
-		CheckedLoad(fxbuttonMaterial = g_application->LoadMaterial("fxbutton"));
-		fxbuttonMaterial->opaque = false;
-		fxbuttonMaterial->blendMode = MaterialBlendMode::Additive;
-
-		// Load Laser object
-		CheckedLoad(laserTexture = g_application->LoadTexture("laser.png"));
-		laserTexture->SetMipmaps(true);
-		laserTexture->SetFilter(true, true, 16.0f);
-
-		// Laser object material, allows coloring and sampling laser edge texture
-		CheckedLoad(laserMaterial = g_application->LoadMaterial("laser"));
-		laserMaterial->blendMode = MaterialBlendMode::Additive;
-		laserMaterial->opaque = false;
-
-		// Overlay shader
-		CheckedLoad(trackOverlay = g_application->LoadMaterial("overlay"));
-		trackOverlay->opaque = false;
-
-		// Create a laser track builder for each laser object
-		// these will output and cache meshes for rendering lasers
-		for(uint32 i = 0; i < 2; i++)
-		{
-			m_laserTrackBuilder[i] = new LaserTrackBuilder(g_gl, i, trackWidth, laserWidth);
-			m_laserTrackBuilder[i]->laserTextureSize = laserTexture->GetSize();
-			m_laserTrackBuilder[i]->laserBorderPixels = 12;
+			return false;
 		}
 
 		if(!InitHUD())
@@ -527,18 +127,10 @@ public:
 	virtual void Render(float deltaTime) override
 	{
 		// The amount of bars visible on the track at one time
-		m_trackViewRange = Vector2(m_playback.GetBarTime(), 0.0f);
-		m_trackViewRange.y = m_trackViewRange.x + viewRange;
+		m_track->trackViewRange = Vector2(m_playback.GetBarTime(), 0.0f);
+		m_track->trackViewRange.y = m_track->trackViewRange.x + viewRange;
 
-		// Perform laser track cache cleanup, etc.
-		for(uint32 i = 0; i < 2; i++)
-		{
-			/// TODO: Add this back when lasers are fixedto support this
-			// Set the length of laser slams based on the approach rate
-			//m_laserTrackBuilder[i]->laserSlamHeight = Math::Clamp(buttonWidth / (viewRange / 1.2f), buttonWidth * 0.5f, buttonWidth * 4.0f);
-			//m_laserTrackBuilder[i]->laserSlamHeight = buttonWidth;
-			m_laserTrackBuilder[i]->Update(m_lastMapTime);
-		}
+		m_track->Tick(m_playback, deltaTime);
 
 		RenderState rs;
 		rs.cameraTransform = Transform::Rotation({ 0.0f, 0.0f, 0.0f });
@@ -552,14 +144,11 @@ public:
 		RenderQueue renderQueue(g_gl, rs);
 
 		// Draw the base track + time division ticks
-		DrawTrack(renderQueue);
+		m_track->DrawBase(renderQueue);
 
-		// Draw items on the track
-		for(uint32 i = 0; i < 2; i++)
-			m_laserTrackBuilder[i]->currentTimingPoint = *m_currentTiming;
 		for(auto& object : m_currentObjectSet)
 		{
-			DrawObjectState(renderQueue, object);
+			m_track->DrawObjectState(renderQueue, m_playback, object, m_scoring.IsActive(object));
 		}
 
 		// Use new camera for scoring overlay
@@ -567,7 +156,10 @@ public:
 		//	the track's near and far planes
 		SetupCamera(rs, 5.0f);
 		RenderQueue scoringRq(g_gl, rs);
-		DrawScoringOverlay(scoringRq);
+
+		// Copy laser positions
+		memcpy(m_track->laserPositions, m_scoring.laserPositions, sizeof(float) * 2);
+		m_track->DrawOverlays(scoringRq);
 
 		// Render queues
 		g_gl->SetViewport(rs.viewportSize);
@@ -577,8 +169,6 @@ public:
 		scoringRq.Process();
 
 		RenderHUD(deltaTime);
-
-		TickEffects(deltaTime);
 	}
 
 	// Draws HUD and debug overlay text
@@ -601,6 +191,10 @@ public:
 	}
 	
 	// Draws text, returns the size of the drawn text
+	Vector2i RenderText(RenderQueue& rq, const String& str, const Vector2& position, const Color& color = Color(1.0f), uint32 fontSize = 16)
+	{
+		return RenderText(rq, Utility::ConvertToUnicode(str), position, color, fontSize);
+	}
 	Vector2i RenderText(RenderQueue& rq, const WString& str, const Vector2& position, const Color& color = Color(1.0f), uint32 fontSize = 16)
 	{
 		Text text = font->CreateText(str, fontSize);
@@ -650,12 +244,10 @@ public:
 		textPos.y += RenderText(guiRq, bms.title, textPos).y;
 		textPos.y += RenderText(guiRq, bms.artist, textPos).y;
 
-		int32 renderTimeMs = (int32)(DeltaTime * 1000.0f);
-		textPos.y += RenderText(guiRq, Utility::WSprintf(L"MapTime: %i", m_lastMapTime), textPos).y;
-		textPos.y += RenderText(guiRq, Utility::WSprintf(L"RenderTime: %i", renderTimeMs), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("RenderTime: %.2f ms", DeltaTime * 1000.0f), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("Combo: %d", m_scoring.currentComboCounter), textPos).y;
 
 		// List recent hits and their delay
-		/*
 		Vector2 tableStart = textPos;
 		uint32 hitsShown = 0;
 		for(auto it = m_scoring.hitStats.rbegin(); it != m_scoring.hitStats.rend(); it++)
@@ -667,7 +259,7 @@ public:
 
 			Color baseColor;
 			WString what = (it->delta < 0) ? L"Early" : L"Late ";
-			switch(m_scoring.GetScoreHitRatingFromMs(it->delta))
+			switch(m_scoring.GetHitRatingFromDelta(it->delta))
 			{
 			case ScoreHitRating::Perfect:
 				baseColor = Color::Green;
@@ -684,7 +276,6 @@ public:
 			WString text = Utility::WSprintf(L"%s %i", what, it->delta);
 			textPos.y += RenderText(guiRq, text, textPos, c).y;
 		}
-		*/
 
 		glCullFace(GL_FRONT); // Flipped culling mode for GUI
 		guiRq.Process();
@@ -725,28 +316,6 @@ public:
 		r += 1.0f * buttonStates[base + 1];
 		return r;
 	}
-	void OnButtonInput(Button b, bool pressed) // Raw input handler
-	{
-		bool& state = buttonStates[(size_t)b];
-		if(state == pressed)
-			return; // Nothing changed
-
-		if(b >= Button::BT_0 && b <= Button::BT_3Alt)
-		{
-			OnButtonInput((size_t)b % 4, pressed);
-		}
-		else if(b >= Button::FX_0 && b <= Button::FX_1Alt)
-		{
-			OnButtonInput(4 + (size_t)b % 2, pressed);
-		}
-		// else -> ignore laser state changes, those are checked continuously 
-
-		state = pressed; // Store state
-	}
-	void OnButtonInput(uint32 buttonIdx, bool pressed)
-	{
-		/// TODO: Send input to score
-	}
 	void InitButtonMapping()
 	{
 		memset(buttonStates, 0, sizeof(buttonStates));
@@ -786,18 +355,24 @@ public:
 			}
 			m_paused = !m_paused;
 		}
-		if(key == VK_RETURN)
+		else if(key == VK_RETURN) // Skip intro
+		{
+			SkipIntro();
+		}
+		else if(key == VK_PRIOR)
 		{
 			QWORD bytePos = BASS_ChannelGetPosition(m_audio, BASS_POS_BYTE);
 			double playbackPosition = BASS_ChannelBytes2Seconds(m_audio, bytePos);
 			playbackPosition += 5.0f;
 			BASS_ChannelSetPosition(m_audio, BASS_ChannelSeconds2Bytes(m_audio, playbackPosition), BASS_POS_BYTE);
 		}
-
-		// Handle button mappings
-		auto it = buttonMap.find(key);
-		if(it != buttonMap.end())
-			OnButtonInput(it->second, true);
+		else
+		{
+			// Handle button mappings
+			auto it = buttonMap.find(key);
+			if(it != buttonMap.end())
+				OnButtonInput(it->second, true);
+		}
 	}
 	virtual void OnKeyReleased(uint8 key) override
 	{
@@ -807,6 +382,124 @@ public:
 			OnButtonInput(it->second, false);
 	}
 
+	// Handle button input for game
+	void OnButtonInput(Button b, bool pressed) // Raw input handler
+	{
+		bool& state = buttonStates[(size_t)b];
+		if(state == pressed)
+			return; // Nothing changed
+		state = pressed; // Store state
+
+		if(b >= Button::BT_0 && b <= Button::BT_3Alt)
+		{
+			OnButtonInput((size_t)b % 4, pressed);
+		}
+		else if(b >= Button::FX_0 && b <= Button::FX_1Alt)
+		{
+			OnButtonInput(4 + (size_t)b % 2, pressed);
+		}
+		else // Update lasers
+		{
+			m_scoring.laserInput[0] = GetInputLaserDir(0);
+			m_scoring.laserInput[1] = GetInputLaserDir(1);
+		}
+	}
+	void OnButtonInput(uint32 buttonIdx, bool pressed)
+	{
+		if(pressed)
+		{
+			ObjectState* hitObject = m_scoring.OnButtonPressed(buttonIdx);
+			if(hitObject)
+			{
+				if(hitObject->type == ObjectType::Single)
+				{
+					MapTime hitDelta = m_scoring.GetObjectHitDelta(hitObject);
+					ScoreHitRating rating = m_scoring.GetHitRatingFromDelta(hitDelta);
+					Color c = m_track->hitColors[(size_t)rating + 1];
+					m_track->AddEffect(new ButtonHitEffect(buttonIdx, c));
+					m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, rating));
+				}
+			}
+			else
+			{
+				m_track->AddEffect(new ButtonHitEffect(buttonIdx, m_track->hitColors[0]));
+			}
+		}
+		else
+		{
+			m_scoring.OnButtonReleased(buttonIdx);
+		}
+	}
+	void OnButtonMiss(uint32 buttonIdx)
+	{
+		m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, ScoreHitRating::Miss));
+	}
+
+	// Processes input and Updates scoring, also handles audio timing management
+	void TickGameplay(float deltaTime)
+	{
+		if(!m_started)
+		{
+			// Start playback of audio in first gameplay tick
+			BASS_ChannelPlay(m_audio, true);
+			m_started = true;
+
+			if(g_application->GetAppCommandLine().Contains("-autoSkip"))
+			{
+				SkipIntro();
+			}
+		}
+
+		const BeatmapSettings& beatmapSettings = m_beatmap->GetMapSettings();
+
+		// Update beatmap playback
+		QWORD bytePos = BASS_ChannelGetPosition(m_audio, BASS_POS_BYTE);
+		double playbackPosition = BASS_ChannelBytes2Seconds(m_audio, bytePos);
+		MapTime playbackPositionMs = (MapTime)(playbackPosition * 1000.0);
+
+		// Apply offset correction and clamp to 0->
+		if(playbackPositionMs < g_audio->audioLatency)
+			playbackPositionMs = 0;
+		else
+			playbackPositionMs += (MapTime)g_audio->audioLatency;
+
+		if(playbackPositionMs > beatmapSettings.offset)
+		{
+			playbackPositionMs -= m_beatmap->GetMapSettings().offset;
+			m_playback.Update(playbackPositionMs);
+		}
+		else
+		{
+			playbackPositionMs = 0;
+		}
+
+		// Update scoring
+		m_scoring.Tick(deltaTime);
+
+		// Get the current timing point
+		m_currentTiming = &m_playback.GetCurrentTimingPoint();
+
+		// Get objects in range
+		MapTime msViewRange = m_playback.BarDistanceToDuration(viewRange);
+		m_currentObjectSet = m_playback.GetObjectsInRange(msViewRange);
+
+		m_lastMapTime = playbackPositionMs;
+	}
+	// SKips ahead to the right before the first object in the map
+	void SkipIntro()
+	{
+		ObjectState* firstObj = m_beatmap->GetLinearObjects().front();
+		MapTime skipTime = firstObj->time - 1000;
+		if(skipTime > m_lastMapTime)
+		{
+			QWORD dstBytes = BASS_ChannelSeconds2Bytes(m_audio, (double)skipTime / 1000.0);
+			BASS_ChannelSetPosition(m_audio, dstBytes, BASS_POS_BYTE);
+		}
+	}
+	virtual bool IsPlaying() const override
+	{
+		return m_playing;
+	}
 };
 
 Game* Game::Create(Beatmap* map, String mapPath)

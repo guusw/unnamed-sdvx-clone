@@ -10,8 +10,6 @@ public:
 	void Reset();
 	void Update(MapTime newTime);
 	Mesh GenerateTrackMesh(class BeatmapPlayback& playback, LaserObjectState* state);
-	
-	TimingPoint currentTimingPoint;
 
 	// Used to generate larges meshes but allow the texture to match the actual laser width
 	uint32 laserBorderPixels;

@@ -28,6 +28,12 @@ public:
 	virtual void SetMipmaps(bool enabled) = 0;
 	virtual void SetFilter(bool enabled, bool mipFiltering = true, float anisotropic = 1.0f) = 0;
 	virtual const Vector2i& GetSize() const = 0;
+
+	// Gives the aspect ratio correct height for a given width
+	float CalculateHeight(float width);
+	// Gives the aspect ratio correct width for a given height
+	float CalculateWidth(float height);
+
 	virtual void Bind(uint32 index = 0) = 0;
 	virtual uint32 Handle() = 0;
 	virtual void SetWrap(TextureWrap u, TextureWrap v) = 0;
