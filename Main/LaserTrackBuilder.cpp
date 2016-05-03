@@ -4,6 +4,22 @@
 #include "BeatmapPlayback.hpp"
 #include <algorithm>
 
+void GenerateLaserQuad(Rect3D r, Rect uv, Vector<MeshGenerators::SimpleVertex>& out)
+{
+	Vector<MeshGenerators::SimpleVertex> verts =
+	{
+		{ { r.Left(),  r.Top(),     0.0f },{ uv.Left(), uv.Top() } },
+		{ { r.Right(), r.Bottom(),  0.0f },{ uv.Right(), uv.Bottom() } },
+		{ { r.Right(), r.Top(),     0.0f },{ uv.Right(), uv.Top() } },
+
+		{ { r.Left(),  r.Top(),     0.0f },{ uv.Left(), uv.Top() } },
+		{ { r.Left(),  r.Bottom(),  0.0f },{ uv.Left(), uv.Bottom() } },
+		{ { r.Right(), r.Bottom(),  0.0f },{ uv.Right(), uv.Bottom() } },
+	};
+	for(auto& v : verts)
+		out.Add(v);
+}
+
 LaserTrackBuilder::LaserTrackBuilder(class OpenGL* gl, uint32 laserIndex, float trackWidth, float laserWidth)
 {
 	m_gl = gl;
@@ -20,26 +36,27 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 
 	// Calculate amount to scale laser size to fit the texture border in
 	assert(laserTextureSize.x == laserTextureSize.y); // Use Square texture
-	float laserTextureScale = ((float)laserTextureSize.x / (float)(laserTextureSize.x - laserBorderPixels));
-	float laserBorderAmount = laserTextureScale - 1.0f;
+	float laserCenterAmount = ((float)laserTextureSize.x - ((float)laserBorderPixels*2)) / (float)(laserTextureSize.x);
+	float laserBorderAmount = (1.0f - laserCenterAmount);
 
-	float laserWidthWithBorder = m_laserWidth * laserTextureScale;
-	float trackWidthWidthBorder = m_trackWidth + laserBorderAmount * m_laserWidth;
-	float effectiveWidth = trackWidthWidthBorder - laserWidthWithBorder;
-	float halfWidth = laserWidthWithBorder * 0.5f;
-	float length = playback.DurationToBarDistance(laser->duration);
-	float textureBorder = 0.25f;
+	// The uv coordinates to sample the laser without the border, or only the border
+	float textureBorder = (float)laserBorderPixels / laserTextureSize.x;
 	float invTextureBorder = 1.0f - textureBorder;
+
+	// The the size of the laser with compensation added for the border
+	float actualLaserWidth = m_laserWidth / laserCenterAmount;
+
+	// The width of the laser without the border
+	float laserWidthNoBorder = actualLaserWidth * laserCenterAmount;
+	// World size of a single border around a laser
+	float realBorderSize = (actualLaserWidth - laserWidthNoBorder) * 0.5f;
+
+	float effectiveWidth = m_trackWidth - m_laserWidth;
+	float length = playback.DurationToBarDistance(laser->duration);
 
 	if((laser->flags & LaserObjectState::flag_Instant) != 0) // Slam segment
 	{
 		float left, right;
-		float top = length;
-		float bottom = 0.0f;
-		float halfBorder = length * laserBorderAmount * 0.5f;
-		bottom -= halfBorder;
-		top += halfBorder;
-		
 		left = laser->points[0] * effectiveWidth - effectiveWidth * 0.5f;
 		right = laser->points[1] * effectiveWidth - effectiveWidth * 0.5f;
 
@@ -57,61 +74,87 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 
 		// Make place for corner pieces
 		if(cornerLeft)
-			left += m_laserWidth * 0.5f;
+			left += laserWidthNoBorder * 0.5f;
 		else // otherwise extend all the way from the center to the edge
-			left -= laserWidthWithBorder * 0.5f;
+			left -= laserWidthNoBorder * 0.5f;
 		if(cornerRight)
-			right -= m_laserWidth * 0.5f;
+			right -= laserWidthNoBorder * 0.5f;
 		else
-			right += laserWidthWithBorder * 0.5f;
+			right += laserWidthNoBorder * 0.5f;
 
-		Vector<MeshGenerators::SimpleVertex> verts =
-		{
-			{ { left,  top,     0.0f },{ textureBorder, textureBorder } },
-			{ { right, bottom,  0.0f },{ invTextureBorder, invTextureBorder } },
-			{ { right, top,     0.0f },{ invTextureBorder, textureBorder } },
+		// Uv coordinates for center and borders
+		// More tight border in horizontal direction
+		Rect centerMiddleUv = Rect(textureBorder, textureBorder, invTextureBorder, invTextureBorder);
+		Rect centerUpperUv = Rect(textureBorder, 0.0f, invTextureBorder, textureBorder);
+		Rect centerLowerUv = Rect(textureBorder, invTextureBorder, invTextureBorder, 1.0f);
 
-			{ { left,  top,     0.0f },{ textureBorder, textureBorder } },
-			{ { left,  bottom,  0.0f },{ textureBorder, invTextureBorder } },
-			{ { right, bottom,  0.0f },{ invTextureBorder, invTextureBorder } },
-		};
+		// Generate positions for middle top and bottom
+		Rect3D centerMiddle = Rect3D(left, laserWidthNoBorder * perspectiveHeightScale, right, 0.0f);
+		Rect3D centerBottom = centerMiddle;
+		centerBottom.size.y = realBorderSize * perspectiveHeightScale;
+		centerBottom.pos.y = centerMiddle.Bottom() - centerBottom.size.y;
+		Rect3D centerTop = centerBottom;
+		centerTop.pos.y = centerMiddle.Top();
 
-		// Generate corners
+		float uvMin = textureBorder;
+		float uvMax = invTextureBorder;
+
+		Vector<MeshGenerators::SimpleVertex> verts;
+
+		// Middle part
+		GenerateLaserQuad(centerTop, centerUpperUv, verts);
+		GenerateLaserQuad(centerBottom, centerLowerUv, verts);
+		GenerateLaserQuad(centerMiddle, centerMiddleUv, verts);
+
+		// Generate left corner
 		if(cornerLeft)
 		{
-			float cleft = left - laserWidthWithBorder;
-			float cright = left;
+			Rect3D leftCenter = Rect3D(left - laserWidthNoBorder, centerMiddle.Top(), left, centerMiddle.Bottom());
+			Rect3D leftCap = leftCenter;
+			leftCap.pos.y = leftCap.pos.y + leftCap.size.y;
+			leftCap.size.y = realBorderSize * perspectiveHeightScale;
+			leftCap.size.x += realBorderSize;
+			leftCap.pos.x -= realBorderSize;
+			Rect3D leftSide = leftCenter;
+			leftSide.size.x = realBorderSize;
+			leftSide.pos.x = leftCap.Left();
 
-			Vector<MeshGenerators::SimpleVertex> cl =
+			Rect sideUv = Rect(0.0f, textureBorder, textureBorder, invTextureBorder);
+			Rect capUv = Rect(0.0f, 0.0f, invTextureBorder, textureBorder); // Cap at the top
+			if(swapped)
 			{
-				{ { cleft,  top,     0.0f },{ textureBorder, textureBorder } },
-				{ { cright, bottom,  0.0f },{ invTextureBorder, invTextureBorder } },
-				{ { cright, top,     0.0f },{ textureBorder, textureBorder } },
+				capUv = Rect(0.0f, invTextureBorder, invTextureBorder, 1.0f); // Cap at the bottom
+				leftCap.size.y = realBorderSize * perspectiveHeightScale;
+				leftCap.pos.y = leftCenter.pos.y - leftCap.size.y;
+			}
 
-				{ { cleft,  top,     0.0f },{ textureBorder, textureBorder } },
-				{ { cleft,  bottom,  0.0f },{ textureBorder, invTextureBorder } },
-				{ { cright, bottom,  0.0f },{ invTextureBorder, invTextureBorder } },
-			};
-			for(auto& v : cl)
-				verts.Add(v);
+			GenerateLaserQuad(leftCenter, centerMiddleUv, verts);
+			GenerateLaserQuad(leftSide, sideUv, verts);
+			GenerateLaserQuad(leftCap, capUv, verts);
 		}
+
 		if(cornerRight)
 		{
-			float cleft = right;
-			float cright = right + laserWidthWithBorder;
+			Rect3D rightCenter = Rect3D(right, centerMiddle.Top(), right + laserWidthNoBorder, centerMiddle.Bottom());
+			Rect3D rightCap = rightCenter;
+			rightCap.size.y = realBorderSize * perspectiveHeightScale;
+			rightCap.size.x += realBorderSize;
+			rightCap.pos.y = rightCenter.Bottom() - rightCap.size.y;
+			Rect3D rightSide = rightCenter;
+			rightSide.size.x = realBorderSize;
+			rightSide.pos.x = rightCenter.Right();
 
-			Vector<MeshGenerators::SimpleVertex> cl =
+			Rect sideUv = Rect(invTextureBorder, textureBorder, 1.0f, invTextureBorder);
+			Rect capUv = Rect(textureBorder, invTextureBorder, 1.0f, 1.0f); // Cap at the bottom
+			if(swapped)
 			{
-				{ { cleft,  top,     0.0f },{ textureBorder, textureBorder } },
-				{ { cright, bottom,  0.0f },{ invTextureBorder, invTextureBorder } },
-				{ { cright, top,     0.0f },{ invTextureBorder, textureBorder } },
+				capUv = Rect(textureBorder, 0.0f, 1.0f, textureBorder); // Cap at the top
+				rightCap.pos.y = rightCenter.Top();
+			}
 
-				{ { cleft,  top,     0.0f },{ textureBorder, textureBorder } },
-				{ { cleft,  bottom,  0.0f },{ textureBorder, invTextureBorder } },
-				{ { cright, bottom,  0.0f },{ invTextureBorder,invTextureBorder } },
-			};
-			for(auto& v : cl)
-				verts.Add(v);
+			GenerateLaserQuad(rightCenter, centerMiddleUv, verts);
+			GenerateLaserQuad(rightSide, sideUv, verts);
+			GenerateLaserQuad(rightCap, capUv, verts);
 		}
 
 		newMesh->SetData(verts);
@@ -119,22 +162,37 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 	}
 	else
 	{
+		float prevLength = 0.0f;
+		if(laser->prev && (laser->prev->flags & LaserObjectState::flag_Instant) != 0)
+		{
+			prevLength = laserWidthNoBorder * perspectiveHeightScale;
+		}
+
+		// Connecting center points
 		Vector2 points[2] =
 		{
-			Vector2(laser->points[0] * effectiveWidth - effectiveWidth * 0.5f, 0.0f), // Bottom
-			Vector2(laser->points[1] * effectiveWidth - effectiveWidth * 0.5f, length), // Top
+			Vector2(laser->points[0] * effectiveWidth - effectiveWidth * 0.5f, prevLength), // Bottom
+			Vector2(laser->points[1] * effectiveWidth - effectiveWidth * 0.5f, length * laserLengthScale), // Top
 		};
 
+		float uMin = 0.0f;
+		float uMax = 1.0f;
+		// More tight border in vertical direction
+		float vMin = textureBorder;
+		float vMax = invTextureBorder;
+
+		float halfWidth = actualLaserWidth * 0.5f;
 		Vector<MeshGenerators::SimpleVertex> verts =
 		{
-			{ { points[0].x - halfWidth, points[0].y,  0.0f },{ 0.0f, invTextureBorder} }, // BL
-			{ { points[0].x + halfWidth, points[0].y,  0.0f },{ 1.0f, invTextureBorder} }, // BR
-			{ { points[1].x + halfWidth, points[1].y,  0.0f },{ 1.0f, textureBorder } }, // TR
+			{ { points[0].x - halfWidth, points[0].y,  0.0f },{ uMin, vMax } }, // BL
+			{ { points[0].x + halfWidth, points[0].y,  0.0f },{ uMax, vMax } }, // BR
+			{ { points[1].x + halfWidth, points[1].y,  0.0f },{ uMax, vMin } }, // TR
 
-			{ { points[0].x - halfWidth, points[0].y,  0.0f },{ 0.0f, invTextureBorder } }, // BL
-			{ { points[1].x + halfWidth, points[1].y,  0.0f },{ 1.0f, textureBorder } }, // TR
-			{ { points[1].x - halfWidth, points[1].y,  0.0f },{ 0.0f, textureBorder } }, // TL
+			{ { points[0].x - halfWidth, points[0].y,  0.0f },{ uMin, vMax } }, // BL
+			{ { points[1].x + halfWidth, points[1].y,  0.0f },{ uMax, vMin } }, // TR
+			{ { points[1].x - halfWidth, points[1].y,  0.0f },{ uMin, vMin } }, // TL
 		};
+
 
 		newMesh->SetData(verts);
 		newMesh->SetPrimitiveType(PrimitiveType::TriangleList);

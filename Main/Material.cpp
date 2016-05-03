@@ -212,7 +212,8 @@ public:
 				uint32* textureUnit = m_textureIDs.Find(p.first);
 				if(!textureUnit)
 				{
-					Logf("Texture not found \"%s\"", Logger::Warning, p.first);
+					/// TODO: Add print once mechanism for these kind of errors
+					//Logf("Texture not found \"%s\"", Logger::Warning, p.first);
 					break;
 				}
 				uint32 texture = p.second.Get<int32>();

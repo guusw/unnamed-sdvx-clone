@@ -1,236 +1,287 @@
 #include "stdafx.h"
 #include "Scoring.hpp"
+#include "BeatmapPlayback.hpp"
+#include <math.h>
 
 const float Scoring::idleLaserMoveSpeed = 1.0f;
-
-const int64 Scoring::maxEarlyHitTime = 100;
-const int64 Scoring::perfectHitTime = 50;
+const MapTime Scoring::maxEarlyHitTime = 100;
+const MapTime Scoring::perfectHitTime = 50;
+const MapTime Scoring::laserMissTreshold = perfectHitTime;
 
 Scoring::Scoring()
 {
-	laserPositions[0] = 0.0f;
-	laserPositions[1] = 1.0f;
-
 	currentComboCounter = 0;
 	m_hitNotesDelta = 0;
 	m_numNotesHit = 0;
+	m_holdTickCounter = 0;
+	m_lastTime = 0;
+	laserPositions[0] = 0.0f;
+	laserPositions[1] = 1.0f;
 }
-void Scoring::Tick(Vector<ObjectState*> objects, MapTime currentTime, float deltaTime)
+
+void Scoring::SetPlayback(BeatmapPlayback& playback)
 {
-	m_hitableObjects = objects;
-	int64 timeDeltaMs = Math::Max<int64>(0, currentTime - m_currentTime);
-	m_currentTime = currentTime;
-
-	// Add objects in range to the array and find missed objects (>max hit time)
-	m_hitableObjects.clear();
-	for(auto& o : objects) 
+	if(m_playback)
 	{
-		int64 delta = currentTime - o->time;
-		if(delta > maxEarlyHitTime) // Miss button in this object that were not hit
-		{
-			bool containsHoldNotes = false;
-			for(uint32 i = 0; i < 6; i++)
-			{
-				ButtonState& btn = o->buttons[i];
-				if(btn.on)
-				{
-					// Instant miss on single notes
-					if(btn.duration == -1)
-					{
-						if(m_RecordHit(o, i))
-						{
-							m_AddScore(o, i, delta);
-							OnButtonHit.Call(o, i);
-							hitStats.Add({ currentTime, delta });
-						}
-					}
-					else
-					{
-						// Miss hold note
-						if(!currentHoldObjects[i])
-						{
-							if(m_RecordHit(o, i))
-							{
-								m_AddScore(o, i, delta);
-								OnButtonHit.Call(o, i);
-								hitStats.Add({ currentTime, delta });
-							}
-						}
+		m_playback->OnObjectEntered.RemoveAll(this);
+		m_playback->OnObjectLeaved.RemoveAll(this);
+	}
+	m_playback = &playback;
+	m_playback->OnObjectEntered.Add(this, &Scoring::m_OnObjectEntered);
+	m_playback->OnObjectLeaved.Add(this, &Scoring::m_OnObjectLeaved);
+}
 
-						// Add as hitable object if there is still a hold not that can be triggered for more duration
-						int64 holdDelta = (int64)currentTime - (int64)(btn.duration + o->time);
-						if(holdDelta < 0)
-						{
-							containsHoldNotes = true;
-						}
+void Scoring::Tick(float deltaTime)
+{
+	assert(m_playback);
+	Set<ObjectState*>& objects = m_playback->GetHittableObjects();
+	MapTime time = m_playback->GetLastTime();
+	MapTime delta = time - m_lastTime;
+	if(delta <= 0)
+		return;
+	m_lastTime = time;
+
+	// Count beats on current tick
+	uint32 startBeat = 0;
+	uint32 numBeats = m_playback->CountBeats(m_lastTime, delta, startBeat, 1);
+
+	for(auto it = objects.begin(); it != objects.end(); it++)
+	{
+		MapTime hitDelta = GetObjectHitDelta(*it);
+		MultiObjectState* mobj = **it;
+		// Check for hold breaks
+		if(mobj->type == ObjectType::Hold)
+		{
+			HoldObjectState* hold = (HoldObjectState*)mobj;
+			if(!activeHoldObjects[hold->index])
+			{
+				// Should be held down?, also check for release offset
+				if(abs(hitDelta) > maxEarlyHitTime)
+				{
+					MapTime endTime = hold->duration + hold->time;
+					MapTime endDelta = time - endTime;
+
+					if(abs(endDelta) > maxEarlyHitTime)
+					{
+						// Combo break, released too early
+						currentComboCounter = 0;
+						OnButtonMiss.Call(hold->index);
+						continue;
 					}
 				}
 			}
+			else
+			{
+				const TimingPoint* tp = m_playback->GetTimingPointAt(hold->time);
+				assert(tp);
 
-			// Add if hold notes are in this object
-			if(containsHoldNotes)
-				m_hitableObjects.Add(o);
-			continue;
+				// Give combo points for hold note ticks
+				uint32 comboTickLast = (uint32)round(((double)lastHoldDuration[hold->index] * (double)tp->measure) / tp->beatDuration);
+				lastHoldDuration[hold->index] += delta;
+				uint32 comboTickCurrent = (uint32)round(((double)lastHoldDuration[hold->index] * (double)tp->measure) / tp->beatDuration);
+				if(comboTickCurrent > comboTickLast)
+				{
+					currentComboCounter++;
+
+					currentHitScore += 1;
+					currentMaxScore += 1;
+				}
+			}
 		}
-		if(o->time < (currentTime + maxEarlyHitTime))
-			m_hitableObjects.Add(o);
-	}
-
-	// remove old recent hits
-	for(auto it = recentHits.begin(); it != recentHits.end();)
-	{
-		int64 delta = it->first->time - currentTime;
-		if(delta < -2000)
+		// Set the active laser segment
+		else if(mobj->type == ObjectType::Laser)
 		{
-			it = recentHits.erase(it);
-			continue;
-		}
-		it++;
-	}
+			uint32 laserIndex = mobj->laser.index;
+			LaserObjectState* laser = (LaserObjectState*)mobj;
+			MapTime endTime = laser->duration + laser->time;
+			MapTime endDelta = time - endTime;
 
-	// Evaluate hold objects
-	for(uint32 i = 0; i < 6; i++)
-	{
-		if(!currentHoldObjects[i])
-			continue;
-		// If button is pressed, add hold duration to note
-		if(buttonStates[i])
-			holdDurations[i] += timeDeltaMs;
+			if(activeLaserObjects[laserIndex] != laser)
+			{
+				// Select new laser
+				if(hitDelta >= -laserMissTreshold && endDelta < laserMissTreshold)
+				{
+					if(!activeLaserObjects[laserIndex] || activeLaserObjects[laserIndex]->time < mobj->time)
+					{
+						if(!laser->prev)
+						{
+							// Set initial pointer position
+							laserPositions[laserIndex] = mobj->laser.points[0];
+							// Reset miss duration
+							laserMissDuration[laserIndex] = 0;
+							laserSlamHit[laserIndex] = false;
+						}
+						activeLaserObjects[laserIndex] = (LaserObjectState*)mobj;
+					}
+				}
+			}
+			else
+			{
 
-		ButtonState& btn = currentHoldObjects[i]->buttons[i];
-		MapTime end = currentHoldObjects[i]->time + btn.duration;
-		// Evaluate the clearing of the hold object
-		if(m_currentTime >= end)
-		{
-			m_TerminateHoldObject(i);
+				if(endDelta > laserMissTreshold)
+				{
+					activeLaserObjects[laserIndex] = nullptr;
+				}
+			}
 		}
 	}
 
 	for(uint32 i = 0; i < 2; i++)
 	{
-		laserPositions[i] = Math::Clamp(laserPositions[i] + laserInput[i] * idleLaserMoveSpeed * deltaTime, 0.0f, 1.0f);
-	}
-}
-void Scoring::HandleButtonPress(uint32 buttonCode)
-{
-	assert(buttonCode >= 0 || buttonCode <= 6);
-	buttonStates[buttonCode] = true;
-	// Scan for single hittable or holdable objects
-	for(uint32 i = 0; i < m_hitableObjects.size(); i++)
-	{
-		ObjectState* obj = m_hitableObjects[i];
-		ButtonState& btn = m_hitableObjects[i]->buttons[buttonCode];
-		int64 delta = m_hitableObjects[i]->time - m_currentTime;
-		if(delta > maxEarlyHitTime)
+		LaserObjectState* laser = activeLaserObjects[i];
+		if(!laser)
 			continue;
-		if(btn.on)
+
+		float laserTargetNew = 0.0f;
+		if(activeLaserObjects[i])
+			laserTargetNew = m_SampleLaserPosition(time, activeLaserObjects[i]);
+		float targetDelta = laserTargetNew - laserTargetPositions[i];
+		laserTargetPositions[i] = laserTargetNew;
+
+		if(targetDelta != 0.0f)
 		{
-
-			if(btn.duration != -1)
+			// Check if the input is following the laser segment
+			if(Math::Sign(targetDelta) == Math::Sign(laserInput[i]))
 			{
-				assert(!currentHoldObjects[buttonCode]);
-				// Hold object
-				currentHoldObjects[buttonCode] = obj;
-				holdDurations[buttonCode] = 0;
-				holdStartDelta[buttonCode] = delta;
-				break;
+				// Make the cursor follow the laser track
+				laserPositions[i] = laserTargetPositions[i];
+				laserMissDuration[i] = 0;
+
+				// Check if laser slam was hit
+				if((laser->flags & LaserObjectState::flag_Instant) != 0 && !laserSlamHit[i])
+				{
+					OnLaserSlamHit.Call(i);
+					laserSlamHit[i] = true;
+				}
 			}
-
-			if(!m_RecordHit(obj, buttonCode))
-				continue;
-
-			OnButtonHit.Call(obj, buttonCode);
-			m_AddScore(m_hitableObjects[i], buttonCode, delta);
-			hitStats.Add({ m_currentTime, delta });
-			m_hitNotesDelta += delta;
-			m_numNotesHit++;
-			break;
+			else
+			{
+				laserMissDuration[i] += delta;
+			}
 		}
 	}
 }
-void Scoring::HandleButtonRelease(uint32 buttonCode)
-{
-	assert(buttonCode >= 0 || buttonCode <= 6);
-	buttonStates[buttonCode] = false;
-	if(currentHoldObjects[buttonCode])
-	{
-		m_TerminateHoldObject(buttonCode);
-	}
-}
-ScoreHitRating Scoring::GetScoreHitRatingFromMs(int64 delta)
+
+ScoreHitRating Scoring::GetHitRatingFromDelta(MapTime delta)
 {
 	delta = abs(delta);
-	if(delta < maxEarlyHitTime)
-	{
-		if(delta < perfectHitTime)
-			return ScoreHitRating::Perfect;
+	if(delta > maxEarlyHitTime)
+		return ScoreHitRating::Miss;
+	if(delta > perfectHitTime)
 		return ScoreHitRating::Good;
-	}
-	return ScoreHitRating::Miss;
-}
-int64 Scoring::GetObjectHitDelta(ObjectState* state, uint32 buttonCode)
-{
-	if(!recentHits.Contains(state))
-		return 0;
-	return recentHits[state].hitDeltas[buttonCode];
-}
-int64 Scoring::GetAverageHitDelta() const
-{
-	if(m_numNotesHit == 0)
-		return 0;
-	return (int64)((double)m_hitNotesDelta / (double)m_numNotesHit);
+	return ScoreHitRating::Perfect;
 }
 
-void Scoring::m_AddScore(ObjectState* state, uint32 buttonCode, int64 delta)
+ObjectState* Scoring::OnButtonPressed(uint32 buttonCode)
 {
-	ScoreHitRating hitRating = GetScoreHitRatingFromMs(delta);
+	assert(m_playback);
+	Set<ObjectState*>& objects = m_playback->GetHittableObjects();
+	MapTime time = m_playback->GetLastTime();
 
-	if(hitRating == ScoreHitRating::Miss)
-		currentComboCounter = 0;
-	else
-		currentComboCounter++;
-
-	currentMaxScore += (size_t)ScoreHitRating::Perfect;
-	currentHitScore += (size_t)hitRating;
-	recentHits[state].hitDeltas[buttonCode] = delta;
-}
-void Scoring::m_TerminateHoldObject(uint32 buttonCode)
-{
-	ButtonState& btn = currentHoldObjects[buttonCode]->buttons[buttonCode];
-	if(m_RecordHit(currentHoldObjects[buttonCode], buttonCode))
+	ObjectState* hitObject = nullptr;
+	for(auto it = objects.begin(); it != objects.end();)
 	{
-		float holdRate = (float)holdDurations[buttonCode] / (float)btn.duration;
-		Logf("Hold button [%i] released, score: %f", Logger::Info, buttonCode, holdRate);
-
-		int64 timeBeforeEnd = (int64)(m_currentTime) - (int64)(currentHoldObjects[buttonCode]->time + btn.duration);
-		if(timeBeforeEnd < -maxEarlyHitTime)
+		MultiObjectState* mobj = **it;
+		if((*it)->type != ObjectType::Laser && mobj->button.index == buttonCode)
 		{
-			m_AddScore(currentHoldObjects[buttonCode], buttonCode, holdStartDelta[buttonCode]);
+			if((*it)->type == ObjectType::Single)
+			{
 
-			// This automatically calculates a miss using timeBeforeEnd as a delta
-			m_AddScore(currentHoldObjects[buttonCode], buttonCode, timeBeforeEnd);
-			// Register miss
-			OnButtonHit.Call(currentHoldObjects[buttonCode], buttonCode);
+				hitObject = *it;
+				objects.erase(it);
+				m_RegisterHit(hitObject);
+				break;
+			}
+			else if((*it)->type == ObjectType::Hold)
+			{
+				activeHoldObjects[mobj->button.index] = (HoldObjectState*)*it;
+				return *it;
+			}
 		}
-		else
-		{
-			m_AddScore(currentHoldObjects[buttonCode], buttonCode, holdStartDelta[buttonCode]);
-		}
+		it++;
 	}
 
-	// Clear hold object
-	currentHoldObjects[buttonCode] = nullptr;
+	return hitObject;
 }
-bool Scoring::m_RecordHit(ObjectState* state, uint32 buttonCode)
+void Scoring::OnButtonReleased(uint32 buttonCode)
 {
-	ObjectHitState& setting = recentHits.FindOrAdd(state);
-	uint32 mask = 1 << buttonCode;
-	if((setting.mask & mask) != mask)
+	if(activeHoldObjects[buttonCode])
 	{
-		setting.mask |= mask;
+		activeHoldObjects[buttonCode] = nullptr;
+		lastHoldDuration[buttonCode] = 0;
+	}
+}
 
-		return true;
+bool Scoring::IsActive(ObjectState* object) const
+{
+	MultiObjectState* mobj = *object;
+	if(mobj->type == ObjectType::Hold)
+	{
+		if(activeHoldObjects[mobj->hold.index] == (HoldObjectState*)object)
+			return true;
+	}
+	else if(mobj->type == ObjectType::Laser)
+	{
+		if(activeLaserObjects[mobj->laser.index])
+		{
+			return laserMissDuration[mobj->laser.index] < laserMissTreshold;
+		}
 	}
 	return false;
+}
+
+float Scoring::GetActiveLaserTilt(uint32 index)
+{
+	assert(index >= 0 && index <= 1);
+	if(activeLaserObjects[index])
+	{
+		if(index == 0)
+			return laserTargetPositions[index];
+		if(index == 0)
+			return 1.0f-laserTargetPositions[index];
+	}
+	return 0.0f;
+}
+
+void Scoring::m_RegisterHit(ObjectState* obj)
+{
+	MultiObjectState* mobj = *obj;
+	MapTime delta = GetObjectHitDelta(obj);
+	ScoreHitRating score = GetHitRatingFromDelta(delta);
+	hitStats.emplace_back(obj->time, delta);
+	currentMaxScore += (uint32)ScoreHitRating::Perfect;
+	currentHitScore += (uint32)score;
+	if(score != ScoreHitRating::Miss)
+		currentComboCounter++;
+	else
+	{
+		currentComboCounter = 0;
+		if(obj->type == ObjectType::Single)
+		{
+			OnButtonMiss.Call(mobj->button.index);
+		}
+	}
+}
+
+void Scoring::m_OnObjectEntered(ObjectState* obj)
+{
+}
+void Scoring::m_OnObjectLeaved(ObjectState* obj)
+{
+	if(obj->type == ObjectType::Single)
+	{
+		m_RegisterHit(obj);
+	}
+}
+MapTime Scoring::GetObjectHitDelta(ObjectState* obj)
+{
+	assert(m_playback);
+	return (m_playback->GetLastTime() - obj->time);
+}
+float Scoring::m_SampleLaserPosition(MapTime time, LaserObjectState* laser)
+{
+	time -= laser->time;
+	float r = Math::Clamp((float)time / Math::Max(1.0f, (float)laser->duration), 0.0f, 1.0f);
+	return laser->points[0] + (laser->points[1] - laser->points[0]) * r;
 }
 

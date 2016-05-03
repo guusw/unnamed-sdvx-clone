@@ -15,6 +15,7 @@ Application* g_application = nullptr;
 Game* g_game = nullptr;
 // Use rotated 16:9 as aspect ratio
 float g_aspectRatio = 1.0f / (16.0f / 9.0f);
+static float g_screenHeight = 1000.0f;
 Vector2i g_resolution;
 
 Application::Application()
@@ -54,8 +55,7 @@ int32 Application::Run()
 		}
 
 		// Create the game window
-		float screenHeight = 1000.0f;
-		g_resolution = Vector2i{ (int32)(screenHeight * g_aspectRatio), (int32)screenHeight };
+		g_resolution = Vector2i{ (int32)(g_screenHeight * g_aspectRatio), (int32)g_screenHeight };
 		g_gameWindow = new Window(g_resolution);
 		g_gameWindow->Show();
 		g_gameWindow->OnKeyPressed.Add(this, &Application::m_OnKeyPressed);

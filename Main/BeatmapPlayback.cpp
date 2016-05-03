@@ -16,7 +16,7 @@ bool BeatmapPlayback::Reset()
 
 	m_playbackTime = 0;
 	m_currentObj = &m_objects.front();
-	m_currentTiming = &m_timingPoints.front();
+	m_currentTiming = 0;
 
 	m_barTime = 0;
 	return true;
@@ -50,17 +50,17 @@ void BeatmapPlayback::Update(MapTime newTime)
 	}
 
 	// Advance objects
-	ObjectState** newObject = m_SelectHitObject(m_playbackTime+hittableObjectTreshold);
-	if(newObject != m_currentObj)
+	ObjectState** objEnd = m_SelectHitObject(m_playbackTime+hittableObjectTreshold);
+	ObjectState** objStart = m_currentObj ? m_currentObj : &m_objects.front();
+	if(objEnd != nullptr && objEnd != m_currentObj)
 	{
-		// Iterate over objects that can be hit or have passed that
-		for(ObjectState** it = m_currentObj; it != newObject; it++)
+		for(auto it = objStart; it < objEnd; it++)
 		{
 			MultiObjectState* obj = **it;
 			m_hittableObjects.Add(*it);
 			OnObjectEntered.Call(*it);
 		}
-		m_currentObj = newObject;
+		m_currentObj = objEnd;
 	}
 
 	// Check passed hittable objects
@@ -117,15 +117,12 @@ Vector<ObjectState*> BeatmapPlayback::GetObjectsInRange(MapTime range)
 
 	// Return all objects that lie after the currently queued object and fall within the given range
 	ObjectState** obj = m_currentObj;
-	while(true)
+	while(!IsEndObject(obj))
 	{
 		if((*obj)->time > end)
 			break; // No more objects
 
 		ret.Add(*obj);
-
-		if(IsLastObject(obj))
-			break;
 		obj += 1; // Next
 	}
 
@@ -134,7 +131,8 @@ Vector<ObjectState*> BeatmapPlayback::GetObjectsInRange(MapTime range)
 
 const TimingPoint& BeatmapPlayback::GetCurrentTimingPoint() const
 {
-	assert(m_currentTiming);
+	if(!m_currentTiming)
+		return *m_timingPoints.front();
 	return **m_currentTiming;
 }
 const TimingPoint* BeatmapPlayback::GetTimingPointAt(MapTime time) const
@@ -159,13 +157,13 @@ MapTime BeatmapPlayback::BarDistanceToDuration(float distance)
 float BeatmapPlayback::DurationToBarDistance(MapTime duration)
 {
 	const TimingPoint& tp = GetCurrentTimingPoint();
-	return (float)((double)duration / (tp.beatDuration * tp.measure));
+	return (float)((double)duration / (tp.beatDuration * (double)tp.measure));
 }
 float BeatmapPlayback::TimeToBarDistance(MapTime time)
 {
 	const TimingPoint& tp = GetCurrentTimingPoint();
 	int64 delta = time - m_playbackTime;
-	return (float)((double)delta / (tp.beatDuration * tp.measure));
+	return (float)((double)delta / (tp.beatDuration * (double)tp.measure));
 }
 
 float BeatmapPlayback::GetBarTime() const
@@ -178,17 +176,21 @@ MapTime BeatmapPlayback::GetLastTime() const
 }
 TimingPoint** BeatmapPlayback::m_SelectTimingPoint(MapTime time)
 {
+	TimingPoint** tpRet = nullptr;
 	TimingPoint** tpStart = m_currentTiming;
 
 	// Start at front of array if current object lies ahead of given input time
-	if(tpStart[0]->time > time)
+	if(!tpStart || tpStart[0]->time > time)
 		tpStart = &m_timingPoints.front();
 
 	// Keep advancing the start pointer while the next object's starting time lies before the input time
 	while(true)
 	{
 		if(!IsLastTiming(tpStart) && tpStart[1]->time < time)
+		{
+			tpRet = tpStart;
 			tpStart = tpStart + 1;
+		}
 		else
 			break;
 	}
@@ -198,6 +200,8 @@ TimingPoint** BeatmapPlayback::m_SelectTimingPoint(MapTime time)
 ObjectState** BeatmapPlayback::m_SelectHitObject(MapTime time)
 {
 	ObjectState** objStart = m_currentObj;
+	if(IsEndObject(objStart))
+		return objStart;
 
 	// Start at front of array if current object lies ahead of given input time
 	if(objStart[0]->time > time)
@@ -206,19 +210,22 @@ ObjectState** BeatmapPlayback::m_SelectHitObject(MapTime time)
 	// Keep advancing the start pointer while the next object's starting time lies before the input time
 	while(true)
 	{
-		if(!IsLastObject(objStart) && objStart[1]->time < time)
+		if(!IsEndObject(objStart) && objStart[0]->time < time)
+		{
 			objStart = objStart + 1;
+		}
 		else
 			break;
 	}
 
 	return objStart;
 }
+
 bool BeatmapPlayback::IsLastTiming(TimingPoint** obj)
 {
 	return obj == &m_timingPoints.back();
 }
-bool BeatmapPlayback::IsLastObject(ObjectState** obj)
+bool BeatmapPlayback::IsEndObject(ObjectState** obj)
 {
-	return obj == &m_objects.back();
+	return obj == (&m_objects.back() + 1);
 }

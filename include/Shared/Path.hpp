@@ -16,6 +16,7 @@ public:
 	static String GetTemporaryPath();
 	static String GetTemporaryFileName(const String& path, const String& prefix = String());
 
+	static bool IsDirectory(const String& path);
 	static bool FileExists(const String& path);
 	static String Canonical(const String& path);
 	static String Absolute(const String& path);

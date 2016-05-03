@@ -44,4 +44,9 @@ namespace Math
 	{
 		return b == 0 ? a : gcd(b, a % b);
 	}
+
+	// Gets the sign of a value
+	template <typename T> int Sign(T val) {
+		return (T(0) < val) - (val < T(0));
+	}
 }

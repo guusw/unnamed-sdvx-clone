@@ -70,7 +70,7 @@ void ResourceManagers::TickAll()
 }
 void ResourceManagers::m_TickAll()
 {
-	if(gcTimer.Seconds() > 1 && disabled == 0)
+	if(gcTimer.Milliseconds() > 250 && disabled == 0)
 	{
 		for(auto rm : managers)
 		{

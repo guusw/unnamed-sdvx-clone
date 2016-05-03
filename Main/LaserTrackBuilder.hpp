@@ -10,12 +10,14 @@ public:
 	void Reset();
 	void Update(MapTime newTime);
 	Mesh GenerateTrackMesh(class BeatmapPlayback& playback, LaserObjectState* state);
-	
-	TimingPoint currentTimingPoint;
 
 	// Used to generate larges meshes but allow the texture to match the actual laser width
 	uint32 laserBorderPixels;
 	Vector2i laserTextureSize;
+
+	// The length scale based on the view distance
+	float laserLengthScale;
+	float perspectiveHeightScale;
 
 private:
 	class OpenGL* m_gl;

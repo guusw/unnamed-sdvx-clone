@@ -13,6 +13,8 @@ struct TempButtonState
 	uint32 numTicks = 0;
 	uint32 effectType = 0;
 	uint32 effectParams = 0;
+	// If using the smalles grid to indicate hold note duration
+	bool fineSnap = false;
 };
 struct TempLaserState
 {
@@ -85,6 +87,8 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 	// Laser segment states
 	TempLaserState* laserStates[2] = { nullptr };
 
+	float laserRanges[2] = { 1.0f, 1.0f };
+
 	for(KShootMap::TickIterator it(kshootMap); it; ++it)
 	{
 		const KShootBlock& block = it.GetCurrentBlock();
@@ -129,6 +133,14 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 				double bpm = atof(*p.second);
 				lastTimingPoint->beatDuration = 60000.0 / bpm;
 			}
+			else if(p.first == "laserrange_l")
+			{
+				laserRanges[0] = 1.7f;
+			}
+			else if(p.first == "laserrange_r")
+			{
+				laserRanges[1] = 1.7f;
+			}
 		}
 
 		// Set button states
@@ -136,42 +148,63 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 		{
 			char c = i < 4 ? tick.buttons[i] : tick.fx[i - 4];
 			TempButtonState*& state = buttonStates[i];
+
+			auto CreateButton = [&]()
+			{
+				if(state->numTicks > 0 && state->fineSnap)
+				{
+					HoldObjectState* obj = new HoldObjectState();
+					obj->time = state->startTime;
+					obj->index = i;
+					obj->duration = mapTime - state->startTime;
+					obj->effectType = (uint8)state->effectType;
+					m_objectStates.Add(*obj);
+				}
+				else
+				{
+					ButtonObjectState* obj = new ButtonObjectState();
+					obj->time = state->startTime;
+					obj->index = i;
+					m_objectStates.Add(*obj);
+				}
+
+				// Reset 
+				delete state;
+				state = nullptr;
+			};
+
 			if(c == '0')
 			{
 				// Terminate hold button
 				if(state)
 				{
-					if(state->numTicks > 0)
-					{
-						HoldObjectState* obj = new HoldObjectState();
-						obj->time = state->startTime;
-						obj->index = i;
-						obj->duration = mapTime - state->startTime;
-						obj->effectType = (uint8)state->effectType;
-						m_objectStates.Add(*obj);
-					}
-					else
-					{
-						ButtonObjectState* obj = new ButtonObjectState();
-						obj->time = state->startTime;
-						obj->index = i;
-						m_objectStates.Add(*obj);
-					}
-
-					// Reset 
-					delete state;
-					state = nullptr;
+					CreateButton();
 				}
 			}
 			else if(!state)
 			{
 				// Create new hold state
 				state = new TempButtonState(mapTime, (uint32)c);
+				size_t div = block.ticks.size();
+				state->fineSnap = div >= (lastTimingPoint->measure * 8);
 			}
 			else
 			{
-				// Update current hold state
-				state->numTicks++;
+				// For buttons not using the 1/32 grid
+				if(!state->fineSnap)
+				{
+					CreateButton();
+
+					// Create new hold state
+					state = new TempButtonState(mapTime, (uint32)c);
+					size_t div = block.ticks.size();
+					state->fineSnap = div >= (lastTimingPoint->measure * 8);
+				}
+				else
+				{
+					// Update current hold state
+					state->numTicks++;
+				}
 			}
 		}
 
@@ -220,6 +253,9 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 					// Reset state
 					delete state;
 					state = nullptr;
+
+					// Reset range extension
+					laserRanges[i] = 1.0f;
 				}
 			}
 			else if(c == ':')
@@ -232,7 +268,22 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 			}
 			else
 			{
-				float pos = kshootMap.TranslateLaserChar(c);
+				float pos = kshootMap.TranslateLaserChar(c) * laserRanges[i];
+				if(laserRanges[i] > 1.0f)
+				{
+					if(c == 'C') // Snap edges to 0 or 1
+					{
+						pos = 0.0f;
+					}
+					else if(c == 'b')
+					{
+						pos = 1.0f;
+					}
+					else
+					{
+						pos -= (laserRanges[i] - 1.0f) * 0.5f;
+					}
+				}
 				LaserObjectState* last = nullptr;
 				if(state)
 				{
