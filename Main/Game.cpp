@@ -11,6 +11,7 @@
 #include "Scoring.hpp"
 #include "Audio.hpp"
 #include "Track.hpp"
+#include "Camera.hpp"
 #include "bass.h"
 
 class Game_Impl : public Game
@@ -33,6 +34,9 @@ class Game_Impl : public Game
 	// The play field
 	Track* m_track;
 
+	// The camera watching the playfield
+	Camera m_camera;
+
 	// Currently active timing point
 	const TimingPoint* m_currentTiming;
 	// Currently visible gameplay objects
@@ -40,28 +44,8 @@ class Game_Impl : public Game
 	MapTime m_lastMapTime;
 
 public:
-	// Track positioning
-	float cameraTilt = 7.0f;
-	float cameraHeight = 00.8f;
-
 	/// TODO: Use BPM scale for view range
 	const float viewRange = 0.5f;
-
-	// Set's up the perspective camera for track rendering
-	void SetupCamera(RenderState& rs, float viewRangeExtension = 0.0f)
-	{
-		static const float nearDistBase = 4.0f;
-		static const float maxNearPlane = 0.2f;
-
-		Transform cameraTransform;
-		float nearDistance = Math::Max(maxNearPlane, nearDistBase - viewRangeExtension);
-		float farDistance = nearDistance + m_track->trackLength + viewRangeExtension;
-		cameraTransform *= Transform::Translation({ 0.0f, -cameraHeight, -nearDistBase });
-		cameraTransform *= Transform::Rotation({-90.0f + cameraTilt, 0.0f, 0.0f});
-
-		rs.cameraTransform = cameraTransform;
-		rs.projectionTransform = ProjectionMatrix::CreatePerspective(30.0f, g_aspectRatio, nearDistance, farDistance);
-	}
 
 	~Game_Impl()
 	{
@@ -98,15 +82,8 @@ public:
 			return false;
 		}
 
-		// Input
-		InitButtonMapping();
-
-		// Playback and timing
-		m_playback = BeatmapPlayback(*m_beatmap);
-		if(!m_playback.Reset())
+		if(!InitGameplay())
 			return false;
-		m_scoring.SetPlayback(m_playback);
-		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
 
 		// Intialize track graphics
 		m_track = new Track();
@@ -132,13 +109,13 @@ public:
 
 		m_track->Tick(m_playback, deltaTime);
 
-		RenderState rs;
-		rs.cameraTransform = Transform::Rotation({ 0.0f, 0.0f, 0.0f });
-		rs.viewportSize = g_resolution;
-		rs.aspectRatio = g_aspectRatio;
-
-		// Use perspective projected track
-		SetupCamera(rs);
+		// Get render state from the camera
+		float rollA = m_scoring.GetActiveLaserRoll(0);
+		float rollB = m_scoring.GetActiveLaserRoll(1);
+		m_camera.baseRoll = (rollA + rollB) * 0.1f;
+		m_camera.Tick(deltaTime);
+		m_camera.track = m_track;
+		RenderState rs = m_camera.CreateRenderState(true);
 
 		// Main render queue
 		RenderQueue renderQueue(g_gl, rs);
@@ -154,7 +131,7 @@ public:
 		// Use new camera for scoring overlay
 		//	this is because otherwise some of the scoring elements would get clipped to 
 		//	the track's near and far planes
-		SetupCamera(rs, 5.0f);
+		rs = m_camera.CreateRenderState(false);
 		RenderQueue scoringRq(g_gl, rs);
 
 		// Copy laser positions
@@ -434,7 +411,28 @@ public:
 	{
 		m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, ScoreHitRating::Miss));
 	}
+	void OnLaserSlamHit(uint32 laserIndex)
+	{
+		CameraShake shake(0.2f, 0.5f, 170.0f);
+		shake.amplitude = Vector3(0.02f, 0.01f, 0.0f); // Mainly x-axis
+		m_camera.AddCameraShake(shake);
+	}
 
+	bool InitGameplay()
+	{
+		// Input
+		InitButtonMapping();
+
+		// Playback and timing
+		m_playback = BeatmapPlayback(*m_beatmap);
+		if(!m_playback.Reset())
+			return false;
+		m_scoring.SetPlayback(m_playback);
+		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
+		m_scoring.OnLaserSlamHit.Add(this, &Game_Impl::OnLaserSlamHit);
+
+		return true;
+	}
 	// Processes input and Updates scoring, also handles audio timing management
 	void TickGameplay(float deltaTime)
 	{

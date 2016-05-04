@@ -8,4 +8,5 @@ public:
 	Transform cameraTransform;
 	Vector2i viewportSize;
 	float aspectRatio;
+	float time;
 };

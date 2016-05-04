@@ -65,7 +65,7 @@ void Scoring::Tick(float deltaTime)
 					{
 						// Combo break, released too early
 						currentComboCounter = 0;
-						OnButtonMiss.Call(hold->index);
+						//OnButtonMiss.Call(hold->index);
 						continue;
 					}
 				}
@@ -138,27 +138,34 @@ void Scoring::Tick(float deltaTime)
 		float targetDelta = laserTargetNew - laserTargetPositions[i];
 		laserTargetPositions[i] = laserTargetNew;
 
-		if(targetDelta != 0.0f)
+		// Check if laser slam was hit
+		if((laser->flags & LaserObjectState::flag_Instant) != 0 && !laserSlamHit[i])
 		{
-			// Check if the input is following the laser segment
-			if(Math::Sign(targetDelta) == Math::Sign(laserInput[i]))
-			{
-				// Make the cursor follow the laser track
-				laserPositions[i] = laserTargetPositions[i];
-				laserMissDuration[i] = 0;
-
-				// Check if laser slam was hit
-				if((laser->flags & LaserObjectState::flag_Instant) != 0 && !laserSlamHit[i])
-				{
-					OnLaserSlamHit.Call(i);
-					laserSlamHit[i] = true;
-				}
-			}
-			else
-			{
-				laserMissDuration[i] += delta;
-			}
+			OnLaserSlamHit.Call(i);
+			laserSlamHit[i] = true;
 		}
+
+		//if(targetDelta != 0.0f)
+		//{
+		//	// Check if the input is following the laser segment
+		//	if(Math::Sign(targetDelta) == Math::Sign(laserInput[i]))
+		//	{
+		//		// Make the cursor follow the laser track
+		//		laserPositions[i] = laserTargetPositions[i];
+		//		laserMissDuration[i] = 0;
+		//
+		//		// Check if laser slam was hit
+		//		if((laser->flags & LaserObjectState::flag_Instant) != 0 && !laserSlamHit[i])
+		//		{
+		//			OnLaserSlamHit.Call(i);
+		//			laserSlamHit[i] = true;
+		//		}
+		//	}
+		//	else
+		//	{
+		//		laserMissDuration[i] += delta;
+		//	}
+		//}
 	}
 }
 
@@ -230,15 +237,15 @@ bool Scoring::IsActive(ObjectState* object) const
 	return false;
 }
 
-float Scoring::GetActiveLaserTilt(uint32 index)
+float Scoring::GetActiveLaserRoll(uint32 index)
 {
 	assert(index >= 0 && index <= 1);
 	if(activeLaserObjects[index])
 	{
 		if(index == 0)
 			return laserTargetPositions[index];
-		if(index == 0)
-			return 1.0f-laserTargetPositions[index];
+		if(index == 1)
+			return -(1.0f - laserTargetPositions[index]);
 	}
 	return 0.0f;
 }

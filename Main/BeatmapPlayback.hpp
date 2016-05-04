@@ -66,8 +66,9 @@ private:
 	ObjectState** m_currentObj = nullptr;
 
 	// Selects an object or timing point based on a given input state
-	TimingPoint** m_SelectTimingPoint(MapTime time);
-	ObjectState** m_SelectHitObject(MapTime time);
+	// if allowReset is true the search starts from the start of the object list if current point lies beyond given input time
+	TimingPoint** m_SelectTimingPoint(MapTime time, bool allowReset = false);
+	ObjectState** m_SelectHitObject(MapTime time, bool allowReset = false);
 	bool IsLastTiming(TimingPoint** obj);
 	// End object pointer, this is not a valid pointer, but points to the element after the last element
 	bool IsEndObject(ObjectState** obj);

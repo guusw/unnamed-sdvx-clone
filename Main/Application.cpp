@@ -65,6 +65,11 @@ int32 Application::Run()
 		// Fixed window style
 		g_gameWindow->UnsetStyles(WS_SIZEBOX | WS_MAXIMIZE | WS_MAXIMIZEBOX);
 
+		// Set render state variables
+		m_renderStateBase.aspectRatio = g_aspectRatio;
+		m_renderStateBase.viewportSize = g_resolution;
+		m_renderStateBase.time = 0.0f;
+
 		{
 			ProfilerScope $1("Audio Init");
 
@@ -117,7 +122,8 @@ int32 Application::Run()
 		static const float maxDeltaTime = (1.0f / 30.0f);
 
 		// Gameplay loop
-		for(uint32 i = 0; i < 60; i++)
+		/// TODO: Add timing management
+		for(uint32 i = 0; i < 32; i++)
 		{
 			// Input update
 			if(!g_gameWindow->Update())
@@ -131,6 +137,9 @@ int32 Application::Run()
 
 			g_game->Tick(deltaTime);
 		}
+
+		// Set time in render state
+		m_renderStateBase.time = m_lastUpdateTime;
 
 		// Render loop
 		for(uint32 i = 0; i < 1; i++)
@@ -251,6 +260,11 @@ const Vector<String>& Application::GetAppCommandLine() const
 	return m_commandLine;
 }
 
+RenderState Application::GetRenderStateBase() const
+{
+	return m_renderStateBase;
+}
+
 Texture Application::LoadTexture(const String& name)
 {
 	String path = String("textures/") + name;
@@ -297,4 +311,7 @@ void Application::m_OnWindowResized(const Vector2i& newSize)
 {
 	g_resolution = newSize;
 	g_aspectRatio = (float)g_resolution.y / (float)g_resolution.x;
+
+	m_renderStateBase.aspectRatio = g_aspectRatio;
+	m_renderStateBase.viewportSize = g_resolution;
 }

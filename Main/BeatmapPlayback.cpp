@@ -174,13 +174,13 @@ MapTime BeatmapPlayback::GetLastTime() const
 {
 	return m_playbackTime;
 }
-TimingPoint** BeatmapPlayback::m_SelectTimingPoint(MapTime time)
+TimingPoint** BeatmapPlayback::m_SelectTimingPoint(MapTime time, bool allowReset)
 {
 	TimingPoint** tpRet = nullptr;
 	TimingPoint** tpStart = m_currentTiming;
 
 	// Start at front of array if current object lies ahead of given input time
-	if(!tpStart || tpStart[0]->time > time)
+	if(!tpStart || (tpStart[0]->time > time && allowReset))
 		tpStart = &m_timingPoints.front();
 
 	// Keep advancing the start pointer while the next object's starting time lies before the input time
@@ -197,14 +197,14 @@ TimingPoint** BeatmapPlayback::m_SelectTimingPoint(MapTime time)
 
 	return tpStart;
 }
-ObjectState** BeatmapPlayback::m_SelectHitObject(MapTime time)
+ObjectState** BeatmapPlayback::m_SelectHitObject(MapTime time, bool allowReset)
 {
 	ObjectState** objStart = m_currentObj;
 	if(IsEndObject(objStart))
 		return objStart;
 
 	// Start at front of array if current object lies ahead of given input time
-	if(objStart[0]->time > time)
+	if(objStart[0]->time > time && allowReset)
 		objStart = &m_objects.front();
 
 	// Keep advancing the start pointer while the next object's starting time lies before the input time

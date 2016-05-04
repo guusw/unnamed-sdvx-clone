@@ -51,9 +51,9 @@ public:
 	// Check if a hold object or laser is currently being held
 	bool IsActive(ObjectState* object) const;
 
-	// Get laser tilt values
+	// Get laser roll values
 	// these range from 0 to 1, 0 being the the laser at home position, and 1 the outer extreme
-	float GetActiveLaserTilt(uint32 index);
+	float GetActiveLaserRoll(uint32 index);
 
 	Delegate<uint32, MapTime> OnButtonScore;
 	Delegate<uint32> OnButtonMiss;

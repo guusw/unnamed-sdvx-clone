@@ -43,6 +43,7 @@
 #include "Transform.hpp"
 #include "Color.hpp"
 #include "Rect.hpp"
+#include "Random.hpp"
 
 // Resource manager
 #include "ResourceManager.hpp"
