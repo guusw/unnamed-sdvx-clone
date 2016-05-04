@@ -40,6 +40,7 @@ public:
 	void SetParameter(const String& name, const Vector4& vec);
 	void SetParameter(const String& name, const Colori& color);
 	void SetParameter(const String& name, const Vector2& vec2);
+	void SetParameter(const String& name, const Vector2i& vec2);
 	void SetParameter(const String& name, const Transform& tf);
 	void SetParameter(const String& name, Ref<class TextureRes> tex);
 };

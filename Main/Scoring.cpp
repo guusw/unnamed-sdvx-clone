@@ -243,9 +243,9 @@ float Scoring::GetActiveLaserRoll(uint32 index)
 	if(activeLaserObjects[index])
 	{
 		if(index == 0)
-			return laserTargetPositions[index];
+			return -laserTargetPositions[index];
 		if(index == 1)
-			return -(1.0f - laserTargetPositions[index]);
+			return (1.0f - laserTargetPositions[index]);
 	}
 	return 0.0f;
 }

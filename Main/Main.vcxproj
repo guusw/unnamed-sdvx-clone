@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="Background.cpp" />
     <ClCompile Include="Beatmap.cpp" />
     <ClCompile Include="BeatmapFromKSH.cpp" />
     <ClCompile Include="BeatmapPlayback.cpp" />
@@ -62,6 +63,7 @@
   <ItemGroup>
     <ClInclude Include="ApplicationTickable.hpp" />
     <ClInclude Include="Audio.hpp" />
+    <ClInclude Include="Background.hpp" />
     <ClInclude Include="Beatmap.hpp" />
     <ClInclude Include="BeatmapObjects.hpp" />
     <ClInclude Include="BeatmapPlayback.hpp" />

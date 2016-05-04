@@ -12,6 +12,7 @@
 #include "Audio.hpp"
 #include "Track.hpp"
 #include "Camera.hpp"
+#include "Background.hpp"
 #include "bass.h"
 
 class Game_Impl : public Game
@@ -37,6 +38,9 @@ class Game_Impl : public Game
 	// The camera watching the playfield
 	Camera m_camera;
 
+	// Current background visualization
+	Background* m_background;
+
 	// Currently active timing point
 	const TimingPoint* m_currentTiming;
 	// Currently visible gameplay objects
@@ -49,6 +53,10 @@ public:
 
 	~Game_Impl()
 	{
+		if(m_track)
+			delete m_track;
+		if(m_background)
+			delete m_background;
 	}
 
 	// Main update routine for the game logic
@@ -92,6 +100,9 @@ public:
 			return false;
 		}
 
+		// Background graphics
+		CheckedLoad(m_background = CreateBackground(this));
+
 		if(!InitHUD())
 			return false;
 
@@ -112,17 +123,22 @@ public:
 		// Get render state from the camera
 		float rollA = m_scoring.GetActiveLaserRoll(0);
 		float rollB = m_scoring.GetActiveLaserRoll(1);
-		m_camera.baseRoll = (rollA + rollB) * 0.1f;
-		m_camera.Tick(deltaTime);
+		m_camera.SetTargetRoll((rollA + rollB) * 0.05f);
 		m_camera.track = m_track;
+		m_camera.Tick(deltaTime);
 		RenderState rs = m_camera.CreateRenderState(true);
+
+		// Draw BG first
+		g_gl->SetViewport(rs.viewportSize);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		m_background->Render(deltaTime);
 
 		// Main render queue
 		RenderQueue renderQueue(g_gl, rs);
 
 		// Draw the base track + time division ticks
 		m_track->DrawBase(renderQueue);
-
 		for(auto& object : m_currentObjectSet)
 		{
 			m_track->DrawObjectState(renderQueue, m_playback, object, m_scoring.IsActive(object));
@@ -139,9 +155,7 @@ public:
 		m_track->DrawOverlays(scoringRq);
 
 		// Render queues
-		g_gl->SetViewport(rs.viewportSize);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		
 		renderQueue.Process();
 		scoringRq.Process();
 
@@ -498,6 +512,24 @@ public:
 	{
 		return m_playing;
 	}
+
+	virtual class Track& GetTrack() override
+	{
+		return *m_track;
+	}
+	virtual class Camera& GetCamera() override
+	{
+		return m_camera;
+	}
+	virtual class BeatmapPlayback& GetPlayback() override
+	{
+		return m_playback;
+	}
+	virtual class Scoring& GetScoring() override
+	{
+		return m_scoring;
+	}
+
 };
 
 Game* Game::Create(Beatmap* map, String mapPath)

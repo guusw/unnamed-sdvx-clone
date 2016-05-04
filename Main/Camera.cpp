@@ -13,26 +13,33 @@ Camera::~Camera()
 }
 void Camera::Tick(float deltaTime)
 {
-	// Smoothly blend to new roll value
-	//float rollInterpolateSpeed = 0.9f;
-	//m_baseRollBlend -= (m_baseRollBlend * rollInterpolateSpeed) * deltaTime;
-	//m_baseRollBlend += (baseRoll * rollInterpolateSpeed) * deltaTime;
-
+	// Caluclate new force for the camera roll rotation
 	// Like gravity but for roll
 	float angle = m_roll * Math::pi;
+	Vector3 wanted = Vector3(sin(m_targetRoll), cos(m_targetRoll), 0.0f);
 	Vector3 rod = Vector3(sin(m_roll), cos(m_roll), 0.0f);
-	Vector3 gravity = -Vector3(sin(baseRoll), cos(baseRoll), 0.0f);
-	float rollForce = -VectorMath::Cross(gravity, rod).z * 10.0f;
+	float rollForce = VectorMath::Cross(wanted, rod).z * 100.0f;
 
-	// Decay velocity
+	// Decay roll velocity
 	m_rollVelocity -= m_rollVelocity * Math::Min(1.0f, 8.0f * deltaTime);
 
-	// Apply force
-	m_rollVelocity += rollForce * deltaTime;
+	float rollDelta = m_targetRoll - m_roll;
+	//if(m_targetRollSet && abs(rollDelta) < 0.0001f) // Apply directly if delta is small enough
+	//{
+	//	m_roll = m_targetRoll;
+	//}
+	//else // Apply regular force otherwise
+	{
+		// Apply force
+		m_rollVelocity += rollForce * deltaTime;
 
-	// Apply velocity
-	m_roll += m_rollVelocity * deltaTime;
-	m_roll = m_ClampRoll(m_roll);
+		// Apply velocity
+		m_roll += m_rollVelocity * deltaTime;
+		m_roll = m_ClampRoll(m_roll);
+	}
+
+	m_targetRollSet = false;
+	m_targetRoll = 0.0f;
 
 	// Update camera shake effects
 	m_shakeOffset = Vector3(0.0f);
@@ -66,6 +73,17 @@ void Camera::AddCameraShake(CameraShake cameraShake)
 void Camera::AddRollImpulse(float dir, float strength)
 {
 	m_rollVelocity += dir * strength;
+}
+
+Vector2 Camera::Project(const Vector3& pos)
+{
+	Vector3 cameraSpace = m_rsLast.cameraTransform.TransformPoint(pos);
+	Vector3 screenSpace = m_rsLast.projectionTransform.TransformPoint(cameraSpace);
+	screenSpace.y = -screenSpace.y;
+	screenSpace *= 0.5f;
+	screenSpace += Vector2(0.5f, 0.5f);
+	screenSpace *= m_rsLast.viewportSize;
+	return screenSpace.xy();
 }
 
 RenderState Camera::CreateRenderState(bool clipped)
@@ -107,7 +125,15 @@ RenderState Camera::CreateRenderState(bool clipped)
 	rs.cameraTransform = cameraTransform;
 	rs.projectionTransform = ProjectionMatrix::CreatePerspective(30.0f, g_aspectRatio, nearDistance, farDistance);
 
+	m_rsLast = rs;
+
 	return rs;
+}
+
+void Camera::SetTargetRoll(float target)
+{
+	m_targetRoll = target;
+	m_targetRollSet = true;
 }
 
 float Camera::m_ClampRoll(float in) const

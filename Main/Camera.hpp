@@ -30,15 +30,16 @@ public:
 	void AddCameraShake(CameraShake camerShake);
 	void AddRollImpulse(float dir, float strength);
 
+	Vector2 Project(const Vector3& pos);
+
 	// Generates a new render state for drawing from this cameras Point of View
 	// the clipped boolean indicates whenether to clip the cameras clipping planes to the track range
 	RenderState CreateRenderState(bool clipped);
 
+	void SetTargetRoll(float target);
+
 	// The track being watched
 	class Track* track;
-
-	// Base roll value
-	float baseRoll = 0.0f;
 
 	// Zoom values, both can range from -1 to 1 to control the track zoom
 	float zoomBottom = 0.0f;
@@ -49,8 +50,13 @@ private:
 	float m_ClampRoll(float in) const;
 	// -1 to 1 roll value
 	float m_roll = 0.0f;
+	// Target to roll towards
+	float m_targetRoll = 0.0f;
+	bool m_targetRollSet = false;
 	// Roll force
 	float m_rollVelocity = 0.0f;
+
+	RenderState m_rsLast;
 
 	Vector<CameraShake> m_shakeEffects;
 	// Base position with shake effects applied after a frame
