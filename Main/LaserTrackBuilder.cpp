@@ -226,7 +226,7 @@ Mesh LaserTrackBuilder::GenerateTrackExit(class BeatmapPlayback& playback, Laser
 	}
 	else
 	{
-		prevLength = playback.DurationToBarDistance(laser->duration);
+		prevLength = playback.DurationToBarDistance(laser->duration) * laserLengthScale;
 	}
 
 	float halfWidth = actualLaserWidth * 0.5f;
