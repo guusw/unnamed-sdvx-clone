@@ -93,6 +93,16 @@ bool Track::Init()
 	CheckedLoad(laserTexture = g_application->LoadTexture("laser.png"));
 	laserTexture->SetMipmaps(true);
 	laserTexture->SetFilter(true, true, 16.0f);
+	laserTexture->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
+
+	CheckedLoad(laserTailTextures[0] = g_application->LoadTexture("laser_entry.png"));
+	CheckedLoad(laserTailTextures[1] = g_application->LoadTexture("laser_exit.png"));
+	for(uint32 i = 0; i < 2; i++)
+	{
+		laserTailTextures[i]->SetMipmaps(true);
+		laserTailTextures[i]->SetFilter(true, true, 16.0f);
+		laserTailTextures[i]->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
+	}
 
 	// Laser object material, allows coloring and sampling laser edge texture
 	CheckedLoad(laserMaterial = g_application->LoadMaterial("laser"));
@@ -109,7 +119,12 @@ bool Track::Init()
 	{
 		m_laserTrackBuilder[i] = new LaserTrackBuilder(g_gl, i, trackWidth, laserWidth);
 		m_laserTrackBuilder[i]->laserTextureSize = laserTexture->GetSize();
+		m_laserTrackBuilder[i]->laserEntryTextureSize = laserTailTextures[0]->GetSize();
+		m_laserTrackBuilder[i]->laserExitTextureSize = laserTailTextures[1]->GetSize();
 		m_laserTrackBuilder[i]->laserBorderPixels = 12;
+		m_laserTrackBuilder[i]->perspectiveHeightScale = perspectiveHeightScale;
+		m_laserTrackBuilder[i]->laserLengthScale = trackLength / viewRange;
+		m_laserTrackBuilder[i]->Reset(); // Also initializes the track builder
 	}
 
 	return true;
@@ -231,26 +246,46 @@ void Track::DrawObjectState(RenderQueue& rq, class BeatmapPlayback& playback, Ob
 	}
 	else // Draw laser
 	{
-		MaterialParameterSet laserParams;
-
-		/// TODO: Add glow for lasers that are active
-		laserParams.SetParameter("objectGlow", active ? objectGlow : 0.0f);
-		laserParams.SetParameter("mainTex", laserTexture);
 		LaserObjectState* laser = (LaserObjectState*)obj;
 
-		// Get the length of this laser segment
-		Transform laserTransform;
-		laserTransform *= Transform::Translation(Vector3{ 0.0f, trackLength * position, 0.02f + 0.02f * laser->index });
-
-		// Set laser color
-		laserParams.SetParameter("color", laserColors[laser->index]);
-
-		m_laserTrackBuilder[laser->index]->perspectiveHeightScale = perspectiveHeightScale;
-		m_laserTrackBuilder[laser->index]->laserLengthScale = trackLength / viewRange;
-		Mesh laserMesh = m_laserTrackBuilder[laser->index]->GenerateTrackMesh(playback, laser);
-		if(laserMesh)
+		// Draw segment function
+		auto DrawSegment = [&](Mesh mesh, Texture texture)
 		{
-			rq.Draw(laserTransform, laserMesh, laserMaterial, laserParams);
+			MaterialParameterSet laserParams;
+
+			/// TODO: Add glow for lasers that are active
+			laserParams.SetParameter("objectGlow", active ? objectGlow : 0.0f);
+			laserParams.SetParameter("mainTex", texture);
+
+			// Get the length of this laser segment
+			Transform laserTransform;
+			laserTransform *= Transform::Translation(Vector3{ 0.0f, trackLength * position, 0.02f + 0.02f * laser->index });
+
+			// Set laser color
+			laserParams.SetParameter("color", laserColors[laser->index]);
+
+			if(mesh)
+			{
+				rq.Draw(laserTransform, mesh, laserMaterial, laserParams);
+			}
+		};
+
+		// Draw entry?
+		if(!laser->prev)
+		{
+			Mesh laserTail = m_laserTrackBuilder[laser->index]->GenerateTrackEntry(playback, laser);
+			DrawSegment(laserTail, laserTailTextures[0]);
+		}
+
+		// Body
+		Mesh laserMesh = m_laserTrackBuilder[laser->index]->GenerateTrackMesh(playback, laser);
+		DrawSegment(laserMesh, laserTexture);
+
+		// Draw exit?
+		if(!laser->next)
+		{
+			Mesh laserTail = m_laserTrackBuilder[laser->index]->GenerateTrackExit(playback, laser);
+			DrawSegment(laserTail, laserTailTextures[1]);
 		}
 	}
 }

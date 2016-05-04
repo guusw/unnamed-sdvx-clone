@@ -97,7 +97,7 @@ RenderState Camera::CreateRenderState(bool clipped)
 	static const float nearDistZoom = 2.0f;
 	static const float maxNearPlane = 0.2f;
 	static const float heightMin = 0.3f;
-	static const float heightBase = 0.9f;
+	static const float heightBase = 1.0f;
 	static const float heightMax = 1.5f;
 
 	float cameraTilt = zoomTop * 10.0f + 2.0f;

@@ -48,8 +48,6 @@ class Game_Impl : public Game
 	MapTime m_lastMapTime;
 
 public:
-	/// TODO: Use BPM scale for view range
-	const float viewRange = 0.5f;
 
 	~Game_Impl()
 	{
@@ -116,7 +114,7 @@ public:
 	{
 		// The amount of bars visible on the track at one time
 		m_track->trackViewRange = Vector2(m_playback.GetBarTime(), 0.0f);
-		m_track->trackViewRange.y = m_track->trackViewRange.x + viewRange;
+		m_track->trackViewRange.y = m_track->trackViewRange.x + m_track->viewRange;
 
 		m_track->Tick(m_playback, deltaTime);
 
@@ -237,6 +235,8 @@ public:
 
 		textPos.y += RenderText(guiRq, Utility::Sprintf("RenderTime: %.2f ms", DeltaTime * 1000.0f), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Combo: %d", m_scoring.currentComboCounter), textPos).y;
+		if(m_scoring.autoplay)
+			textPos.y += RenderText(guiRq, "Autoplay enabled", textPos, Color::Blue).y;
 
 		// List recent hits and their delay
 		Vector2 tableStart = textPos;
@@ -381,6 +381,10 @@ public:
 			return; // Nothing changed
 		state = pressed; // Store state
 
+		// Ignore game input when autoplay is on
+		if(m_scoring.autoplay)
+			return;
+
 		if(b >= Button::BT_0 && b <= Button::BT_3Alt)
 		{
 			OnButtonInput((size_t)b % 4, pressed);
@@ -400,18 +404,7 @@ public:
 		if(pressed)
 		{
 			ObjectState* hitObject = m_scoring.OnButtonPressed(buttonIdx);
-			if(hitObject)
-			{
-				if(hitObject->type == ObjectType::Single)
-				{
-					MapTime hitDelta = m_scoring.GetObjectHitDelta(hitObject);
-					ScoreHitRating rating = m_scoring.GetHitRatingFromDelta(hitDelta);
-					Color c = m_track->hitColors[(size_t)rating + 1];
-					m_track->AddEffect(new ButtonHitEffect(buttonIdx, c));
-					m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, rating));
-				}
-			}
-			else
+			if(!hitObject)
 			{
 				m_track->AddEffect(new ButtonHitEffect(buttonIdx, m_track->hitColors[0]));
 			}
@@ -431,6 +424,17 @@ public:
 		shake.amplitude = Vector3(0.02f, 0.01f, 0.0f); // Mainly x-axis
 		m_camera.AddCameraShake(shake);
 	}
+	void OnButtonHit(uint32 buttonIdx, ObjectState* hitObject)
+	{
+		if(hitObject->type == ObjectType::Single)
+		{
+			MapTime hitDelta = m_scoring.GetObjectHitDelta(hitObject);
+			ScoreHitRating rating = m_scoring.GetHitRatingFromDelta(hitDelta);
+			Color c = m_track->hitColors[(size_t)rating + 1];
+			m_track->AddEffect(new ButtonHitEffect(buttonIdx, c));
+			m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, rating));
+		}
+	}
 
 	bool InitGameplay()
 	{
@@ -444,6 +448,13 @@ public:
 		m_scoring.SetPlayback(m_playback);
 		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
 		m_scoring.OnLaserSlamHit.Add(this, &Game_Impl::OnLaserSlamHit);
+		m_scoring.OnButtonHit.Add(this, &Game_Impl::OnButtonHit);
+
+		// Autoplay enabled?
+		if(g_application->GetAppCommandLine().Contains("-autoplay"))
+		{
+			m_scoring.autoplay = true;
+		}
 
 		return true;
 	}
@@ -492,7 +503,7 @@ public:
 		m_currentTiming = &m_playback.GetCurrentTimingPoint();
 
 		// Get objects in range
-		MapTime msViewRange = m_playback.BarDistanceToDuration(viewRange);
+		MapTime msViewRange = m_playback.BarDistanceToDuration(m_track->viewRange);
 		m_currentObjectSet = m_playback.GetObjectsInRange(msViewRange);
 
 		m_lastMapTime = playbackPositionMs;

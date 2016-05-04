@@ -45,6 +45,8 @@ void Scoring::Tick(float deltaTime)
 	uint32 startBeat = 0;
 	uint32 numBeats = m_playback->CountBeats(m_lastTime, delta, startBeat, 1);
 
+	Vector<uint32> buttonsToAutoHit;
+
 	for(auto it = objects.begin(); it != objects.end(); it++)
 	{
 		MapTime hitDelta = GetObjectHitDelta(*it);
@@ -53,8 +55,14 @@ void Scoring::Tick(float deltaTime)
 		if(mobj->type == ObjectType::Hold)
 		{
 			HoldObjectState* hold = (HoldObjectState*)mobj;
+			MapTime endTime = hold->duration + hold->time;
+			MapTime endDelta = time - endTime;
+
 			if(!activeHoldObjects[hold->index])
 			{
+				if(autoplay && hitDelta >= 0 && endDelta < 0)
+					OnButtonPressed(hold->index);
+
 				// Should be held down?, also check for release offset
 				if(abs(hitDelta) > maxEarlyHitTime)
 				{
@@ -86,6 +94,19 @@ void Scoring::Tick(float deltaTime)
 					currentHitScore += 1;
 					currentMaxScore += 1;
 				}
+
+				if(endDelta > 0)
+				{
+					OnButtonReleased(hold->index);
+				}
+			}
+		}
+		// Autoplay single notes
+		else if(mobj->type == ObjectType::Single)
+		{
+			if(autoplay && hitDelta >= 0)
+			{
+				buttonsToAutoHit.Add(mobj->button.index);
 			}
 		}
 		// Set the active laser segment
@@ -98,32 +119,27 @@ void Scoring::Tick(float deltaTime)
 
 			if(activeLaserObjects[laserIndex] != laser)
 			{
-				// Select new laser
-				if(hitDelta >= -laserMissTreshold && endDelta < laserMissTreshold)
+				// Laser entered perfect hit area
+				if(time >= mobj->time && endDelta < 0)
 				{
-					if(!activeLaserObjects[laserIndex] || activeLaserObjects[laserIndex]->time < mobj->time)
+					if(!laser->prev)
 					{
-						if(!laser->prev)
-						{
-							// Set initial pointer position
-							laserPositions[laserIndex] = mobj->laser.points[0];
-							// Reset miss duration
-							laserMissDuration[laserIndex] = 0;
-							laserSlamHit[laserIndex] = false;
-						}
-						activeLaserObjects[laserIndex] = (LaserObjectState*)mobj;
+						// Set initial pointer position
+						laserPositions[laserIndex] = mobj->laser.points[0];
 					}
-				}
-			}
-			else
-			{
-
-				if(endDelta > laserMissTreshold)
-				{
-					activeLaserObjects[laserIndex] = nullptr;
+					laserSlamHit[laserIndex] = false;
+					activeLaserObjects[laserIndex] = (LaserObjectState*)mobj;
 				}
 			}
 		}
+	}
+
+	// Autoplay logic
+	for(uint32& b : buttonsToAutoHit)
+	{
+		ObjectState* object = OnButtonPressed(b);
+		if(!object)
+			Log("Autoplay fail?", Logger::Warning);
 	}
 
 	for(uint32 i = 0; i < 2; i++)
@@ -138,6 +154,15 @@ void Scoring::Tick(float deltaTime)
 		float targetDelta = laserTargetNew - laserTargetPositions[i];
 		laserTargetPositions[i] = laserTargetNew;
 
+		MapTime endTime = laser->duration + laser->time;
+		MapTime endDelta = time - endTime;
+		if(endDelta > 0)
+		{
+			// Laser has passed
+			activeLaserObjects[i] = nullptr;
+			continue;
+		}
+
 		// Check if laser slam was hit
 		if((laser->flags & LaserObjectState::flag_Instant) != 0 && !laserSlamHit[i])
 		{
@@ -145,27 +170,11 @@ void Scoring::Tick(float deltaTime)
 			laserSlamHit[i] = true;
 		}
 
-		//if(targetDelta != 0.0f)
-		//{
-		//	// Check if the input is following the laser segment
-		//	if(Math::Sign(targetDelta) == Math::Sign(laserInput[i]))
-		//	{
-		//		// Make the cursor follow the laser track
-		//		laserPositions[i] = laserTargetPositions[i];
-		//		laserMissDuration[i] = 0;
-		//
-		//		// Check if laser slam was hit
-		//		if((laser->flags & LaserObjectState::flag_Instant) != 0 && !laserSlamHit[i])
-		//		{
-		//			OnLaserSlamHit.Call(i);
-		//			laserSlamHit[i] = true;
-		//		}
-		//	}
-		//	else
-		//	{
-		//		laserMissDuration[i] += delta;
-		//	}
-		//}
+		if(autoplay)
+		{
+			laserPositions[i] = laserTargetPositions[i];
+		}
+
 	}
 }
 
@@ -208,6 +217,9 @@ ObjectState* Scoring::OnButtonPressed(uint32 buttonCode)
 		it++;
 	}
 
+	if(hitObject)
+		OnButtonHit.Call(buttonCode, hitObject);
+
 	return hitObject;
 }
 void Scoring::OnButtonReleased(uint32 buttonCode)
@@ -249,7 +261,6 @@ float Scoring::GetActiveLaserRoll(uint32 index)
 	}
 	return 0.0f;
 }
-
 void Scoring::m_RegisterHit(ObjectState* obj)
 {
 	MultiObjectState* mobj = *obj;

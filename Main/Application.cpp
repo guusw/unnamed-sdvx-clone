@@ -189,6 +189,25 @@ void Application::m_Cleanup()
 	}
 }
 
+// Try load map helper
+Beatmap* TryLoadMap(const String& path)
+{
+	// Load map file
+	Beatmap* newMap = new Beatmap();
+	File mapFile;
+	if(!mapFile.OpenRead(path))
+	{
+		delete newMap;
+		return nullptr;
+	}
+	FileReader reader(mapFile);
+	if(!newMap->Load(reader))
+	{
+		delete newMap;
+		return nullptr;
+	}
+	return newMap;
+}
 bool Application::LaunchMap(const String& mapPath)
 {
 	String actualMapPath = mapPath;
@@ -206,39 +225,37 @@ bool Application::LaunchMap(const String& mapPath)
 	}
 
 	// Check if converted map exists
-	//String currentExtension = Path::GetExtension(actualMapPath);
-	//String convertedPath = Path::ReplaceExtension(actualMapPath, ".fxm");
-	//bool loadingConvertedMap = false;
-	//if(m_allowMapConversion && currentExtension == "ksh" && Path::FileExists(convertedPath)) // Load pre-converted map instead
-	//{
-	//	actualMapPath = convertedPath;
-	//	loadingConvertedMap = true;
-	//}
-
-	// Load map file
-	Beatmap* newMap = new Beatmap();
-	File mapFile;
-	if(!mapFile.OpenRead(actualMapPath))
+	String currentExtension = Path::GetExtension(actualMapPath);
+	String convertedPath = Path::ReplaceExtension(actualMapPath, ".fxm");
+	bool loadedConvertedMap = false;
+	if(m_allowMapConversion && currentExtension == "ksh" && Path::FileExists(convertedPath))
 	{
-		delete newMap;
-		return false;
+		// Try loading converted map
+		actualMapPath = convertedPath;
+		if(m_currentMap = TryLoadMap(convertedPath))
+		{
+			loadedConvertedMap = true;
+		}
 	}
-	FileReader reader(mapFile);
-	if(!newMap->Load(reader))
+	// Load original map
+	if(!loadedConvertedMap)
 	{
-		delete newMap;
-		return false;
+		m_currentMap = TryLoadMap(actualMapPath);
 	}
-	m_currentMap = newMap; // Loaded successfully
+	
+	// Check failure of above loading attempts
+	if(!m_currentMap)
+		return false;
+	// Loaded successfully
 
 	// Save converted map
-	//if(m_allowMapConversion && !loadingConvertedMap)
-	//{
-	//	mapFile.Close();
-	//	mapFile.OpenWrite(convertedPath);
-	//	FileWriter writer(mapFile);
-	//	m_currentMap->Save(writer);
-	//}
+	if(m_allowMapConversion && !loadedConvertedMap)
+	{
+		File mapFile;
+		mapFile.OpenWrite(convertedPath);
+		FileWriter writer(mapFile);
+		m_currentMap->Save(writer);
+	}
 
 	// Acquire map base path
 	String pathCanonical = Path::Canonical(actualMapPath);

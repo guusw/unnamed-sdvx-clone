@@ -33,7 +33,7 @@ public:
 	template <typename T>
 	typename std::enable_if<std::is_pointer<T>::value, bool>::type SerializeObject(T& obj)
 	{
-		static_assert(false, "Can't serialize pointer, no static SerializeObject found");
+		static_assert(false, "Can't serialize pointer, no static SerializeObject(BinaryStream&, T*&) found");
 	}
 	template<>
 	bool SerializeObject(String& obj)
@@ -113,11 +113,11 @@ BinaryStream& BinaryStream::operator<<(Vector<T>& obj)
 	}
 	else
 	{
-		uint32 len;
+		uint32 len = (uint32)obj.size();
 		*this << len;
 		for(uint32 i = 0; i < len; i++)
 		{
-			bool ok = SerializeObject(obj[v]);
+			bool ok = SerializeObject(obj[i]);
 			assert(ok);
 		}
 	}

@@ -235,8 +235,15 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 				// Link segments together
 				if(state->last)
 				{
+					// Always fixup duration so they are connected by duration as well
 					obj->prev = state->last;
+					MapTime actualPrevDuration = obj->time - obj->prev->time;
+					if(obj->prev->duration != actualPrevDuration)
+					{
+						obj->prev->duration = actualPrevDuration;
+					}
 					obj->prev->next = obj;
+
 				}
 
 				// Add to list of objects

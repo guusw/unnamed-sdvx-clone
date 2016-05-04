@@ -56,6 +56,7 @@ public:
 	float GetActiveLaserRoll(uint32 index);
 
 	Delegate<uint32, MapTime> OnButtonScore;
+	Delegate<uint32, ObjectState*> OnButtonHit;
 	Delegate<uint32> OnButtonMiss;
 	Delegate<uint32> OnLaserSlamHit;
 
@@ -76,7 +77,12 @@ public:
 	// Current combo
 	uint32 currentComboCounter;
 
+	// The timings of hit objects, sorted by time hit
+	// this is mainly for debugging purposes
 	Vector<HitStat> hitStats;
+
+	// Autoplay mode
+	bool autoplay = false;
 
 	float laserInput[2];
 	float laserPositions[2];

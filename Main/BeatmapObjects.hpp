@@ -52,6 +52,7 @@ struct TObjectState : public ObjectTypeData_Base, T
 	operator MultiObjectState*() { return (MultiObjectState*)this; }
 	operator const MultiObjectState*() const { return (MultiObjectState*)this; }
 };
+
 // Generic object, does not have an object member
 template<> struct TObjectState<void> : public ObjectTypeData_Base
 {
@@ -107,6 +108,8 @@ struct ObjectTypeData_Laser
 // Object state with union data member
 struct MultiObjectState
 {
+	static bool StaticSerialize(BinaryStream& stream, MultiObjectState*& out);
+
 	// Position in ms when this object appears
 	MapTime time;
 	// Type of this object, determines the size of this struct and which type its data is
@@ -117,6 +120,10 @@ struct MultiObjectState
 		ObjectTypeData_Hold hold;
 		ObjectTypeData_Laser laser;
 	};
+
+	// Implicit down-cast
+	operator TObjectState<void>*() { return (TObjectState<void>*)this; }
+	operator const TObjectState<void>*() const { return (TObjectState<void>*)this; }
 };
 
 typedef TObjectState<void> ObjectState;
@@ -127,6 +134,8 @@ typedef TObjectState<ObjectTypeData_Laser> LaserObjectState;
 // Map timing point
 struct TimingPoint
 {
+	static bool StaticSerialize(BinaryStream& stream, TimingPoint*& out);
+
 	// Beat duration in milliseconds
 	//	this is a double so the least precision is lost
 	//	can be cast back to integer format once is has been multiplied by the amount of beats you want the length of.
