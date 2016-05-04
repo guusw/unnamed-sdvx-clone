@@ -14,6 +14,9 @@ intermediate
 *.iobj
 *.ipdb
 
+# Profiling results
+*.vspx
+
 # Visual studio plz
 .vs
 *.vcxproj.user
