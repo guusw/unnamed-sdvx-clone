@@ -76,6 +76,7 @@ public:
 	/* Object graphics */
 	Mesh buttonMesh;
 	Texture buttonTexture;
+	Texture buttonHoldTexture;
 	Mesh fxbuttonMesh;
 	Texture fxbuttonTexture;
 	Texture fxbuttonHoldTexture;

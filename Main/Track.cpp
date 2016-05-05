@@ -72,6 +72,9 @@ bool Track::Init()
 	CheckedLoad(buttonTexture = g_application->LoadTexture("button.png"));
 	buttonTexture->SetMipmaps(true);
 	buttonTexture->SetFilter(true, true, 16.0f);
+	CheckedLoad(buttonHoldTexture = g_application->LoadTexture("buttonhold.png"));
+	buttonHoldTexture->SetMipmaps(true);
+	buttonHoldTexture->SetFilter(true, true, 16.0f);
 	buttonLength = buttonTexture->CalculateHeight(buttonWidth);
 	buttonMesh = MeshGenerators::Quad(g_gl, Vector2(0.0f, 0.0f), Vector2(buttonWidth, buttonLength));
 
@@ -209,12 +212,13 @@ void Track::DrawObjectState(RenderQueue& rq, class BeatmapPlayback& playback, Ob
 		float width;
 		float xposition;
 		float length;
+		float currentObjectGlow = active ? objectGlow : 0.0f;
 		if(mobj->button.index < 4) // Normal button
 		{
 			width = buttonWidth;
 			xposition = buttonTrackWidth * -0.5f + width * mobj->button.index;
 			length = buttonLength;
-			params.SetParameter("mainTex", buttonTexture);
+			params.SetParameter("mainTex", isHold ? buttonHoldTexture : buttonTexture);
 			mesh = buttonMesh;
 		}
 		else // FX Button
@@ -229,7 +233,7 @@ void Track::DrawObjectState(RenderQueue& rq, class BeatmapPlayback& playback, Ob
 		if(isHold)
 		{
 			mat = holdButtonMaterial;
-			params.SetParameter("objectGlow", active ? objectGlow : 0.0f);
+			params.SetParameter("objectGlow", currentObjectGlow);
 		}
 
 		Vector3 buttonPos = Vector3(xposition, trackLength * position, 0.02f);
