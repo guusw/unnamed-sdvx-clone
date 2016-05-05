@@ -69,8 +69,9 @@ private:
 	// if allowReset is true the search starts from the start of the object list if current point lies beyond given input time
 	TimingPoint** m_SelectTimingPoint(MapTime time, bool allowReset = false);
 	ObjectState** m_SelectHitObject(MapTime time, bool allowReset = false);
-	bool IsLastTiming(TimingPoint** obj);
+
 	// End object pointer, this is not a valid pointer, but points to the element after the last element
+	bool IsEndTiming(TimingPoint** obj);
 	bool IsEndObject(ObjectState** obj);
 
 	// Current map position of this playback object

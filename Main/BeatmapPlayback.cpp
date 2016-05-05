@@ -16,7 +16,7 @@ bool BeatmapPlayback::Reset()
 
 	m_playbackTime = 0;
 	m_currentObj = &m_objects.front();
-	m_currentTiming = 0;
+	m_currentTiming = &m_timingPoints.front();
 
 	m_barTime = 0;
 	return true;
@@ -43,10 +43,11 @@ void BeatmapPlayback::Update(MapTime newTime)
 	m_playbackTime = newTime;
 
 	// Advance timing
-	TimingPoint** newTimingPoint = m_SelectTimingPoint(m_playbackTime);
-	if(newTimingPoint != m_currentTiming)
+	TimingPoint** timingEnd = m_SelectTimingPoint(m_playbackTime);
+	TimingPoint** timingStart = m_currentTiming ? m_currentTiming : &m_timingPoints.front();
+	if(timingEnd != nullptr && timingEnd != m_currentTiming)
 	{
-		m_currentTiming = newTimingPoint;
+		m_currentTiming = timingEnd;
 	}
 
 	// Advance objects
@@ -176,26 +177,26 @@ MapTime BeatmapPlayback::GetLastTime() const
 }
 TimingPoint** BeatmapPlayback::m_SelectTimingPoint(MapTime time, bool allowReset)
 {
-	TimingPoint** tpRet = nullptr;
-	TimingPoint** tpStart = m_currentTiming;
+	TimingPoint** objStart = m_currentTiming;
+	if(IsEndTiming(objStart))
+		return objStart;
 
 	// Start at front of array if current object lies ahead of given input time
-	if(!tpStart || (tpStart[0]->time > time && allowReset))
-		tpStart = &m_timingPoints.front();
+	if(objStart[0]->time > time && allowReset)
+		objStart = &m_timingPoints.front();
 
 	// Keep advancing the start pointer while the next object's starting time lies before the input time
 	while(true)
 	{
-		if(!IsLastTiming(tpStart) && tpStart[1]->time < time)
+		if(!IsEndTiming(objStart+1) && objStart[1]->time < time)
 		{
-			tpRet = tpStart;
-			tpStart = tpStart + 1;
+			objStart = objStart + 1;
 		}
 		else
 			break;
 	}
 
-	return tpStart;
+	return objStart;
 }
 ObjectState** BeatmapPlayback::m_SelectHitObject(MapTime time, bool allowReset)
 {
@@ -221,9 +222,9 @@ ObjectState** BeatmapPlayback::m_SelectHitObject(MapTime time, bool allowReset)
 	return objStart;
 }
 
-bool BeatmapPlayback::IsLastTiming(TimingPoint** obj)
+bool BeatmapPlayback::IsEndTiming(TimingPoint** obj)
 {
-	return obj == &m_timingPoints.back();
+	return obj == (&m_timingPoints.back() + 1);;
 }
 bool BeatmapPlayback::IsEndObject(ObjectState** obj)
 {

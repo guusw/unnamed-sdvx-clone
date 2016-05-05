@@ -229,12 +229,18 @@ public:
 		RenderRect(guiRq, jrect, Color::White, m_jacketTexture);
 
 		const BeatmapSettings& bms = m_beatmap->GetMapSettings();
+		const TimingPoint& tp = m_playback.GetCurrentTimingPoint();
 		Vector2 textPos = Vector2(jrect.pos.x, jrect.Bottom() + 10.0f);
 		textPos.y += RenderText(guiRq, bms.title, textPos).y;
 		textPos.y += RenderText(guiRq, bms.artist, textPos).y;
 
 		textPos.y += RenderText(guiRq, Utility::Sprintf("RenderTime: %.2f ms", DeltaTime * 1000.0f), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Combo: %d", m_scoring.currentComboCounter), textPos).y;
+
+		float currentBPM = (float)(60000.0 / tp.beatDuration);
+		textPos.y += RenderText(guiRq, Utility::Sprintf("BPM: %.1f", currentBPM), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("Time Signature: %d/4", tp.measure), textPos).y;
+
 		if(m_scoring.autoplay)
 			textPos.y += RenderText(guiRq, "Autoplay enabled", textPos, Color::Blue).y;
 
@@ -485,16 +491,8 @@ public:
 			playbackPositionMs = 0;
 		else
 			playbackPositionMs += (MapTime)g_audio->audioLatency;
-
-		if(playbackPositionMs > beatmapSettings.offset)
-		{
-			playbackPositionMs -= m_beatmap->GetMapSettings().offset;
+		if(playbackPositionMs > 0)
 			m_playback.Update(playbackPositionMs);
-		}
-		else
-		{
-			playbackPositionMs = 0;
-		}
 
 		// Update scoring
 		m_scoring.Tick(deltaTime);
