@@ -18,4 +18,9 @@ public:
 	// When the game is still going, false when the map is done, all ending sequences have played, etc.
 	// also false when the player leaves the game
 	virtual bool IsPlaying() const = 0;
+
+	virtual class Track& GetTrack() = 0;
+	virtual class Camera& GetCamera() = 0;
+	virtual class BeatmapPlayback& GetPlayback() = 0;
+	virtual class Scoring& GetScoring() = 0;
 };

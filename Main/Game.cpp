@@ -11,6 +11,8 @@
 #include "Scoring.hpp"
 #include "Audio.hpp"
 #include "Track.hpp"
+#include "Camera.hpp"
+#include "Background.hpp"
 #include "bass.h"
 
 class Game_Impl : public Game
@@ -33,6 +35,12 @@ class Game_Impl : public Game
 	// The play field
 	Track* m_track;
 
+	// The camera watching the playfield
+	Camera m_camera;
+
+	// Current background visualization
+	Background* m_background;
+
 	// Currently active timing point
 	const TimingPoint* m_currentTiming;
 	// Currently visible gameplay objects
@@ -40,31 +48,13 @@ class Game_Impl : public Game
 	MapTime m_lastMapTime;
 
 public:
-	// Track positioning
-	float cameraTilt = 7.0f;
-	float cameraHeight = 00.8f;
-
-	/// TODO: Use BPM scale for view range
-	const float viewRange = 0.5f;
-
-	// Set's up the perspective camera for track rendering
-	void SetupCamera(RenderState& rs, float viewRangeExtension = 0.0f)
-	{
-		static const float nearDistBase = 4.0f;
-		static const float maxNearPlane = 0.2f;
-
-		Transform cameraTransform;
-		float nearDistance = Math::Max(maxNearPlane, nearDistBase - viewRangeExtension);
-		float farDistance = nearDistance + m_track->trackLength + viewRangeExtension;
-		cameraTransform *= Transform::Translation({ 0.0f, -cameraHeight, -nearDistBase });
-		cameraTransform *= Transform::Rotation({-90.0f + cameraTilt, 0.0f, 0.0f});
-
-		rs.cameraTransform = cameraTransform;
-		rs.projectionTransform = ProjectionMatrix::CreatePerspective(30.0f, g_aspectRatio, nearDistance, farDistance);
-	}
 
 	~Game_Impl()
 	{
+		if(m_track)
+			delete m_track;
+		if(m_background)
+			delete m_background;
 	}
 
 	// Main update routine for the game logic
@@ -98,15 +88,8 @@ public:
 			return false;
 		}
 
-		// Input
-		InitButtonMapping();
-
-		// Playback and timing
-		m_playback = BeatmapPlayback(*m_beatmap);
-		if(!m_playback.Reset())
+		if(!InitGameplay())
 			return false;
-		m_scoring.SetPlayback(m_playback);
-		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
 
 		// Intialize track graphics
 		m_track = new Track();
@@ -114,6 +97,9 @@ public:
 		{
 			return false;
 		}
+
+		// Background graphics
+		CheckedLoad(m_background = CreateBackground(this));
 
 		if(!InitHUD())
 			return false;
@@ -128,24 +114,29 @@ public:
 	{
 		// The amount of bars visible on the track at one time
 		m_track->trackViewRange = Vector2(m_playback.GetBarTime(), 0.0f);
-		m_track->trackViewRange.y = m_track->trackViewRange.x + viewRange;
+		m_track->trackViewRange.y = m_track->trackViewRange.x + m_track->viewRange;
 
 		m_track->Tick(m_playback, deltaTime);
 
-		RenderState rs;
-		rs.cameraTransform = Transform::Rotation({ 0.0f, 0.0f, 0.0f });
-		rs.viewportSize = g_resolution;
-		rs.aspectRatio = g_aspectRatio;
+		// Get render state from the camera
+		float rollA = m_scoring.GetActiveLaserRoll(0);
+		float rollB = m_scoring.GetActiveLaserRoll(1);
+		m_camera.SetTargetRoll((rollA + rollB) * 0.05f);
+		m_camera.track = m_track;
+		m_camera.Tick(deltaTime);
+		RenderState rs = m_camera.CreateRenderState(true);
 
-		// Use perspective projected track
-		SetupCamera(rs);
+		// Draw BG first
+		g_gl->SetViewport(rs.viewportSize);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		m_background->Render(deltaTime);
 
 		// Main render queue
 		RenderQueue renderQueue(g_gl, rs);
 
 		// Draw the base track + time division ticks
 		m_track->DrawBase(renderQueue);
-
 		for(auto& object : m_currentObjectSet)
 		{
 			m_track->DrawObjectState(renderQueue, m_playback, object, m_scoring.IsActive(object));
@@ -154,7 +145,7 @@ public:
 		// Use new camera for scoring overlay
 		//	this is because otherwise some of the scoring elements would get clipped to 
 		//	the track's near and far planes
-		SetupCamera(rs, 5.0f);
+		rs = m_camera.CreateRenderState(false);
 		RenderQueue scoringRq(g_gl, rs);
 
 		// Copy laser positions
@@ -162,9 +153,7 @@ public:
 		m_track->DrawOverlays(scoringRq);
 
 		// Render queues
-		g_gl->SetViewport(rs.viewportSize);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		
 		renderQueue.Process();
 		scoringRq.Process();
 
@@ -240,12 +229,20 @@ public:
 		RenderRect(guiRq, jrect, Color::White, m_jacketTexture);
 
 		const BeatmapSettings& bms = m_beatmap->GetMapSettings();
+		const TimingPoint& tp = m_playback.GetCurrentTimingPoint();
 		Vector2 textPos = Vector2(jrect.pos.x, jrect.Bottom() + 10.0f);
 		textPos.y += RenderText(guiRq, bms.title, textPos).y;
 		textPos.y += RenderText(guiRq, bms.artist, textPos).y;
 
 		textPos.y += RenderText(guiRq, Utility::Sprintf("RenderTime: %.2f ms", DeltaTime * 1000.0f), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Combo: %d", m_scoring.currentComboCounter), textPos).y;
+
+		float currentBPM = (float)(60000.0 / tp.beatDuration);
+		textPos.y += RenderText(guiRq, Utility::Sprintf("BPM: %.1f", currentBPM), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("Time Signature: %d/4", tp.measure), textPos).y;
+
+		if(m_scoring.autoplay)
+			textPos.y += RenderText(guiRq, "Autoplay enabled", textPos, Color::Blue).y;
 
 		// List recent hits and their delay
 		Vector2 tableStart = textPos;
@@ -390,6 +387,10 @@ public:
 			return; // Nothing changed
 		state = pressed; // Store state
 
+		// Ignore game input when autoplay is on
+		if(m_scoring.autoplay)
+			return;
+
 		if(b >= Button::BT_0 && b <= Button::BT_3Alt)
 		{
 			OnButtonInput((size_t)b % 4, pressed);
@@ -409,18 +410,7 @@ public:
 		if(pressed)
 		{
 			ObjectState* hitObject = m_scoring.OnButtonPressed(buttonIdx);
-			if(hitObject)
-			{
-				if(hitObject->type == ObjectType::Single)
-				{
-					MapTime hitDelta = m_scoring.GetObjectHitDelta(hitObject);
-					ScoreHitRating rating = m_scoring.GetHitRatingFromDelta(hitDelta);
-					Color c = m_track->hitColors[(size_t)rating + 1];
-					m_track->AddEffect(new ButtonHitEffect(buttonIdx, c));
-					m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, rating));
-				}
-			}
-			else
+			if(!hitObject)
 			{
 				m_track->AddEffect(new ButtonHitEffect(buttonIdx, m_track->hitColors[0]));
 			}
@@ -434,7 +424,46 @@ public:
 	{
 		m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, ScoreHitRating::Miss));
 	}
+	void OnLaserSlamHit(uint32 laserIndex)
+	{
+		CameraShake shake(0.2f, 0.5f, 170.0f);
+		shake.amplitude = Vector3(0.02f, 0.01f, 0.0f); // Mainly x-axis
+		m_camera.AddCameraShake(shake);
+	}
+	void OnButtonHit(uint32 buttonIdx, ObjectState* hitObject)
+	{
+		if(hitObject->type == ObjectType::Single)
+		{
+			MapTime hitDelta = m_scoring.GetObjectHitDelta(hitObject);
+			ScoreHitRating rating = m_scoring.GetHitRatingFromDelta(hitDelta);
+			Color c = m_track->hitColors[(size_t)rating + 1];
+			m_track->AddEffect(new ButtonHitEffect(buttonIdx, c));
+			m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, rating));
+		}
+	}
 
+	bool InitGameplay()
+	{
+		// Input
+		InitButtonMapping();
+
+		// Playback and timing
+		m_playback = BeatmapPlayback(*m_beatmap);
+		if(!m_playback.Reset())
+			return false;
+		m_scoring.SetPlayback(m_playback);
+		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
+		m_scoring.OnLaserSlamHit.Add(this, &Game_Impl::OnLaserSlamHit);
+		m_scoring.OnButtonHit.Add(this, &Game_Impl::OnButtonHit);
+
+		// Autoplay enabled?
+		if(g_application->GetAppCommandLine().Contains("-autoplay"))
+		{
+			m_scoring.autoplay = true;
+		}
+
+		return true;
+	}
 	// Processes input and Updates scoring, also handles audio timing management
 	void TickGameplay(float deltaTime)
 	{
@@ -444,7 +473,7 @@ public:
 			BASS_ChannelPlay(m_audio, true);
 			m_started = true;
 
-			if(g_application->GetAppCommandLine().Contains("-autoSkip"))
+			if(g_application->GetAppCommandLine().Contains("-autoskip"))
 			{
 				SkipIntro();
 			}
@@ -462,16 +491,8 @@ public:
 			playbackPositionMs = 0;
 		else
 			playbackPositionMs += (MapTime)g_audio->audioLatency;
-
-		if(playbackPositionMs > beatmapSettings.offset)
-		{
-			playbackPositionMs -= m_beatmap->GetMapSettings().offset;
+		if(playbackPositionMs > 0)
 			m_playback.Update(playbackPositionMs);
-		}
-		else
-		{
-			playbackPositionMs = 0;
-		}
 
 		// Update scoring
 		m_scoring.Tick(deltaTime);
@@ -480,7 +501,7 @@ public:
 		m_currentTiming = &m_playback.GetCurrentTimingPoint();
 
 		// Get objects in range
-		MapTime msViewRange = m_playback.BarDistanceToDuration(viewRange);
+		MapTime msViewRange = m_playback.BarDistanceToDuration(m_track->viewRange);
 		m_currentObjectSet = m_playback.GetObjectsInRange(msViewRange);
 
 		m_lastMapTime = playbackPositionMs;
@@ -500,6 +521,24 @@ public:
 	{
 		return m_playing;
 	}
+
+	virtual class Track& GetTrack() override
+	{
+		return *m_track;
+	}
+	virtual class Camera& GetCamera() override
+	{
+		return m_camera;
+	}
+	virtual class BeatmapPlayback& GetPlayback() override
+	{
+		return m_playback;
+	}
+	virtual class Scoring& GetScoring() override
+	{
+		return m_scoring;
+	}
+
 };
 
 Game* Game::Create(Beatmap* map, String mapPath)

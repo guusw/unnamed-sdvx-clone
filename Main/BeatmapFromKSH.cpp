@@ -79,6 +79,8 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 	double bpm = atof(*kshootMap.settings["t"]);
 	lastTimingPoint->beatDuration = 60000.0 / bpm;
 	lastTimingPoint->measure = 4;
+	uint32 timingPointBlockOffset = 0;
+	// Ending time of last timing point
 	m_timingPoints.Add(lastTimingPoint);
 	timingPointMap.Add(lastTimingPoint->time, lastTimingPoint);
 
@@ -97,7 +99,8 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 
 		// Calculate MapTime from current tick
 		double blockDuration = (lastTimingPoint->beatDuration * lastTimingPoint->measure);
-		MapTime mapTime = MapTime((time.block + (double)time.tick / (double)block.ticks.size()) * blockDuration);
+		uint32 blockFromStartOfTimingPoint = (time.block - timingPointBlockOffset);
+		MapTime mapTime = lastTimingPoint->time + MapTime((blockFromStartOfTimingPoint + (double)time.tick / (double)block.ticks.size()) * blockDuration);
 
 		// Process settings
 		for(auto& p : tick.settings)
@@ -108,8 +111,10 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 				if(!timingPointMap.Contains(mapTime))
 				{
 					lastTimingPoint = new TimingPoint(*lastTimingPoint);
+					lastTimingPoint->time = mapTime;
 					m_timingPoints.Add(lastTimingPoint);
 					timingPointMap.Add(mapTime, lastTimingPoint);
+					timingPointBlockOffset = time.block;
 				}
 
 				String n, d;
@@ -126,8 +131,10 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 				if(!timingPointMap.Contains(mapTime))
 				{
 					lastTimingPoint = new TimingPoint(*lastTimingPoint);
+					lastTimingPoint->time = mapTime;
 					m_timingPoints.Add(lastTimingPoint);
 					timingPointMap.Add(mapTime, lastTimingPoint);
+					timingPointBlockOffset = time.block;
 				}
 
 				double bpm = atof(*p.second);
@@ -185,8 +192,18 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 			{
 				// Create new hold state
 				state = new TempButtonState(mapTime, (uint32)c);
-				size_t div = block.ticks.size();
-				state->fineSnap = div >= (lastTimingPoint->measure * 8);
+				uint32 div = (uint32)block.ticks.size();
+
+				if(i < 4)
+				{
+					// Normal '1' notes are always individual
+					state->fineSnap = c != '1';
+				}
+				else
+				{
+					// Hold are always on a high enough snap to make suere they are seperate when needed
+					state->fineSnap = true;
+				}
 			}
 			else
 			{
@@ -197,8 +214,18 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 
 					// Create new hold state
 					state = new TempButtonState(mapTime, (uint32)c);
-					size_t div = block.ticks.size();
-					state->fineSnap = div >= (lastTimingPoint->measure * 8);
+					uint32 div = (uint32)block.ticks.size();
+					
+					if(i < 4)
+					{
+						// Normal '1' notes are always individual
+						state->fineSnap = c != '1';
+					}
+					else
+					{
+						// Hold are always on a high enough snap to make suere they are seperate when needed
+						state->fineSnap = true;
+					}
 				}
 				else
 				{
@@ -235,8 +262,15 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 				// Link segments together
 				if(state->last)
 				{
+					// Always fixup duration so they are connected by duration as well
 					obj->prev = state->last;
+					MapTime actualPrevDuration = obj->time - obj->prev->time;
+					if(obj->prev->duration != actualPrevDuration)
+					{
+						obj->prev->duration = actualPrevDuration;
+					}
 					obj->prev->next = obj;
+
 				}
 
 				// Add to list of objects

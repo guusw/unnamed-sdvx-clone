@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="Background.cpp" />
     <ClCompile Include="Beatmap.cpp" />
     <ClCompile Include="BeatmapFromKSH.cpp" />
     <ClCompile Include="BeatmapPlayback.cpp" />
@@ -62,6 +63,7 @@
   <ItemGroup>
     <ClInclude Include="ApplicationTickable.hpp" />
     <ClInclude Include="Audio.hpp" />
+    <ClInclude Include="Background.hpp" />
     <ClInclude Include="Beatmap.hpp" />
     <ClInclude Include="BeatmapObjects.hpp" />
     <ClInclude Include="BeatmapPlayback.hpp" />
@@ -96,20 +98,23 @@
     <ClInclude Include="Window.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\External\freetype.vcxproj">
-      <Project>{aa8c6de9-0dba-4f64-ba2c-937efeebb4ed}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\External\jpeg.vcxproj">
-      <Project>{de75831e-5515-4653-a8f3-5b6ffecc82cb}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\External\png.vcxproj">
-      <Project>{0982a493-8511-4892-ae12-d1e924654ccc}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\External\zlib.vcxproj">
-      <Project>{2f7c928d-6e83-4f90-bb06-01550f4440f0}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\Shared\Shared.vcxproj">
       <Project>{d7388e0f-7b3b-4154-a521-95571e89d0ca}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\third_party\freetype.vcxproj">
+      <Project>{aa8c6de9-0dba-4f64-ba2c-937efeebb4ed}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\third_party\jpeg.vcxproj">
+      <Project>{de75831e-5515-4653-a8f3-5b6ffecc82cb}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\third_party\LZMA.vcxproj">
+      <Project>{3cfcb135-a66c-493a-88c7-c5ab17cbbfbe}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\third_party\png.vcxproj">
+      <Project>{0982a493-8511-4892-ae12-d1e924654ccc}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\third_party\zlib.vcxproj">
+      <Project>{2f7c928d-6e83-4f90-bb06-01550f4440f0}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -200,7 +205,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\jpeg-9b;$(SolutionDir)external\lpng1621;$(SolutionDir)external\zlib-1.2.8;$(SolutionDir)external\freetype\include;$(SolutionDir)include;glew</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -220,7 +225,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\jpeg-9b;$(SolutionDir)external\lpng1621;$(SolutionDir)external\zlib-1.2.8;$(SolutionDir)external\freetype\include;$(SolutionDir)include;glew</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -242,7 +247,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\jpeg-9b;$(SolutionDir)external\lpng1621;$(SolutionDir)external\zlib-1.2.8;$(SolutionDir)external\freetype\include;$(SolutionDir)include;glew</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -266,7 +271,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\jpeg-9b;$(SolutionDir)external\lpng1621;$(SolutionDir)external\zlib-1.2.8;$(SolutionDir)external\freetype\include;$(SolutionDir)include;glew</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>

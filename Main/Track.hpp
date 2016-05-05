@@ -17,6 +17,10 @@ public:
 	const float laserWidth = buttonWidth * 0.8f;
 	const float fxbuttonWidth = buttonWidth * 2;
 	const float buttonTrackWidth = buttonWidth * 4;
+
+	/// TODO: Use BPM scale for view range
+	const float viewRange = 0.5f;
+
 	float trackTickLength;
 	float buttonLength;
 	float fxbuttonLength;
@@ -72,11 +76,13 @@ public:
 	/* Object graphics */
 	Mesh buttonMesh;
 	Texture buttonTexture;
+	Texture buttonHoldTexture;
 	Mesh fxbuttonMesh;
 	Texture fxbuttonTexture;
 	Texture fxbuttonHoldTexture;
 	Material holdButtonMaterial;
 	Texture laserTexture;
+	Texture laserTailTextures[2]; // Entry and exit textures
 	Material laserMaterial;
 
 	/* Overlay graphics */

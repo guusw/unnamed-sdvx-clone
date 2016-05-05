@@ -12,6 +12,7 @@ enum BuiltInShaderVariable
 	SV_Camera,
 	SV_Viewport,
 	SV_AspectRatio,
+	SV_Time,
 	SV__BuiltInEnd,
 	SV_User = 0x100, // Start defining user variables here
 };
@@ -22,6 +23,7 @@ const char* builtInShaderVariableNames[] =
 	"camera",
 	"viewport",
 	"aspectRatio",
+	"time",
 };
 class BuiltInShaderVariableMap : public Map<String, BuiltInShaderVariable>
 {
@@ -179,6 +181,7 @@ public:
 		BindAll(SV_Camera, rs.cameraTransform);
 		BindAll(SV_Viewport, rs.viewportSize);
 		BindAll(SV_AspectRatio, rs.aspectRatio);
+		BindAll(SV_Time, rs.time);
 		for(auto p : params)
 		{
 			switch(p.second.parameterType)
@@ -368,4 +371,8 @@ void MaterialParameterSet::SetParameter(const String& name, const Transform& tf)
 void MaterialParameterSet::SetParameter(const String& name, Ref<class TextureRes> tex)
 {
 	Add(name, MaterialParameter::Create(tex->Handle(), GL_SAMPLER_2D));
+}
+void MaterialParameterSet::SetParameter(const String& name, const Vector2i& vec2)
+{
+	Add(name, MaterialParameter::Create(vec2, GL_INT_VEC2));
 }

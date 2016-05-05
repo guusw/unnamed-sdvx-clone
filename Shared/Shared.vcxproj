@@ -164,6 +164,7 @@
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="MemoryStream.cpp" />
     <ClCompile Include="Path.cpp" />
+    <ClCompile Include="Random.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -192,6 +193,7 @@
     <ClInclude Include="..\include\Shared\Math.hpp" />
     <ClInclude Include="..\Include\Shared\MemoryStream.hpp" />
     <ClInclude Include="..\include\Shared\Path.hpp" />
+    <ClInclude Include="..\include\Shared\Random.hpp" />
     <ClInclude Include="..\include\Shared\Rect.hpp" />
     <ClInclude Include="..\include\Shared\Ref.hpp" />
     <ClInclude Include="..\include\Shared\ResourceManager.hpp" />

@@ -2,11 +2,6 @@
 #include "ImageLoader.hpp"
 #include "Image.hpp"
 #include "png.h"
-
-// For doubly defined INT32 inside jpeg
-#define XMD_H
-// For redefine inside jpeg
-#undef FAR
 #include "jpeglib.h"
 
 class ImageLoader_Impl
@@ -24,8 +19,8 @@ public:
 		/* This struct contains the JPEG decompression parameters and pointers to
 		* working space (which is allocated as needed by the JPEG library).
 		*/
-		struct jpeg_decompress_struct cinfo;
-		struct jpeg_error_mgr jerr;
+		jpeg_decompress_struct cinfo;
+		jpeg_error_mgr jerr;
 		cinfo.err = jpeg_std_error(&jerr);
 
 		jpeg_create_decompress(&cinfo);

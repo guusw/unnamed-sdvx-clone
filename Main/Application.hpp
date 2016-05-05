@@ -2,6 +2,7 @@
 #include "Texture.hpp"
 #include "Material.hpp"
 #include "RenderQueue.hpp"
+#include "RenderState.hpp"
 
 extern class OpenGL* g_gl;
 extern class Window* g_gameWindow;
@@ -24,6 +25,9 @@ public:
 	// Retrieves application command line parameters
 	const Vector<String>& GetAppCommandLine() const;
 
+	// Gets a basic template for a render state, with all the application variables initialized
+	RenderState GetRenderStateBase() const;
+
 	Texture LoadTexture(const String& name);
 	Material LoadMaterial(const String& name);
 
@@ -37,6 +41,7 @@ private:
 	void m_OnKeyReleased(uint8 key);
 	void m_OnWindowResized(const Vector2i& newSize);
 
+	RenderState m_renderStateBase;
 	Vector<String> m_commandLine;
 	class Beatmap* m_currentMap = nullptr;
 	float m_lastUpdateTime;

@@ -34,24 +34,6 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 
 	Mesh newMesh = MeshRes::Create(m_gl);
 
-	// Calculate amount to scale laser size to fit the texture border in
-	assert(laserTextureSize.x == laserTextureSize.y); // Use Square texture
-	float laserCenterAmount = ((float)laserTextureSize.x - ((float)laserBorderPixels*2)) / (float)(laserTextureSize.x);
-	float laserBorderAmount = (1.0f - laserCenterAmount);
-
-	// The uv coordinates to sample the laser without the border, or only the border
-	float textureBorder = (float)laserBorderPixels / laserTextureSize.x;
-	float invTextureBorder = 1.0f - textureBorder;
-
-	// The the size of the laser with compensation added for the border
-	float actualLaserWidth = m_laserWidth / laserCenterAmount;
-
-	// The width of the laser without the border
-	float laserWidthNoBorder = actualLaserWidth * laserCenterAmount;
-	// World size of a single border around a laser
-	float realBorderSize = (actualLaserWidth - laserWidthNoBorder) * 0.5f;
-
-	float effectiveWidth = m_trackWidth - m_laserWidth;
 	float length = playback.DurationToBarDistance(laser->duration);
 
 	if((laser->flags & LaserObjectState::flag_Instant) != 0) // Slam segment
@@ -60,27 +42,19 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 		left = laser->points[0] * effectiveWidth - effectiveWidth * 0.5f;
 		right = laser->points[1] * effectiveWidth - effectiveWidth * 0.5f;
 
+
 		// If corners should be placed, connecting the texture to the previous laser
-		bool cornerRight = laser->next != nullptr;
-		bool cornerLeft = laser->prev != nullptr;
 		bool swapped = false;
 		if(laser->points[0] > laser->points[1])
 		{
 			// <------
 			std::swap(left, right);
-			std::swap(cornerLeft, cornerRight);
 			swapped = true;
 		}// else ------>
 
-		// Make place for corner pieces
-		if(cornerLeft)
-			left += laserWidthNoBorder * 0.5f;
-		else // otherwise extend all the way from the center to the edge
-			left -= laserWidthNoBorder * 0.5f;
-		if(cornerRight)
-			right -= laserWidthNoBorder * 0.5f;
-		else
-			right += laserWidthNoBorder * 0.5f;
+		// Make place for corners
+		left += laserWidthNoBorder * 0.5f;
+		right -= laserWidthNoBorder * 0.5f;
 
 		// Uv coordinates for center and borders
 		// More tight border in horizontal direction
@@ -89,7 +63,7 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 		Rect centerLowerUv = Rect(textureBorder, invTextureBorder, invTextureBorder, 1.0f);
 
 		// Generate positions for middle top and bottom
-		Rect3D centerMiddle = Rect3D(left, laserWidthNoBorder * perspectiveHeightScale, right, 0.0f);
+		Rect3D centerMiddle = Rect3D(left, slamLength, right, 0.0f);
 		Rect3D centerBottom = centerMiddle;
 		centerBottom.size.y = realBorderSize * perspectiveHeightScale;
 		centerBottom.pos.y = centerMiddle.Bottom() - centerBottom.size.y;
@@ -107,7 +81,6 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 		GenerateLaserQuad(centerMiddle, centerMiddleUv, verts);
 
 		// Generate left corner
-		if(cornerLeft)
 		{
 			Rect3D leftCenter = Rect3D(left - laserWidthNoBorder, centerMiddle.Top(), left, centerMiddle.Bottom());
 			Rect3D leftCap = leftCenter;
@@ -133,7 +106,7 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 			GenerateLaserQuad(leftCap, capUv, verts);
 		}
 
-		if(cornerRight)
+		// Generate right corner
 		{
 			Rect3D rightCenter = Rect3D(right, centerMiddle.Top(), right + laserWidthNoBorder, centerMiddle.Bottom());
 			Rect3D rightCap = rightCenter;
@@ -165,7 +138,7 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 		float prevLength = 0.0f;
 		if(laser->prev && (laser->prev->flags & LaserObjectState::flag_Instant) != 0)
 		{
-			prevLength = laserWidthNoBorder * perspectiveHeightScale;
+			prevLength = slamLength;
 		}
 
 		// Connecting center points
@@ -202,23 +175,125 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 	m_objectCache.Add(laser, newMesh);
 	return newMesh;
 }
-void LaserTrackBuilder::Reset()
+
+Mesh LaserTrackBuilder::GenerateTrackEntry(class BeatmapPlayback& playback, LaserObjectState* laser)
 {
-	m_objectCache.clear();
+	assert(laser->prev == nullptr);
+	if(m_cachedEntries.Contains(laser))
+		return m_cachedEntries[laser];
+
+	Mesh newMesh = MeshRes::Create(m_gl);
+
+	// Starting point of laser
+	float startingX = laser->points[0] * effectiveWidth - effectiveWidth * 0.5f;
+	
+	// Length of the tail
+	float length = (float)laserEntryTextureSize.y / (float)laserEntryTextureSize.x * actualLaserWidth * perspectiveHeightScale;
+
+	float halfWidth = actualLaserWidth * 0.5f;
+	Vector<MeshGenerators::SimpleVertex> verts;
+	Rect3D pos = Rect3D(Vector2(startingX - halfWidth, -length), Vector2(halfWidth * 2, length));
+	Rect uv = Rect(0.0f, 0.0f, 1.0f, 1.0f);
+	GenerateLaserQuad(pos, uv, verts);
+
+	newMesh->SetData(verts);
+	newMesh->SetPrimitiveType(PrimitiveType::TriangleList);
+
+	// Cache this mesh
+	m_cachedEntries.Add(laser, newMesh);
+	return newMesh;
+
+}
+Mesh LaserTrackBuilder::GenerateTrackExit(class BeatmapPlayback& playback, LaserObjectState* laser)
+{
+	assert(laser->next == nullptr);
+	if(m_cachedExits.Contains(laser))
+		return m_cachedExits[laser];
+
+	Mesh newMesh = MeshRes::Create(m_gl);
+
+	// Ending point of laser 
+	float startingX = laser->points[1] * effectiveWidth - effectiveWidth * 0.5f;
+
+	// Length of the tail
+	float length = (float)laserExitTextureSize.y / (float)laserExitTextureSize.x * actualLaserWidth * perspectiveHeightScale;
+
+	// Length of this segment
+	float prevLength = 0.0f;
+	if((laser->flags & LaserObjectState::flag_Instant) != 0)
+	{
+		prevLength = slamLength;
+	}
+	else
+	{
+		prevLength = playback.DurationToBarDistance(laser->duration) * laserLengthScale;
+	}
+
+	float halfWidth = actualLaserWidth * 0.5f;
+	Vector<MeshGenerators::SimpleVertex> verts;
+	Rect3D pos = Rect3D(Vector2(startingX - halfWidth, prevLength), Vector2(halfWidth * 2, length));
+	Rect uv = Rect(0.0f, 0.0f, 1.0f, 1.0f);
+	GenerateLaserQuad(pos, uv, verts);
+
+	newMesh->SetData(verts);
+	newMesh->SetPrimitiveType(PrimitiveType::TriangleList);
+
+	// Cache this mesh
+	m_cachedExits.Add(laser, newMesh);
+	return newMesh;
 }
 
-void LaserTrackBuilder::Update(MapTime newTime)
+void LaserTrackBuilder::m_RecalculateConstants()
+{
+	// Calculate amount to scale laser size to fit the texture border in
+	assert(laserTextureSize.x == laserTextureSize.y); // Use Square texture
+	const float laserCenterAmount = ((float)laserTextureSize.x - ((float)laserBorderPixels * 2)) / (float)(laserTextureSize.x);
+	const float laserBorderAmount = (1.0f - laserCenterAmount);
+
+	// The uv coordinates to sample the laser without the border, or only the border
+	textureBorder = (float)laserBorderPixels / laserTextureSize.x;
+	invTextureBorder = 1.0f - textureBorder;
+
+	// The the size of the laser with compensation added for the border
+	actualLaserWidth = m_laserWidth / laserCenterAmount;
+
+	// The width of the laser without the border
+	laserWidthNoBorder = actualLaserWidth * laserCenterAmount;
+	// World size of a single border around a laser
+	realBorderSize = (actualLaserWidth - laserWidthNoBorder) * 0.5f;
+
+	// The length of the horizontal slam segments
+	slamLength = laserWidthNoBorder * perspectiveHeightScale * 3.0f;
+
+	// The effective area in which the center point of the laser can move
+	effectiveWidth = m_trackWidth - m_laserWidth;
+}
+
+void LaserTrackBuilder::m_Cleanup(MapTime newTime, Map<LaserObjectState*, Mesh>& arr)
 {
 	// Cleanup unused meshes
-	for(auto it = m_objectCache.begin(); it != m_objectCache.end();)
+	for(auto it = arr.begin(); it != arr.end();)
 	{
 		LaserObjectState* obj = it->first;
 		MapTime endTime = obj->time + obj->duration + 1000;
 		if(newTime > endTime)
 		{
-			it = m_objectCache.erase(it);
+			it = arr.erase(it);
 			continue;
 		}
 		it++;
 	}
+}
+void LaserTrackBuilder::Reset()
+{
+	m_objectCache.clear();
+	m_cachedEntries.clear();
+	m_cachedExits.clear();
+	m_RecalculateConstants();
+}
+void LaserTrackBuilder::Update(MapTime newTime)
+{
+	m_Cleanup(newTime, m_objectCache);
+	m_Cleanup(newTime, m_cachedEntries);
+	m_Cleanup(newTime, m_cachedExits);
 }
