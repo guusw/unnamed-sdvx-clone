@@ -44,7 +44,7 @@ int32 Application::Run()
 		bool debugMute = false;
 		for(auto& cl : m_commandLine)
 		{
-			if(cl == "-convertMaps")
+			if(cl == "-convertmaps")
 			{
 				m_allowMapConversion = true;
 			}
