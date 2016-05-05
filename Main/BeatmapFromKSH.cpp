@@ -192,8 +192,18 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 			{
 				// Create new hold state
 				state = new TempButtonState(mapTime, (uint32)c);
-				uint8 div = (uint8)block.ticks.size();
-				state->fineSnap = div >= (lastTimingPoint->measure * 8);
+				uint32 div = (uint32)block.ticks.size();
+
+				if(i < 4)
+				{
+					// Normal '1' notes are always individual
+					state->fineSnap = c != '1';
+				}
+				else
+				{
+					// Hold are always on a high enough snap to make suere they are seperate when needed
+					state->fineSnap = true;
+				}
 			}
 			else
 			{
@@ -204,8 +214,18 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 
 					// Create new hold state
 					state = new TempButtonState(mapTime, (uint32)c);
-					uint8 div = (uint8)block.ticks.size();
-					state->fineSnap = div >= (lastTimingPoint->measure * 8);
+					uint32 div = (uint32)block.ticks.size();
+					
+					if(i < 4)
+					{
+						// Normal '1' notes are always individual
+						state->fineSnap = c != '1';
+					}
+					else
+					{
+						// Hold are always on a high enough snap to make suere they are seperate when needed
+						state->fineSnap = true;
+					}
 				}
 				else
 				{

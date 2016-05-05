@@ -194,6 +194,8 @@ ObjectState* Scoring::OnButtonPressed(uint32 buttonCode)
 	Set<ObjectState*>& objects = m_playback->GetHittableObjects();
 	MapTime time = m_playback->GetLastTime();
 
+	// Find closest object to hit
+	MapTime closestObject = INT_MAX;
 	ObjectState* hitObject = nullptr;
 	for(auto it = objects.begin(); it != objects.end();)
 	{
@@ -202,23 +204,46 @@ ObjectState* Scoring::OnButtonPressed(uint32 buttonCode)
 		{
 			if((*it)->type == ObjectType::Single)
 			{
-
-				hitObject = *it;
-				objects.erase(it);
-				m_RegisterHit(hitObject);
-				break;
+				MapTime delta = mobj->time - time;
+				if(abs(delta) < abs(closestObject))
+				{
+					closestObject = delta;
+					hitObject = *it;
+				}
 			}
 			else if((*it)->type == ObjectType::Hold)
 			{
-				activeHoldObjects[mobj->button.index] = (HoldObjectState*)*it;
-				return *it;
+				MapTime delta = mobj->time - time;
+				MapTime endDelta = (mobj->time + mobj->hold.duration) - time;
+				if(abs(delta) < abs(closestObject))
+				{
+					closestObject = delta;
+					hitObject = *it;
+				}
+				if(abs(endDelta) < abs(closestObject))
+				{
+					closestObject = delta;
+					hitObject = *it;
+				}
 			}
 		}
 		it++;
 	}
 
 	if(hitObject)
+	{
+		MultiObjectState* mobj = *hitObject;
+		if(hitObject->type == ObjectType::Hold)
+		{
+			activeHoldObjects[mobj->hold.index] = (HoldObjectState*)hitObject;
+		}
+		else if(hitObject->type == ObjectType::Single)
+		{
+			objects.erase(hitObject);
+			m_RegisterHit(hitObject);
+		}
 		OnButtonHit.Call(buttonCode, hitObject);
+	}
 
 	return hitObject;
 }

@@ -473,7 +473,7 @@ public:
 			BASS_ChannelPlay(m_audio, true);
 			m_started = true;
 
-			if(g_application->GetAppCommandLine().Contains("-autoSkip"))
+			if(g_application->GetAppCommandLine().Contains("-autoskip"))
 			{
 				SkipIntro();
 			}
