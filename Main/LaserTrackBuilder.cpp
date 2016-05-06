@@ -4,22 +4,6 @@
 #include "BeatmapPlayback.hpp"
 #include <algorithm>
 
-void GenerateLaserQuad(Rect3D r, Rect uv, Vector<MeshGenerators::SimpleVertex>& out)
-{
-	Vector<MeshGenerators::SimpleVertex> verts =
-	{
-		{ { r.Left(),  r.Top(),     0.0f },{ uv.Left(), uv.Top() } },
-		{ { r.Right(), r.Bottom(),  0.0f },{ uv.Right(), uv.Bottom() } },
-		{ { r.Right(), r.Top(),     0.0f },{ uv.Right(), uv.Top() } },
-
-		{ { r.Left(),  r.Top(),     0.0f },{ uv.Left(), uv.Top() } },
-		{ { r.Left(),  r.Bottom(),  0.0f },{ uv.Left(), uv.Bottom() } },
-		{ { r.Right(), r.Bottom(),  0.0f },{ uv.Right(), uv.Bottom() } },
-	};
-	for(auto& v : verts)
-		out.Add(v);
-}
-
 LaserTrackBuilder::LaserTrackBuilder(class OpenGL* gl, uint32 laserIndex, float trackWidth, float laserWidth)
 {
 	m_gl = gl;
@@ -76,9 +60,9 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 		Vector<MeshGenerators::SimpleVertex> verts;
 
 		// Middle part
-		GenerateLaserQuad(centerTop, centerUpperUv, verts);
-		GenerateLaserQuad(centerBottom, centerLowerUv, verts);
-		GenerateLaserQuad(centerMiddle, centerMiddleUv, verts);
+		MeshGenerators::GenerateSimpleXYQuad(centerTop, centerUpperUv, verts);
+		MeshGenerators::GenerateSimpleXYQuad(centerBottom, centerLowerUv, verts);
+		MeshGenerators::GenerateSimpleXYQuad(centerMiddle, centerMiddleUv, verts);
 
 		// Generate left corner
 		{
@@ -101,9 +85,9 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 				leftCap.pos.y = leftCenter.pos.y - leftCap.size.y;
 			}
 
-			GenerateLaserQuad(leftCenter, centerMiddleUv, verts);
-			GenerateLaserQuad(leftSide, sideUv, verts);
-			GenerateLaserQuad(leftCap, capUv, verts);
+			MeshGenerators::GenerateSimpleXYQuad(leftCenter, centerMiddleUv, verts);
+			MeshGenerators::GenerateSimpleXYQuad(leftSide, sideUv, verts);
+			MeshGenerators::GenerateSimpleXYQuad(leftCap, capUv, verts);
 		}
 
 		// Generate right corner
@@ -125,9 +109,9 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 				rightCap.pos.y = rightCenter.Top();
 			}
 
-			GenerateLaserQuad(rightCenter, centerMiddleUv, verts);
-			GenerateLaserQuad(rightSide, sideUv, verts);
-			GenerateLaserQuad(rightCap, capUv, verts);
+			MeshGenerators::GenerateSimpleXYQuad(rightCenter, centerMiddleUv, verts);
+			MeshGenerators::GenerateSimpleXYQuad(rightSide, sideUv, verts);
+			MeshGenerators::GenerateSimpleXYQuad(rightCap, capUv, verts);
 		}
 
 		newMesh->SetData(verts);
@@ -194,7 +178,7 @@ Mesh LaserTrackBuilder::GenerateTrackEntry(class BeatmapPlayback& playback, Lase
 	Vector<MeshGenerators::SimpleVertex> verts;
 	Rect3D pos = Rect3D(Vector2(startingX - halfWidth, -length), Vector2(halfWidth * 2, length));
 	Rect uv = Rect(0.0f, 0.0f, 1.0f, 1.0f);
-	GenerateLaserQuad(pos, uv, verts);
+	MeshGenerators::GenerateSimpleXYQuad(pos, uv, verts);
 
 	newMesh->SetData(verts);
 	newMesh->SetPrimitiveType(PrimitiveType::TriangleList);
@@ -233,7 +217,7 @@ Mesh LaserTrackBuilder::GenerateTrackExit(class BeatmapPlayback& playback, Laser
 	Vector<MeshGenerators::SimpleVertex> verts;
 	Rect3D pos = Rect3D(Vector2(startingX - halfWidth, prevLength), Vector2(halfWidth * 2, length));
 	Rect uv = Rect(0.0f, 0.0f, 1.0f, 1.0f);
-	GenerateLaserQuad(pos, uv, verts);
+	MeshGenerators::GenerateSimpleXYQuad(pos, uv, verts);
 
 	newMesh->SetData(verts);
 	newMesh->SetPrimitiveType(PrimitiveType::TriangleList);

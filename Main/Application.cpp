@@ -152,9 +152,14 @@ int32 Application::Run()
 			float deltaTime = Math::Min(currentTime - m_lastRenderTime, maxDeltaTime);
 			m_lastRenderTime = currentTime;
 
-			g_game->Render(deltaTime);
-			// Swap Front/Back buffer
-			g_gl->SwapBuffers();
+			// Not minimized and such
+			if(g_resolution.x > 0 && g_resolution.y > 0)
+			{
+				g_game->Render(deltaTime);
+				// Swap Front/Back buffer
+				g_gl->SwapBuffers();
+			}
+
 			// Garbage collect resources
 			ResourceManagers::TickAll();
 		}
@@ -327,7 +332,7 @@ void Application::m_OnKeyReleased(uint8 key)
 void Application::m_OnWindowResized(const Vector2i& newSize)
 {
 	g_resolution = newSize;
-	g_aspectRatio = (float)g_resolution.y / (float)g_resolution.x;
+	g_aspectRatio = (float)g_resolution.x / (float)g_resolution.y;
 
 	m_renderStateBase.aspectRatio = g_aspectRatio;
 	m_renderStateBase.viewportSize = g_resolution;

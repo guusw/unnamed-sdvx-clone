@@ -70,7 +70,7 @@ void Scoring::Tick(float deltaTime)
 					if(abs(endDelta) > maxEarlyHitTime)
 					{
 						// Combo break, released too early
-						currentComboCounter = 0;
+						m_ResetCombo();
 						//OnButtonMiss.Call(hold->index);
 						continue;
 					}
@@ -88,7 +88,7 @@ void Scoring::Tick(float deltaTime)
 				uint32 comboTickCurrent = (uint32)floor(((double)lastHoldDuration[hold->index] * (double)tp->measure) / tp->beatDuration);
 				if(comboTickCurrent > comboTickLast)
 				{
-					currentComboCounter++;
+					m_AddCombo();
 
 					currentHitScore += 1;
 					currentMaxScore += 1;
@@ -191,7 +191,7 @@ void Scoring::Tick(float deltaTime)
 				// Got it
 				currentHitScore++; // 1 Point for laser slams
 				currentMaxScore++;
-				currentComboCounter++;
+				m_AddCombo();
 				OnLaserSlamHit.Call(i);
 				laserPositions[i] = laserTargetNew;
 				objects.erase(*laser);
@@ -200,7 +200,7 @@ void Scoring::Tick(float deltaTime)
 			else if(hitDelta > maxLaserHitTime)
 			{
 				// Miss laser slam
-				currentComboCounter = 0;
+				m_ResetCombo();
 				currentMaxScore++; // miss 1 Point for laser slams
 				laserActive[i] = false;
 				AdvanceLaser();
@@ -243,7 +243,7 @@ void Scoring::Tick(float deltaTime)
 				uint32 comboTickCurrent = (uint32)floor(((double)laserHoldDuration[laser->index] * (double)tp->measure) / tp->beatDuration);
 				if(comboTickCurrent > comboTickLast)
 				{
-					currentComboCounter++;
+					m_AddCombo();
 
 					currentHitScore += 1;
 					currentMaxScore += 1;
@@ -252,7 +252,7 @@ void Scoring::Tick(float deltaTime)
 			else
 			{
 				// Combo break on laser segment
-				currentComboCounter = 0;
+				m_ResetCombo();
 				laserHoldDuration[i] = 0; 
 				laserHoldObjects[i] = nullptr;
 				laserActive[i] = false;
@@ -421,10 +421,10 @@ void Scoring::m_RegisterHit(ObjectState* obj)
 	currentMaxScore += (uint32)ScoreHitRating::Perfect;
 	currentHitScore += (uint32)score;
 	if(score != ScoreHitRating::Miss)
-		currentComboCounter++;
+		m_AddCombo();
 	else
 	{
-		currentComboCounter = 0;
+		m_ResetCombo();
 		if(obj->type == ObjectType::Single)
 		{
 			OnButtonMiss.Call(mobj->button.index);
@@ -446,6 +446,18 @@ MapTime Scoring::GetObjectHitDelta(ObjectState* obj)
 	assert(m_playback);
 	return (m_playback->GetLastTime() - obj->time);
 }
+
+void Scoring::m_AddCombo(uint32 amount)
+{
+	OnComboChanged.Call(currentComboCounter + amount);
+	currentComboCounter += amount;
+}
+void Scoring::m_ResetCombo()
+{
+	OnComboChanged.Call(0);
+	currentComboCounter = 0;
+}
+
 float Scoring::m_SampleLaserPosition(MapTime time, LaserObjectState* laser)
 {
 	time -= laser->time;

@@ -10,6 +10,14 @@
 #include "BeatmapPlayback.hpp"
 #include "BeatmapObjects.hpp"
 
+const float Track::trackWidth = 1.0f;
+const float Track::trackLength = 25.0f;
+const float Track::buttonWidth = trackWidth / 6;
+const float Track::laserWidth = buttonWidth * 0.7f;
+const float Track::fxbuttonWidth = buttonWidth * 2;
+const float Track::buttonTrackWidth = buttonWidth * 4;
+const float Track::viewRange = 0.5f;
+
 Track::~Track()
 {
 	for(uint32 i = 0; i < 2; i++)
@@ -115,6 +123,20 @@ bool Track::Init()
 	// Overlay shader
 	CheckedLoad(trackOverlay = g_application->LoadMaterial("overlay"));
 	trackOverlay->opaque = false;
+
+	CheckedLoad(comboSpriteSheet = g_application->LoadTexture("combo.png"));
+	Vector2i comboFontSize = comboSpriteSheet->GetSize();
+	Vector2i comboFontSizePerCharacter = comboFontSize / Vector2i(10, 1);
+	Vector2 comboFontTexCoordSize = Vector2(1.0f / 10.0f, 1.0f);
+	for(uint32 i = 0; i < 10; i++)
+	{
+		Vector2 texStart = comboFontTexCoordSize * Vector2((float)i, 0);
+		Vector<MeshGenerators::SimpleVertex> verts;
+		MeshGenerators::GenerateSimpleXYQuad(Rect3D(Vector2(-0.5f), Vector2(1.0f)), Rect(texStart, comboFontTexCoordSize), verts);
+		Mesh m = comboSpriteMeshes[i] = MeshRes::Create(g_gl);
+		m->SetData(verts);
+		m->SetPrimitiveType(PrimitiveType::TriangleList);
+	}
 
 	// Create a laser track builder for each laser object
 	// these will output and cache meshes for rendering lasers
@@ -337,6 +359,35 @@ void Track::DrawSprite(RenderQueue& rq, Vector3 pos, Vector2 size, Texture tex, 
 	params.SetParameter("color", color);
 	rq.Draw(spriteTransform, centeredTrackMesh, spriteMaterial, params);
 }
+void Track::DrawCombo(RenderQueue& rq, uint32 score, Color color, float scale)
+{
+	if(score == 0)
+		return;
+	Vector<Mesh> meshes;
+	while(score > 0)
+	{
+		uint32 c = score % 10;
+		meshes.Add(comboSpriteMeshes[c]);
+		score -= c;
+		score /= 10;
+	}
+	const float charWidth = trackWidth * 0.15f * scale;
+	const float seperation = charWidth * 0.7f;
+	float size = (float)(meshes.size()-1) * seperation;
+	float halfSize = size * 0.5f;
+
+	MaterialParameterSet params;
+	params.SetParameter("mainTex", comboSpriteSheet);
+	params.SetParameter("color", color);
+	for(uint32 i = 0; i < meshes.size(); i++)
+	{
+		float xpos = -halfSize + seperation * (meshes.size()-1-i);
+		Transform t = Transform::Translation({ xpos, 0.3f, 0.03f});
+		t *= Transform::Scale({charWidth, charWidth * perspectiveHeightScale, 1.0f});
+		rq.Draw(t, meshes[i], spriteMaterial, params);
+	}
+}
+
 TimedEffect* Track::AddEffect(TimedEffect* effect)
 {
 	m_hitEffects.Add(effect);
