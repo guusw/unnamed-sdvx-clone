@@ -6,7 +6,7 @@
 const float Scoring::idleLaserMoveSpeed = 1.0f;
 const MapTime Scoring::maxEarlyHitTime = 100;
 const MapTime Scoring::perfectHitTime = 50;
-const MapTime Scoring::laserMissTreshold = perfectHitTime;
+const MapTime Scoring::maxLaserHitTime = 100;
 
 Scoring::Scoring()
 {
@@ -18,7 +18,6 @@ Scoring::Scoring()
 	laserPositions[0] = 0.0f;
 	laserPositions[1] = 1.0f;
 }
-
 void Scoring::SetPlayback(BeatmapPlayback& playback)
 {
 	if(m_playback)
@@ -30,7 +29,6 @@ void Scoring::SetPlayback(BeatmapPlayback& playback)
 	m_playback->OnObjectEntered.Add(this, &Scoring::m_OnObjectEntered);
 	m_playback->OnObjectLeaved.Add(this, &Scoring::m_OnObjectLeaved);
 }
-
 void Scoring::Tick(float deltaTime)
 {
 	assert(m_playback);
@@ -84,9 +82,10 @@ void Scoring::Tick(float deltaTime)
 				assert(tp);
 
 				// Give combo points for hold note ticks
-				uint32 comboTickLast = (uint32)round(((double)lastHoldDuration[hold->index] * (double)tp->measure) / tp->beatDuration);
-				lastHoldDuration[hold->index] += delta;
-				uint32 comboTickCurrent = (uint32)round(((double)lastHoldDuration[hold->index] * (double)tp->measure) / tp->beatDuration);
+				uint32 comboTickLast = (uint32)floor(((double)lastHoldDuration[hold->index] * (double)tp->measure) / tp->beatDuration);
+				// Clamp duration to make sure no one can get extra points on hold notes
+				lastHoldDuration[hold->index] = Math::Min<MapTime>(lastHoldDuration[hold->index] + delta, hold->duration-1);
+				uint32 comboTickCurrent = (uint32)floor(((double)lastHoldDuration[hold->index] * (double)tp->measure) / tp->beatDuration);
 				if(comboTickCurrent > comboTickLast)
 				{
 					currentComboCounter++;
@@ -119,22 +118,18 @@ void Scoring::Tick(float deltaTime)
 
 			if(activeLaserObjects[laserIndex] != laser)
 			{
-				// Laser entered perfect hit area
-				if(time >= mobj->time && endDelta < 0)
+				// Laser entered timing window
+				if(time >= mobj->time && endDelta < maxLaserHitTime)
 				{
-					if(!laser->prev)
-					{
-						// Set initial pointer position
-						laserPositions[laserIndex] = mobj->laser.points[0];
-					}
-					laserSlamHit[laserIndex] = false;
+					// Initialy active
+					laserActive[laserIndex] = true;
 					activeLaserObjects[laserIndex] = (LaserObjectState*)mobj;
 				}
 			}
 		}
 	}
 
-	// Autoplay logic
+	// Autoplay button logic
 	for(uint32& b : buttonsToAutoHit)
 	{
 		ObjectState* object = OnButtonPressed(b);
@@ -142,42 +137,176 @@ void Scoring::Tick(float deltaTime)
 			Log("Autoplay fail?", Logger::Warning);
 	}
 
+	// Tick lasers
 	for(uint32 i = 0; i < 2; i++)
 	{
 		LaserObjectState* laser = activeLaserObjects[i];
 		if(!laser)
 			continue;
 
-		float laserTargetNew = 0.0f;
-		if(activeLaserObjects[i])
-			laserTargetNew = m_SampleLaserPosition(time, activeLaserObjects[i]);
-		float targetDelta = laserTargetNew - laserTargetPositions[i];
+		auto AdvanceLaser = [&]()
+		{
+			if(laser->next)
+			{
+				activeLaserObjects[i] = laser->next;
+				laserHoldDuration[i] = 0;
+
+				// Transfer active state to new segment
+				if(laserActive[i] == true && (laser->next->flags & LaserObjectState::flag_Instant) == 0) 
+				{
+					laserHoldObjects[i] = activeLaserObjects[i];
+				}
+				else
+				{
+					laserHoldObjects[i] = nullptr;
+				}
+			}
+			else
+			{
+				activeLaserObjects[i] = nullptr;
+				laserActive[i] = false;
+				laserHoldDuration[i] = 0;
+				laserMissDuration[i] = 0;
+			}
+		};
+
+		float laserTargetNew = m_SampleLaserPosition(time, activeLaserObjects[i]);
 		laserTargetPositions[i] = laserTargetNew;
 
+		// Delta from current cursor to laser position
+		//float targetDelta = laserTargetPositions[i] - laserPositions[i];
+		float targetDelta = laser->points[1] - laser->points[0];
+
+		// Whenether the user is holding the right direction
+		bool isBeingControlled = Math::Sign(targetDelta) == Math::Sign(laserInput[i]);
+
+		MapTime hitDelta = time - laser->time;
 		MapTime endTime = laser->duration + laser->time;
 		MapTime endDelta = time - endTime;
-		if(endDelta > 0)
+
+		if((laser->flags & LaserObjectState::flag_Instant) != 0)
 		{
-			// Laser has passed
-			activeLaserObjects[i] = nullptr;
-			continue;
+			if(isBeingControlled)
+			{
+				// Got it
+				currentHitScore++; // 1 Point for laser slams
+				currentMaxScore++;
+				currentComboCounter++;
+				OnLaserSlamHit.Call(i);
+				laserPositions[i] = laserTargetNew;
+				objects.erase(*laser);
+				AdvanceLaser();
+			}
+			else if(hitDelta > maxLaserHitTime)
+			{
+				// Miss laser slam
+				currentComboCounter = 0;
+				currentMaxScore++; // miss 1 Point for laser slams
+				laserActive[i] = false;
+				AdvanceLaser();
+			}
+		}
+		else
+		{
+			// Combo points for laser
+			const TimingPoint* tp = m_playback->GetTimingPointAt(laser->time);
+			assert(tp);
+			// The last combo tick on this laser
+			uint32 comboTickLast = (uint32)floor(((double)laserHoldDuration[laser->index] * (double)tp->measure) / tp->beatDuration);
+
+			// Handle miss time
+			if(!isBeingControlled)
+			{
+				if(targetDelta != 0.0f)
+					laserMissDuration[i] += delta;
+			}
+			else
+			{
+				laserMissDuration[i] = 0;
+			}
+
+			if(endDelta > 0) // Advance
+			{
+				AdvanceLaser();
+				laserHoldDuration[i] = 0;
+			} 
+			else if(isBeingControlled || (laserMissDuration[i] < maxLaserHitTime))
+			{
+				// Clamp duration to make sure no one can get extra points on hold notes
+				laserHoldDuration[laser->index] = Math::Min<MapTime>(laserHoldDuration[laser->index] + delta, laser->duration - 1);
+				// Make cursor follow laser
+				laserPositions[i] = laserTargetNew;
+				laserHoldObjects[i] = laser;
+				laserActive[i] = true;
+
+				// Give combo points
+				uint32 comboTickCurrent = (uint32)floor(((double)laserHoldDuration[laser->index] * (double)tp->measure) / tp->beatDuration);
+				if(comboTickCurrent > comboTickLast)
+				{
+					currentComboCounter++;
+
+					currentHitScore += 1;
+					currentMaxScore += 1;
+				}
+			}
+			else
+			{
+				// Combo break on laser segment
+				currentComboCounter = 0;
+				laserHoldDuration[i] = 0; 
+				laserHoldObjects[i] = nullptr;
+				laserActive[i] = false;
+			}
 		}
 
+		//if(delta > maxLaserHitTime)
+		//{
+		//
+		//}
+
+		//const float laserTreshold = 0.05f;
+		//if(!queuedLaserObjects[i])
+		//{
+		//	if(delta > maxEarlyHitTime)
+		//	{
+		//		// Laser combo break
+		//		currentComboCounter = 0;
+		//	}
+		//	else
+		//	{
+		//		// Snap on
+		//		if(abs(targetDelta) < laserTreshold)
+		//		{
+		//			queuedLaserObjects[i] = laser;
+		//		}
+		//	}
+		//}
+		//else
+		//{
+		//	if(laserInput[i] != 0.0f && Math::Sign(targetDelta) == Math::Sign(laserInput))
+		//	{
+		//		laserPositions[i] = laserTargetPositions[i];
+		//	}
+		//	if(targetDelta > laserTreshold)
+		//	{
+		//		// Laser combo break
+		//		currentComboCounter = 0;
+		//	}
+		//}
+
 		// Check if laser slam was hit
-		if((laser->flags & LaserObjectState::flag_Instant) != 0 && !laserSlamHit[i])
-		{
-			OnLaserSlamHit.Call(i);
-			laserSlamHit[i] = true;
-		}
+		//if((laser->flags & LaserObjectState::flag_Instant) != 0 && !laserSlamHit[i])
+		//{
+		//	OnLaserSlamHit.Call(i);
+		//	laserSlamHit[i] = true;
+		//}
 
 		if(autoplay)
 		{
 			laserPositions[i] = laserTargetPositions[i];
 		}
-
 	}
 }
-
 ScoreHitRating Scoring::GetHitRatingFromDelta(MapTime delta)
 {
 	delta = abs(delta);
@@ -187,7 +316,6 @@ ScoreHitRating Scoring::GetHitRatingFromDelta(MapTime delta)
 		return ScoreHitRating::Good;
 	return ScoreHitRating::Perfect;
 }
-
 ObjectState* Scoring::OnButtonPressed(uint32 buttonCode)
 {
 	assert(m_playback);
@@ -255,7 +383,6 @@ void Scoring::OnButtonReleased(uint32 buttonCode)
 		lastHoldDuration[buttonCode] = 0;
 	}
 }
-
 bool Scoring::IsActive(ObjectState* object) const
 {
 	MultiObjectState* mobj = *object;
@@ -268,12 +395,11 @@ bool Scoring::IsActive(ObjectState* object) const
 	{
 		if(activeLaserObjects[mobj->laser.index])
 		{
-			return laserMissDuration[mobj->laser.index] < laserMissTreshold;
+			return laserActive[mobj->laser.index];
 		}
 	}
 	return false;
 }
-
 float Scoring::GetActiveLaserRoll(uint32 index)
 {
 	assert(index >= 0 && index <= 1);
@@ -305,7 +431,6 @@ void Scoring::m_RegisterHit(ObjectState* obj)
 		}
 	}
 }
-
 void Scoring::m_OnObjectEntered(ObjectState* obj)
 {
 }

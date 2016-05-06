@@ -240,6 +240,19 @@ public:
 		float currentBPM = (float)(60000.0 / tp.beatDuration);
 		textPos.y += RenderText(guiRq, Utility::Sprintf("BPM: %.1f", currentBPM), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Time Signature: %d/4", tp.measure), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("Laser input: [L:%f] [R:%f]", m_scoring.laserInput[0], m_scoring.laserInput[1]), textPos).y;
+		for(uint32 i = 0; i < 2; i++)
+		{
+			if(m_scoring.activeLaserObjects[i])
+			{
+				textPos.y += RenderText(guiRq,
+					Utility::Sprintf("Laser %s: %d (f:%02x) (m:%d)",
+						i == 0 ? "L" : "R",
+						m_scoring.activeLaserObjects[i]->time,
+						m_scoring.activeLaserObjects[i]->flags,
+						m_scoring.laserMissDuration[i]), textPos).y;
+			}
+		}
 
 		if(m_scoring.autoplay)
 			textPos.y += RenderText(guiRq, "Autoplay enabled", textPos, Color::Blue).y;
