@@ -47,6 +47,9 @@ class Game_Impl : public Game
 	Vector<ObjectState*> m_currentObjectSet;
 	MapTime m_lastMapTime;
 
+	// Combo gain animation
+	Timer m_comboAnimation;
+
 public:
 
 	~Game_Impl()
@@ -151,6 +154,8 @@ public:
 		// Copy laser positions
 		memcpy(m_track->laserPositions, m_scoring.laserPositions, sizeof(float) * 2);
 		m_track->DrawOverlays(scoringRq);
+		float comboZoom = Math::Max(0.0f, (1.0f - (m_comboAnimation.SecondsAsFloat() / 0.2f)) * 0.5f);
+		m_track->DrawCombo(scoringRq, m_scoring.currentComboCounter, Color::White, 1.0f + comboZoom);
 
 		// Render queues
 		
@@ -233,9 +238,7 @@ public:
 		Vector2 textPos = Vector2(jrect.pos.x, jrect.Bottom() + 10.0f);
 		textPos.y += RenderText(guiRq, bms.title, textPos).y;
 		textPos.y += RenderText(guiRq, bms.artist, textPos).y;
-
 		textPos.y += RenderText(guiRq, Utility::Sprintf("RenderTime: %.2f ms", DeltaTime * 1000.0f), textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("Combo: %d", m_scoring.currentComboCounter), textPos).y;
 
 		float currentBPM = (float)(60000.0 / tp.beatDuration);
 		textPos.y += RenderText(guiRq, Utility::Sprintf("BPM: %.1f", currentBPM), textPos).y;
@@ -454,6 +457,10 @@ public:
 			m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, rating));
 		}
 	}
+	void OnComboChanged(uint32 newCombo)
+	{
+		m_comboAnimation.Restart();
+	}
 
 	bool InitGameplay()
 	{
@@ -468,6 +475,7 @@ public:
 		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
 		m_scoring.OnLaserSlamHit.Add(this, &Game_Impl::OnLaserSlamHit);
 		m_scoring.OnButtonHit.Add(this, &Game_Impl::OnButtonHit);
+		m_scoring.OnComboChanged.Add(this, &Game_Impl::OnComboChanged);
 
 		// Autoplay enabled?
 		if(g_application->GetAppCommandLine().Contains("-autoplay"))

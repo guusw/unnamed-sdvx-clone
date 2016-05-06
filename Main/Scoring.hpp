@@ -59,6 +59,7 @@ public:
 	Delegate<uint32, ObjectState*> OnButtonHit;
 	Delegate<uint32> OnButtonMiss;
 	Delegate<uint32> OnLaserSlamHit;
+	Delegate<uint32> OnComboChanged;
 
 	// The maximum timing window in which you are able to hit an object early
 	static const MapTime maxEarlyHitTime;
@@ -105,6 +106,8 @@ private:
 	void m_RegisterHit(ObjectState* obj);
 	void m_OnObjectEntered(ObjectState* obj);
 	void m_OnObjectLeaved(ObjectState* obj);
+	void m_AddCombo(uint32 amount = 1);
+	void m_ResetCombo();
 	float m_SampleLaserPosition(MapTime time, LaserObjectState* laser);
 
 	// For hold note ticks

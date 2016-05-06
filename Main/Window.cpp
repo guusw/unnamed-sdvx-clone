@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "Window.hpp"
+#include <Uxtheme.h>
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
 
 static LRESULT CALLBACK WndProc(HWND wnd, UINT msg, WPARAM wp, LPARAM lp);
 static HINSTANCE hinst = GetModuleHandle(nullptr);
@@ -18,6 +21,7 @@ public:
 		m_wndClass.lpfnWndProc = &WndProc;
 		m_wndClass.hInstance = hinst;
 		m_wndClass.hCursor = LoadCursor(nullptr, IDC_CROSS);
+		m_wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 
 		m_caption = L"Window";
 
@@ -168,7 +172,7 @@ public:
 			}
 		}
 
-		delete[] (uint8*)input;
+delete[](uint8*)input;
 	}
 
 	/* Window show hide, positioning, etc.*/
@@ -190,7 +194,7 @@ public:
 	bool Update()
 	{
 		MSG m;
-		while(PeekMessage(&m, m_handle, 0,0, PM_REMOVE))
+		while(PeekMessage(&m, m_handle, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&m);
 			DispatchMessage(&m);

@@ -24,3 +24,19 @@ Mesh MeshGenerators::Quad(OpenGL* gl, Vector2 pos, Vector2 size /*= Vector2(1,1)
 	mesh->SetPrimitiveType(PrimitiveType::TriangleList);
 	return mesh;
 }
+
+void MeshGenerators::GenerateSimpleXYQuad(Rect3D r, Rect uv, Vector<SimpleVertex>& out)
+{
+	Vector<MeshGenerators::SimpleVertex> verts =
+	{
+		{ { r.Left(),  r.Top(),     0.0f },{ uv.Left(), uv.Top() } },
+		{ { r.Right(), r.Bottom(),  0.0f },{ uv.Right(), uv.Bottom() } },
+		{ { r.Right(), r.Top(),     0.0f },{ uv.Right(), uv.Top() } },
+
+		{ { r.Left(),  r.Top(),     0.0f },{ uv.Left(), uv.Top() } },
+		{ { r.Left(),  r.Bottom(),  0.0f },{ uv.Left(), uv.Bottom() } },
+		{ { r.Right(), r.Bottom(),  0.0f },{ uv.Right(), uv.Bottom() } },
+	};
+	for(auto& v : verts)
+		out.Add(v);
+}

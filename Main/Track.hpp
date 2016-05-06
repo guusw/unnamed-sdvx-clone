@@ -7,19 +7,20 @@
 /*
 	The object responsible for drawing the track.
 */
+class RenderQueue;
 class Track : Unique
 {
 public:
 	// Size constants of various elements
-	const float trackWidth = 1.0f;
-	const float trackLength = 25.0f;
-	const float buttonWidth = trackWidth / 6;
-	const float laserWidth = buttonWidth * 0.8f;
-	const float fxbuttonWidth = buttonWidth * 2;
-	const float buttonTrackWidth = buttonWidth * 4;
+	static const float trackWidth;
+	static const float trackLength;
+	static const float buttonWidth;
+	static const float laserWidth;
+	static const float fxbuttonWidth;
+	static const float buttonTrackWidth;
 
 	/// TODO: Use BPM scale for view range
-	const float viewRange = 0.5f;
+	static const float viewRange;
 
 	float trackTickLength;
 	float buttonLength;
@@ -45,16 +46,17 @@ public:
 	void Tick(class BeatmapPlayback& playback, float deltaTime);
 
 	// Just the board with tick lines
-	void DrawBase(class RenderQueue& rq);
+	void DrawBase(RenderQueue& rq);
 	// Draws an object
-	void DrawObjectState(class RenderQueue& rq, class BeatmapPlayback& playback, ObjectState* obj, bool active = false);
+	void DrawObjectState(RenderQueue& rq, class BeatmapPlayback& playback, ObjectState* obj, bool active = false);
 	// Things like the laser pointers, hit bar and effect
-	void DrawOverlays(class RenderQueue& rq);
+	void DrawOverlays(RenderQueue& rq);
 
 	// Draws a plane over the track
-	void DrawTrackOverlay(class RenderQueue& rq, Texture texture, float heightOffset = 0.05f, float widthScale = 1.0f);
+	void DrawTrackOverlay(RenderQueue& rq, Texture texture, float heightOffset = 0.05f, float widthScale = 1.0f);
 	// Draw a centered sprite at pos, relative from the track
 	void DrawSprite(RenderQueue& rq, Vector3 pos, Vector2 size, Texture tex, Color color = Color::White, float tilt = 0.0f);
+	void DrawCombo(RenderQueue& rq, uint32 score, Color color, float scale = 1.0f);
 
 	// Adds a sprite effect to the track
 	struct TimedEffect* AddEffect(struct TimedEffect* effect);
@@ -93,6 +95,9 @@ public:
 	Texture scoreHitTexture;
 	Texture laserPointerTexture;
 	Texture scoreHitTextures[3]; // Ok, Miss, Perfect
+	// Combo counter sprite sheet
+	Texture comboSpriteSheet;
+	Mesh comboSpriteMeshes[10];
 	/* Reusable sprite mesh and material */
 	Mesh centeredTrackMesh;
 	Material spriteMaterial;

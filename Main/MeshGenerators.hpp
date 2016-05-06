@@ -18,4 +18,10 @@ namespace MeshGenerators
 	};
 
 	Mesh Quad(OpenGL* gl, Vector2 pos, Vector2 size = Vector2(1,1));
+
+	// Generates vertices for a quad from a given rectangle, with given uv coordinate rectangle
+	// the position top = +y
+	// the uv has bottom = +y
+	// Triangle List
+	void GenerateSimpleXYQuad(Rect3D r, Rect uv, Vector<MeshGenerators::SimpleVertex>& out);
 }
