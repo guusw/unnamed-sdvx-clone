@@ -178,7 +178,7 @@ void Scoring::Tick(float deltaTime)
 		float targetDelta = laser->points[1] - laser->points[0];
 
 		// Whenether the user is holding the right direction
-		bool isBeingControlled = Math::Sign(targetDelta) == Math::Sign(laserInput[i]);
+		bool isBeingControlled = Math::Sign(targetDelta) == Math::Sign(laserInput[i]) || autoplay;
 
 		MapTime hitDelta = time - laser->time;
 		MapTime endTime = laser->duration + laser->time;
