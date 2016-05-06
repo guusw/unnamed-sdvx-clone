@@ -256,7 +256,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 
 				// Threshold for laser segments to be considered instant
 				MapTime laserSlamThreshold = (MapTime)ceil(state->tpStart->beatDuration / 8.0);
-				if(obj->duration <= laserSlamThreshold)
+				if(obj->duration <= laserSlamThreshold && (obj->points[1] != obj->points[0]))
 					obj->flags |= LaserObjectState::flag_Instant;
 
 				// Link segments together

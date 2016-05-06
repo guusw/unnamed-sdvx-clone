@@ -60,14 +60,14 @@ public:
 	Delegate<uint32> OnButtonMiss;
 	Delegate<uint32> OnLaserSlamHit;
 
-	// The maximum timeframe in which you are able to hit an object early
+	// The maximum timing window in which you are able to hit an object early
 	static const MapTime maxEarlyHitTime;
 	static const MapTime perfectHitTime;
+	// Maximum timing window in which you can hit laser segments
+	static const MapTime maxLaserHitTime;
 
 	// Movement speed of the lasers when idle
 	static const float idleLaserMoveSpeed;
-	// time in milliseconds that the laser is allowed to lack behind the cursor
-	static const MapTime laserMissTreshold;
 
 	// Maximum accumulated score of object that have been hit or missed
 	uint32 currentMaxScore;
@@ -84,14 +84,22 @@ public:
 	// Autoplay mode
 	bool autoplay = false;
 
+	// Laser Objects
 	float laserInput[2];
 	float laserPositions[2];
 	float laserTargetPositions[2] = { 0 };
-	MapTime laserMissDuration[2] = { 0 };
+	// Always points to the currently active laser segment
 	LaserObjectState* activeLaserObjects[2] = { 0 };
-	bool laserSlamHit[2] = { 0 };
+
+	// Used for hold logic on laser segments (non-instant segments)
+	LaserObjectState* laserHoldObjects[2] = { 0 };
+	MapTime laserHoldDuration[2] = { 0 };
+	MapTime laserMissDuration[2] = { 0 };
+	bool laserActive[2] = { false };
+
+	// Hold Objects
 	HoldObjectState* activeHoldObjects[6] = { 0 };
-	uint32 lastHoldDuration[6] = { 0 };
+	MapTime lastHoldDuration[6] = { 0 };
 
 private:
 	void m_RegisterHit(ObjectState* obj);
