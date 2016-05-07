@@ -400,7 +400,7 @@ bool Scoring::IsActive(ObjectState* object) const
 	}
 	return false;
 }
-float Scoring::GetActiveLaserRoll(uint32 index)
+float Scoring::GetLaserRollOutput(uint32 index)
 {
 	assert(index >= 0 && index <= 1);
 	if(activeLaserObjects[index])
@@ -412,6 +412,32 @@ float Scoring::GetActiveLaserRoll(uint32 index)
 	}
 	return 0.0f;
 }
+float Scoring::GetLaserOutput()
+{
+	float val = 0.0f;
+	float max = 0.0f;
+	for(int32 i = 0; i < 2; i++)
+	{
+		if(activeLaserObjects[i])
+		{
+			float actual = laserTargetPositions[i];
+			// Undo laser extension
+			if((activeLaserObjects[i]->flags & LaserObjectState::flag_Extended) != 0)
+			{
+				actual += 0.5f;
+				actual *= 0.5f;
+			}
+			if(i == 1) // Second laser goes the other way
+				actual = 1.0f - actual;
+			val += actual;
+			max += 1.0f;
+		}
+	}
+	if(max == 0.0f)
+		return 0.0f;
+	return val / max;
+}
+
 void Scoring::m_RegisterHit(ObjectState* obj)
 {
 	MultiObjectState* mobj = *obj;

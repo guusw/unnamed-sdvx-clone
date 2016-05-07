@@ -142,11 +142,11 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 			}
 			else if(p.first == "laserrange_l")
 			{
-				laserRanges[0] = 1.7f;
+				laserRanges[0] = 2.0f;
 			}
 			else if(p.first == "laserrange_r")
 			{
-				laserRanges[1] = 1.7f;
+				laserRanges[1] = 2.0f;
 			}
 		}
 
@@ -253,7 +253,10 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 				obj->index = i;
 				obj->points[0] = state->startPosition;
 				obj->points[1] = endPos;
-
+				if(laserRanges[i] > 1.0f)
+				{
+					obj->flags |= LaserObjectState::flag_Extended;
+				}
 				// Threshold for laser segments to be considered instant
 				MapTime laserSlamThreshold = (MapTime)ceil(state->tpStart->beatDuration / 8.0);
 				if(obj->duration <= laserSlamThreshold && (obj->points[1] != obj->points[0]))

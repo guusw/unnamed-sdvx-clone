@@ -13,13 +13,12 @@
 #include "Track.hpp"
 #include "Camera.hpp"
 #include "Background.hpp"
-#include "bass.h"
+#include "AudioPlayback.hpp"
 
 class Game_Impl : public Game
 {
 	String m_mapPath;
 	Beatmap* m_beatmap;
-	HCHANNEL m_audio;
 	bool m_playing = true;
 	bool m_started = false;
 	bool m_paused = false;
@@ -31,6 +30,8 @@ class Game_Impl : public Game
 	Scoring m_scoring;
 	// Beatmap playback manager (object and timing point selector)
 	BeatmapPlayback m_playback;
+	// Audio playback manager (music and FX))
+	AudioPlayback m_audioPlayback;
 
 	// The play field
 	Track* m_track;
@@ -79,17 +80,8 @@ public:
 		}
 
 		// Load beatmap audio
-		String audioPath = mapPath + "\\" + mapSettings.audioFX;
-		if(!Path::FileExists(audioPath) || Path::IsDirectory(audioPath))
-			audioPath = mapPath + "\\" + mapSettings.audioNoFX;
-		WString audioPathUnicode = Utility::ConvertToUnicode(audioPath);
-		m_audio = BASS_StreamCreateFile(false, *audioPathUnicode, 0, 0, BASS_UNICODE);
-		if(m_audio == 0)
-		{
-			int32 bassError = BASS_ErrorGetCode();
-			Logf("Failed to load audio for beatmap \"%s\" [%d]", Logger::Error, audioPath, bassError);
+		if(!m_audioPlayback.Init(*m_beatmap, mapPath))
 			return false;
-		}
 
 		if(!InitGameplay())
 			return false;
@@ -122,8 +114,8 @@ public:
 		m_track->Tick(m_playback, deltaTime);
 
 		// Get render state from the camera
-		float rollA = m_scoring.GetActiveLaserRoll(0);
-		float rollB = m_scoring.GetActiveLaserRoll(1);
+		float rollA = m_scoring.GetLaserRollOutput(0);
+		float rollB = m_scoring.GetLaserRollOutput(1);
 		m_camera.SetTargetRoll((rollA + rollB) * 0.05f);
 		m_camera.track = m_track;
 		m_camera.Tick(deltaTime);
@@ -358,15 +350,7 @@ public:
 	{
 		if(key == VK_PAUSE)
 		{
-			if(m_paused)
-			{
-				BASS_ChannelPlay(m_audio, false);
-			}
-			else
-			{
-				BASS_ChannelPause(m_audio);
-			}
-			m_paused = !m_paused;
+			m_audioPlayback.TogglePause();
 		}
 		else if(key == VK_RETURN) // Skip intro
 		{
@@ -374,10 +358,11 @@ public:
 		}
 		else if(key == VK_PRIOR)
 		{
-			QWORD bytePos = BASS_ChannelGetPosition(m_audio, BASS_POS_BYTE);
-			double playbackPosition = BASS_ChannelBytes2Seconds(m_audio, bytePos);
-			playbackPosition += 5.0f;
-			BASS_ChannelSetPosition(m_audio, BASS_ChannelSeconds2Bytes(m_audio, playbackPosition), BASS_POS_BYTE);
+			m_audioPlayback.Advance(5000);
+			//QWORD bytePos = BASS_ChannelGetPosition(m_audio, BASS_POS_BYTE);
+			//double playbackPosition = BASS_ChannelBytes2Seconds(m_audio, bytePos);
+			//playbackPosition += 5.0f;
+			//BASS_ChannelSetPosition(m_audio, BASS_ChannelSeconds2Bytes(m_audio, playbackPosition), BASS_POS_BYTE);
 		}
 		else
 		{
@@ -491,7 +476,7 @@ public:
 		if(!m_started)
 		{
 			// Start playback of audio in first gameplay tick
-			BASS_ChannelPlay(m_audio, true);
+			m_audioPlayback.Play();
 			m_started = true;
 
 			if(g_application->GetAppCommandLine().Contains("-autoskip"))
@@ -503,9 +488,7 @@ public:
 		const BeatmapSettings& beatmapSettings = m_beatmap->GetMapSettings();
 
 		// Update beatmap playback
-		QWORD bytePos = BASS_ChannelGetPosition(m_audio, BASS_POS_BYTE);
-		double playbackPosition = BASS_ChannelBytes2Seconds(m_audio, bytePos);
-		MapTime playbackPositionMs = (MapTime)(playbackPosition * 1000.0);
+		MapTime playbackPositionMs = m_audioPlayback.GetPosition();
 
 		// Apply offset correction and clamp to 0->
 		if(playbackPositionMs < g_audio->audioLatency)
@@ -514,6 +497,10 @@ public:
 			playbackPositionMs += (MapTime)g_audio->audioLatency;
 		if(playbackPositionMs > 0)
 			m_playback.Update(playbackPositionMs);
+
+		// Update music filter states
+		m_audioPlayback.SetLaserFilterInput(m_scoring.GetLaserOutput());
+		m_audioPlayback.Tick(m_playback, deltaTime);
 
 		// Update scoring
 		m_scoring.Tick(deltaTime);
@@ -534,8 +521,7 @@ public:
 		MapTime skipTime = firstObj->time - 1000;
 		if(skipTime > m_lastMapTime)
 		{
-			QWORD dstBytes = BASS_ChannelSeconds2Bytes(m_audio, (double)skipTime / 1000.0);
-			BASS_ChannelSetPosition(m_audio, dstBytes, BASS_POS_BYTE);
+			m_audioPlayback.SetPosition(skipTime);
 		}
 	}
 	virtual bool IsPlaying() const override

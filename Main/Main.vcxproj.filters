@@ -129,6 +129,12 @@
     <ClInclude Include="Background.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AudioPlayback.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioEffects.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -219,6 +225,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Background.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioPlayback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

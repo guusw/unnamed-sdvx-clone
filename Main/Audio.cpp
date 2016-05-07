@@ -2,6 +2,7 @@
 #include "Audio.hpp"
 #include "Window.hpp"
 #include "bass.h"
+#include "bass_fx.h"
 
 Audio* g_audio = nullptr;
 
@@ -47,6 +48,10 @@ bool Audio::Init(class Window& window)
 	{
 		Logf("Failed to open audio device \"%s\"", Logger::Error, devices[1].name);
 	}
+
+	// BFX init
+	DWORD bfxVersion = BASS_FX_GetVersion();
+	assert(HIWORD(bfxVersion) == BASSVERSION);
 
 	if(queryLatency)
 	{

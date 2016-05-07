@@ -103,6 +103,8 @@ struct ObjectTypeData_Laser
 
 	// Indicates that this segment is instant and should generate a laser slam segment
 	static const uint8 flag_Instant = 0x1;
+	// Indicates that the range of this laser is extended from -0.5 to 1.5
+	static const uint8 flag_Extended = 0x2;
 };
 
 // Object state with union data member
