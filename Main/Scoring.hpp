@@ -52,8 +52,10 @@ public:
 	bool IsActive(ObjectState* object) const;
 
 	// Get laser roll values
-	// these range from 0 to 1, 0 being the the laser at home position, and 1 the outer extreme
-	float GetActiveLaserRoll(uint32 index);
+	// these range from -1 to 1, 0 being the center, and 1 the outer extreme
+	float GetLaserRollOutput(uint32 index);
+	// this combines the 2 active lasers to always generate a 0-1 value
+	float GetLaserOutput();
 
 	Delegate<uint32, MapTime> OnButtonScore;
 	Delegate<uint32, ObjectState*> OnButtonHit;
