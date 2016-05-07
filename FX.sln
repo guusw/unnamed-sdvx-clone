@@ -12,6 +12,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{3E68A802-0FE2-4A44-82E8-C33450399CE1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Templates", "Project Templates", "{C1EB7D80-0222-4E4B-9A89-2B578FDF52E7}"
+	ProjectSection(SolutionItems) = preProject
+		Main\Material.hpp = Main\Material.hpp
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AppTemplate", "ProjectTemplates\AppTemplate\AppTemplate.vcxproj", "{9271B263-87C5-4587-AF2F-1C1DB448DA95}"
 EndProject

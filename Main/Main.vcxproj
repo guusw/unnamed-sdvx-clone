@@ -20,23 +20,30 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
-    <ClCompile Include="Audio.cpp" />
-    <ClCompile Include="AudioPlayback.cpp" />
+    <ClCompile Include="Audio\Audio.cpp" />
+    <ClCompile Include="Audio\AudioPlayback.cpp" />
+    <ClCompile Include="Audio\Output.cpp" />
     <ClCompile Include="Background.cpp" />
     <ClCompile Include="Beatmap.cpp" />
     <ClCompile Include="BeatmapFromKSH.cpp" />
     <ClCompile Include="BeatmapPlayback.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Font.cpp" />
-    <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="Image.cpp" />
-    <ClCompile Include="ImageLoader.cpp" />
+    <ClCompile Include="Graphics\Font.cpp" />
+    <ClCompile Include="Graphics\Framebuffer.cpp" />
+    <ClCompile Include="Graphics\Image.cpp" />
+    <ClCompile Include="Graphics\ImageLoader.cpp" />
+    <ClCompile Include="Graphics\Material.cpp" />
+    <ClCompile Include="Graphics\Mesh.cpp" />
+    <ClCompile Include="Graphics\MeshGenerators.cpp" />
+    <ClCompile Include="Graphics\OpenGL.cpp" />
+    <ClCompile Include="Graphics\RenderQueue.cpp" />
+    <ClCompile Include="Graphics\ResourceManager.cpp" />
+    <ClCompile Include="Graphics\Shader.cpp" />
+    <ClCompile Include="Graphics\SpriteMap.cpp" />
+    <ClCompile Include="Graphics\Texture.cpp" />
+    <ClCompile Include="Graphics\Window.cpp" />
     <ClCompile Include="LaserTrackBuilder.cpp" />
-    <ClCompile Include="Material.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="MeshGenerators.cpp" />
-    <ClCompile Include="OpenGL.cpp" />
     <ClCompile Include="glew\glew.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -45,60 +52,56 @@
     </ClCompile>
     <ClCompile Include="KShootMap.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="RenderQueue.cpp" />
-    <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Scoring.cpp" />
-    <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="SpriteMap.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Track.cpp" />
     <ClCompile Include="TrackEffects.cpp" />
-    <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ApplicationTickable.hpp" />
     <ClInclude Include="Audio.hpp" />
     <ClInclude Include="AudioEffects.hpp" />
     <ClInclude Include="AudioPlayback.hpp" />
+    <ClInclude Include="Audio\Output.hpp" />
     <ClInclude Include="Background.hpp" />
     <ClInclude Include="Beatmap.hpp" />
     <ClInclude Include="BeatmapObjects.hpp" />
     <ClInclude Include="BeatmapPlayback.hpp" />
     <ClInclude Include="Camera.hpp" />
+    <ClInclude Include="Graphics\Font.hpp" />
+    <ClInclude Include="Graphics\Framebuffer.hpp" />
+    <ClInclude Include="Graphics\GL.hpp" />
+    <ClInclude Include="Graphics\Image.hpp" />
+    <ClInclude Include="Graphics\ImageLoader.hpp" />
+    <ClInclude Include="Graphics\Material.hpp" />
+    <ClInclude Include="Graphics\Mesh.hpp" />
+    <ClInclude Include="Graphics\MeshGenerators.hpp" />
+    <ClInclude Include="Graphics\OpenGL.hpp" />
+    <ClInclude Include="Graphics\RenderQueue.hpp" />
+    <ClInclude Include="Graphics\RenderState.hpp" />
+    <ClInclude Include="Graphics\ResourceManager.hpp" />
+    <ClInclude Include="Graphics\ResourceTypes.hpp" />
+    <ClInclude Include="Graphics\Shader.hpp" />
+    <ClInclude Include="Graphics\Texture.hpp" />
+    <ClInclude Include="Graphics\VertexFormat.hpp" />
+    <ClInclude Include="Graphics\Window.hpp" />
     <ClInclude Include="Track.hpp" />
-    <ClInclude Include="Framebuffer.hpp" />
     <ClInclude Include="Game.hpp" />
-    <ClInclude Include="GL.hpp" />
     <ClInclude Include="glew\GL\glew.h" />
     <ClInclude Include="glew\GL\glxew.h" />
     <ClInclude Include="glew\GL\wglew.h" />
     <ClInclude Include="Application.hpp" />
-    <ClInclude Include="Image.hpp" />
-    <ClInclude Include="ImageLoader.hpp" />
     <ClInclude Include="KShootMap.hpp" />
     <ClInclude Include="LaserTrackBuilder.hpp" />
-    <ClInclude Include="Material.hpp" />
-    <ClInclude Include="Mesh.hpp" />
-    <ClInclude Include="MeshGenerators.hpp" />
-    <ClInclude Include="OpenGL.hpp" />
     <ClInclude Include="Profiling.hpp" />
-    <ClInclude Include="RenderQueue.hpp" />
-    <ClInclude Include="RenderState.hpp" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="ResourceManager.hpp" />
-    <ClInclude Include="ResourceTypes.hpp" />
     <ClInclude Include="Scoring.hpp" />
-    <ClInclude Include="Shader.hpp" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="Texture.hpp" />
-    <ClInclude Include="VertexFormat.hpp" />
-    <ClInclude Include="Window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.vcxproj">
@@ -208,7 +211,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -229,7 +232,7 @@ copy $(SolutionDir)lib\bass_fx\$(Platform)\bass_fx.dll $(SolutionDir)bin\bass_fx
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -252,7 +255,7 @@ copy $(SolutionDir)lib\bass_fx\$(Platform)\bass_fx.dll $(SolutionDir)bin\bass_fx
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -277,7 +280,7 @@ copy $(SolutionDir)lib\bass_fx\$(Platform)\bass_fx.dll $(SolutionDir)bin\bass_fx
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>

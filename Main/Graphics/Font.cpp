@@ -336,7 +336,7 @@ Font FontRes::Create(OpenGL* gl, const String& assetPath)
 	}
 }
 
-#include "resource.h"
+#include "../resource.h"
 
 FontLibrary::FontLibrary()
 {
