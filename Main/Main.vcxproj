@@ -64,9 +64,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ApplicationTickable.hpp" />
-    <ClInclude Include="Audio.hpp" />
-    <ClInclude Include="AudioEffects.hpp" />
-    <ClInclude Include="AudioPlayback.hpp" />
+    <ClInclude Include="Audio\Audio.hpp" />
+    <ClInclude Include="Audio\AudioEffects.hpp" />
+    <ClInclude Include="Audio\AudioPlayback.hpp" />
     <ClInclude Include="Audio\Output.hpp" />
     <ClInclude Include="Background.hpp" />
     <ClInclude Include="Beatmap.hpp" />
