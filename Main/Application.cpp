@@ -112,7 +112,10 @@ int32 Application::Run()
 
 	// Play the map
 	if(!LaunchMap(m_commandLine[1]))
+	{
+		Logf("LaunchMap(%s) failed", Logger::Error, m_commandLine[1]);
 		return 1;
+	}
 
 	Timer appTimer;
 	m_lastRenderTime = 0.0f;

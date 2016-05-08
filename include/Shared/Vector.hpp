@@ -11,6 +11,28 @@ public:
 	// Adds a new element and returns it
 	I& Add(const I& obj = T()) { push_back(obj); return back(); };
 	I& AddZeroed() { push_back(I()); memset(&back(), 0, sizeof(I)); return back(); };
+	I& AddUnique(I& obj)
+	{
+		if(!Contains(obj))
+			Add(obj);
+		return obj;
+	}
+	
+	// Removes the first or all entries of <obj>
+	void Remove(I& obj, bool all = true)
+	{
+		for(auto it = begin(); it != end();)
+		{
+			if(*it == obj)
+			{
+				it = erase(it);
+				if(!all)
+					break;
+			}
+			else
+				it++;
+		}
+	}
 
 	// O(N) lookup to check if object is in array
 	bool Contains(const I& obj) const 

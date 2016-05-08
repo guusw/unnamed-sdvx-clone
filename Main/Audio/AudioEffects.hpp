@@ -1,7 +1,7 @@
 #pragma once
 
 // The types of effects that can be used on the effect buttons
-enum class EffectType
+enum class EffectType : uint8
 {
 	None = 0,
 	Retrigger,
@@ -10,10 +10,12 @@ enum class EffectType
 	Gate,
 	TapeStop,
 	Bitcrush,
+	Wobble,
+	SideChain,
 };
 
 // The types of effects that can be used on lasers
-enum class LaserEffectType
+enum class LaserEffectType : uint8
 {
 	None = 0,
 	LowPassFilter,

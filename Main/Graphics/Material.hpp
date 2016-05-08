@@ -58,6 +58,7 @@ enum class MaterialBlendMode
 class MaterialRes
 {
 public:
+	virtual ~MaterialRes() = default;
 	// Create a default material
 	static Ref<MaterialRes> Create(class OpenGL* gl);
 	// Create a material that has both a vertex and fragment shader

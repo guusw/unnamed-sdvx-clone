@@ -168,7 +168,7 @@ bool KShootMap::Init(BinaryStream& input)
 }
 bool KShootMap::GetBlock(const KShootTime& time, KShootBlock*& tickOut)
 {
-	if(!time || !tickOut)
+	if(!time)
 		return false;
 	if(time.block >= blocks.size())
 		return false;
@@ -177,7 +177,7 @@ bool KShootMap::GetBlock(const KShootTime& time, KShootBlock*& tickOut)
 }
 bool KShootMap::GetTick(const KShootTime& time, KShootTick*& tickOut)
 {
-	if(!time || !tickOut)
+	if(!time)
 		return false;
 	if(time.block >= blocks.size())
 		return false;

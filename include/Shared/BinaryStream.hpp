@@ -49,9 +49,19 @@ public:
 	}
 
 	// Reads or writes data based on the stream's mode of operation
-	virtual void Serialize(void* data, size_t len) = 0;
+	virtual size_t Serialize(void* data, size_t len) = 0;
 	// Seeks to a position in the stream
 	virtual void Seek(size_t pos) = 0;
+	// Seeks from the end, where 0 is the end of the stream
+	virtual void SeekReverse(size_t pos)
+	{
+		Seek(GetSize() - pos);
+	}
+	// Seeks relative from current position
+	virtual void Skip(size_t pos)
+	{
+		Seek(Tell() + pos);
+	}
 	// Tells the position of the stream
 	virtual size_t Tell() const = 0;
 	// Returns the current size of the stream

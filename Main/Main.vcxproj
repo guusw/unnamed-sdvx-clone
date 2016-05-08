@@ -21,8 +21,11 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Audio\Audio.cpp" />
+    <ClCompile Include="Audio\AudioBase.cpp" />
     <ClCompile Include="Audio\AudioPlayback.cpp" />
-    <ClCompile Include="Audio\Output.cpp" />
+    <ClCompile Include="Audio\AudioStream.cpp" />
+    <ClCompile Include="Audio\AudioOutput.cpp" />
+    <ClCompile Include="Audio\DSP.cpp" />
     <ClCompile Include="Background.cpp" />
     <ClCompile Include="Beatmap.cpp" />
     <ClCompile Include="BeatmapFromKSH.cpp" />
@@ -65,9 +68,13 @@
   <ItemGroup>
     <ClInclude Include="ApplicationTickable.hpp" />
     <ClInclude Include="Audio\Audio.hpp" />
+    <ClInclude Include="Audio\AudioBase.hpp" />
     <ClInclude Include="Audio\AudioEffects.hpp" />
     <ClInclude Include="Audio\AudioPlayback.hpp" />
-    <ClInclude Include="Audio\Output.hpp" />
+    <ClInclude Include="Audio\AudioStream.hpp" />
+    <ClInclude Include="Audio\AudioOutput.hpp" />
+    <ClInclude Include="Audio\Audio_Impl.hpp" />
+    <ClInclude Include="Audio\DSP.hpp" />
     <ClInclude Include="Background.hpp" />
     <ClInclude Include="Beatmap.hpp" />
     <ClInclude Include="BeatmapObjects.hpp" />
@@ -112,6 +119,12 @@
     </ProjectReference>
     <ProjectReference Include="..\third_party\jpeg.vcxproj">
       <Project>{de75831e-5515-4653-a8f3-5b6ffecc82cb}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\third_party\libogg.vcxproj">
+      <Project>{d484eadc-0134-472c-a47e-2a73646472a6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\third_party\libvorbis.vcxproj">
+      <Project>{9f640561-5709-41ba-8b1a-8074ff00b488}</Project>
     </ProjectReference>
     <ProjectReference Include="..\third_party\LZMA.vcxproj">
       <Project>{3cfcb135-a66c-493a-88c7-c5ab17cbbfbe}</Project>
@@ -211,19 +224,19 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>bass_$(Platform).lib;bass_FX_$(Platform).lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(SolutionDir)lib\bass\$(Platform)\bass.dll $(SolutionDir)bin\bass.dll
-copy $(SolutionDir)lib\bass_fx\$(Platform)\bass_fx.dll $(SolutionDir)bin\bass_fx.dll</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -232,19 +245,19 @@ copy $(SolutionDir)lib\bass_fx\$(Platform)\bass_fx.dll $(SolutionDir)bin\bass_fx
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>bass_$(Platform).lib;bass_FX_$(Platform).lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(SolutionDir)lib\bass\$(Platform)\bass.dll $(SolutionDir)bin\bass.dll
-copy $(SolutionDir)lib\bass_fx\$(Platform)\bass_fx.dll $(SolutionDir)bin\bass_fx.dll</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -255,7 +268,7 @@ copy $(SolutionDir)lib\bass_fx\$(Platform)\bass_fx.dll $(SolutionDir)bin\bass_fx
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -264,12 +277,12 @@ copy $(SolutionDir)lib\bass_fx\$(Platform)\bass_fx.dll $(SolutionDir)bin\bass_fx
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>bass_$(Platform).lib;bass_FX_$(Platform).lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(SolutionDir)lib\bass\$(Platform)\bass.dll $(SolutionDir)bin\bass.dll
-copy $(SolutionDir)lib\bass_fx\$(Platform)\bass_fx.dll $(SolutionDir)bin\bass_fx.dll</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -280,7 +293,7 @@ copy $(SolutionDir)lib\bass_fx\$(Platform)\bass_fx.dll $(SolutionDir)bin\bass_fx
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -289,12 +302,12 @@ copy $(SolutionDir)lib\bass_fx\$(Platform)\bass_fx.dll $(SolutionDir)bin\bass_fx
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>bass_$(Platform).lib;bass_FX_$(Platform).lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(SolutionDir)lib\bass\$(Platform)\bass.dll $(SolutionDir)bin\bass.dll
-copy $(SolutionDir)lib\bass_fx\$(Platform)\bass_fx.dll $(SolutionDir)bin\bass_fx.dll</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

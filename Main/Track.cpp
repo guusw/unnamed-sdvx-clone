@@ -16,7 +16,7 @@ const float Track::buttonWidth = trackWidth / 6;
 const float Track::laserWidth = buttonWidth * 0.7f;
 const float Track::fxbuttonWidth = buttonWidth * 2;
 const float Track::buttonTrackWidth = buttonWidth * 4;
-const float Track::viewRange = 0.8f;
+const float Track::viewRange = 0.5f;
 
 Track::~Track()
 {

@@ -72,6 +72,10 @@ public:
 	{
 		return Duration<std::chrono::duration<float>>().count();
 	}
+	inline double SecondsAsDouble() const
+	{
+		return Duration<std::chrono::duration<double>>().count();
+	}
 
 	template<typename rep, typename period> inline Timer& operator+=(std::chrono::duration<rep, period> duration)
 	{

@@ -2,7 +2,7 @@
 #include "Beatmap.hpp"
 #include "Profiling.hpp"
 
-static const uint32 c_mapVersion = 0;
+static const uint32 c_mapVersion = 1;
 
 bool Beatmap::Load(BinaryStream& input)
 {
@@ -56,6 +56,9 @@ bool MultiObjectState::StaticSerialize(BinaryStream& stream, MultiObjectState*& 
 		case ObjectType::Laser:
 			obj = (MultiObjectState*)new LaserObjectState();
 			break;
+		case ObjectType::Event:
+			obj = (MultiObjectState*)new EventObjectState();
+			break;
 		}
 	}
 	else
@@ -75,7 +78,8 @@ bool MultiObjectState::StaticSerialize(BinaryStream& stream, MultiObjectState*& 
 	case ObjectType::Hold:
 		stream << obj->hold.index;
 		stream << obj->hold.duration;
-		stream << obj->hold.effectType;
+		stream << (uint8&)obj->hold.effectType;
+		stream << (uint8&)obj->hold.effectParam;
 		break;
 	case ObjectType::Laser:
 		stream << obj->laser.index;
@@ -83,6 +87,10 @@ bool MultiObjectState::StaticSerialize(BinaryStream& stream, MultiObjectState*& 
 		stream << obj->laser.points[0];
 		stream << obj->laser.points[1];
 		stream << obj->laser.flags;
+		break;
+	case ObjectType::Event:
+		stream << (uint8&)obj->event.key;
+		stream << (uint32&)obj->event.intVal;
 		break;
 	}
 

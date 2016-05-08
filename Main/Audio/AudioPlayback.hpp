@@ -1,7 +1,7 @@
 #pragma once
 #include "Beatmap.hpp"
 #include "AudioEffects.hpp"
-#include "bass.h"
+#include "AudioStream.hpp"
 
 /* 
 	Handles playback of map audio
@@ -24,16 +24,10 @@ public:
 	void Advance(MapTime ms);
 	MapTime GetPosition() const;
 	void SetPosition(MapTime time);
+
 	// Pause the playback
 	void TogglePause();
 	bool IsPaused() const { return m_paused; }
-	// Enables or disables the fx track
-	void SelectFXTrackEnabled(bool active);
-	// Returns the track to apply effects to can be the nofx audio if there is no fx audio track
-	HCHANNEL GetFXTrack();
-
-	// NoFX and FX track for the current map
-	HCHANNEL audioClips[2];
 
 	// Sets either button effect 0 or 1
 	void SetEffect(uint8 index, EffectType type, EffectParam param);
@@ -45,13 +39,15 @@ public:
 	void SetLaserFilterInput(float input);
 
 private:
+	class DSP* m_InitDSP(LaserEffectType type);
+	void m_CleanupDSP(class DSP*& ptr);
 	void m_SetLaserEffectParameter(float input);
-
+	AudioStream m_music;
 	bool m_paused = false;
-	bool m_fxTrackActive = false;
 
 	float m_lastLaserInput;
 	LaserEffectType m_laserEffectType = LaserEffectType::PeakingFilter;
+	class DSP* m_laserDSP;
 
 	uint32 m_buttonEffectParams[2] = { 0 };
 	EffectType m_buttonEffectTypes[2] = { EffectType::None };

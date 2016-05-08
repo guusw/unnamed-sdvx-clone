@@ -92,7 +92,7 @@ void File::SeekReverse(size_t pos)
 	assert(m_impl);
 	LARGE_INTEGER newPos;
 	LARGE_INTEGER tpos = { 0 };
-	tpos.QuadPart = pos;
+	tpos.QuadPart = GetSize() - pos;
 	BOOL ok = SetFilePointerEx(m_impl->handle, tpos, &newPos, 2);
 	assert(ok);
 }

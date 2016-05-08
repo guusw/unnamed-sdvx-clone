@@ -6,6 +6,8 @@
 	No vtable for smaller memory footprint
 */
 #pragma once
+// For effect type enum
+#include "AudioEffects.hpp"
 
 // Time unit used for all objects
 // this is the offset from the audio file beginning in ms for timing points
@@ -23,7 +25,17 @@ enum class ObjectType : uint8
 	Invalid = 0,
 	Single, // Either normal or FX button
 	Hold, // Either normal or FX button but with a duration
-	Laser // A laser segment
+	Laser, // A laser segment
+	Event // Event object
+};
+
+// The key parameter for event objects
+enum class EventKey : uint8
+{
+	SlamVolume, // Float
+	LaserEffectType, // uint8
+	LaserEffectMix, // Float
+	TrackRollBehaviour, // uint8
 };
 
 // Common data for all object types
@@ -79,7 +91,9 @@ struct ObjectTypeData_Hold : public ObjectTypeData_Button
 	// Used for hold notes, 0 is a normal note
 	MapTime duration = 0;
 	// The sound effect on the note
-	uint8 effectType = 0;
+	EffectType effectType = EffectType::None;
+	// The parameter for effects that have it
+	EffectParam effectParam = 0;
 
 	static const ObjectType staticType = ObjectType::Hold;
 };
@@ -107,6 +121,24 @@ struct ObjectTypeData_Laser
 	static const uint8 flag_Extended = 0x2;
 };
 
+// An event segment, these set various settings at a given point, such as an effect volume, the roll behaviour of the track, etc.
+struct ObjectTypeData_Event
+{
+	// The key value for what value this event is setting
+	EventKey key;
+
+	// Always 32 bits of data, but the one used depends on the key
+	union 
+	{
+		float floatVal;
+		int32 intVal;
+		uint8 byteVal;
+		LaserEffectType effectVal;
+	};
+
+	static const ObjectType staticType = ObjectType::Event;
+};
+
 // Object state with union data member
 struct MultiObjectState
 {
@@ -121,6 +153,7 @@ struct MultiObjectState
 		ObjectTypeData_Button button;
 		ObjectTypeData_Hold hold;
 		ObjectTypeData_Laser laser;
+		ObjectTypeData_Event event;
 	};
 
 	// Implicit down-cast
@@ -132,6 +165,7 @@ typedef TObjectState<void> ObjectState;
 typedef TObjectState<ObjectTypeData_Button> ButtonObjectState;
 typedef TObjectState<ObjectTypeData_Hold> HoldObjectState;
 typedef TObjectState<ObjectTypeData_Laser> LaserObjectState;
+typedef TObjectState<ObjectTypeData_Event> EventObjectState;
 
 // Map timing point
 struct TimingPoint

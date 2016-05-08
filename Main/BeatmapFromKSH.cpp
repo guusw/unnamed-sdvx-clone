@@ -5,14 +5,14 @@
 // Temporary object to keep track if a button is a hold button
 struct TempButtonState
 {
-	TempButtonState(MapTime startTime, uint32 effectType)
-		: startTime(startTime), effectType(effectType)
+	TempButtonState(MapTime startTime)
+		: startTime(startTime)
 	{
 	}
 	MapTime startTime;
 	uint32 numTicks = 0;
-	uint32 effectType = 0;
-	uint32 effectParams = 0;
+	EffectType effectType = EffectType::None;
+	EffectParam effectParams = 0;
 	// If using the smalles grid to indicate hold note duration
 	bool fineSnap = false;
 };
@@ -89,6 +89,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 	// Laser segment states
 	TempLaserState* laserStates[2] = { nullptr };
 
+	EffectParam effectParams[2] = { 0 };
 	float laserRanges[2] = { 1.0f, 1.0f };
 
 	for(KShootMap::TickIterator it(kshootMap); it; ++it)
@@ -148,6 +149,48 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 			{
 				laserRanges[1] = 2.0f;
 			}
+			else if(p.first == "fx-l_param1")
+			{
+				effectParams[0] = (EffectParam)atol(*p.second);
+			}
+			else if(p.first == "fx-r_param1")
+			{
+				effectParams[1] = (EffectParam)atol(*p.second);
+			}
+			else if(p.first == "filtertype")
+			{
+				// Inser filter type change event
+				LaserEffectType type = LaserEffectType::None;
+				if(p.second == "hpf1")
+				{
+					type = LaserEffectType::HighPassFilter;
+				}
+				else if(p.second == "lpf1")
+				{
+					type = LaserEffectType::LowPassFilter;
+				}
+				else if(p.second == "fx;bitc")
+				{
+					type = LaserEffectType::Bitcrush;
+				}
+				else if(p.second == "peak")
+				{
+					type = LaserEffectType::PeakingFilter;
+				}
+				EventObjectState* evt = new EventObjectState();
+				evt->key = EventKey::LaserEffectType;
+				evt->effectVal = type;
+				m_objectStates.Add(*evt);
+			}
+			else if(p.first == "pfiltergain")
+			{
+				// Inser filter type change event
+				float gain = (float)atol(*p.second) / 100.0f;
+				EventObjectState* evt = new EventObjectState();
+				evt->key = EventKey::LaserEffectMix;
+				evt->floatVal = gain;
+				m_objectStates.Add(*evt);
+			}
 		}
 
 		// Set button states
@@ -164,7 +207,8 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 					obj->time = state->startTime;
 					obj->index = i;
 					obj->duration = mapTime - state->startTime;
-					obj->effectType = (uint8)state->effectType;
+					obj->effectType = state->effectType;
+					obj->effectParam = state->effectParams;
 					m_objectStates.Add(*obj);
 				}
 				else
@@ -187,11 +231,17 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 				{
 					CreateButton();
 				}
+
+				if(i >= 4)
+				{
+					// Unset effect parameters
+					effectParams[i-4] = 0;
+				}
 			}
 			else if(!state)
 			{
 				// Create new hold state
-				state = new TempButtonState(mapTime, (uint32)c);
+				state = new TempButtonState(mapTime);
 				uint32 div = (uint32)block.ticks.size();
 
 				if(i < 4)
@@ -203,6 +253,51 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 				{
 					// Hold are always on a high enough snap to make suere they are seperate when needed
 					state->fineSnap = true;
+
+					// Set effect
+					if(c == 'B')
+					{
+						state->effectType = EffectType::Bitcrush;
+						state->effectParams = effectParams[i];
+					}
+					else if(c >= 'G' && c <= 'L') // Gate 4/8/16/32/12/24
+					{
+						state->effectType = EffectType::Gate;
+						EffectParam paramMap[] = {
+							4, 8, 16, 32, 12, 24
+						};
+						state->effectParams = paramMap[c - 'G'];
+					}
+					else if(c >= 'S' && c <= 'W') // Retrigger 8/16/32/12/24
+					{
+						state->effectType = EffectType::Gate;
+						EffectParam paramMap[] = {
+							8, 16, 32, 12, 24
+						};
+						state->effectParams = paramMap[c - 'S'];
+					}
+					else if(c == 'Q')
+					{
+						state->effectType = EffectType::Phaser;
+					}
+					else if(c == 'F')
+					{
+						state->effectType = EffectType::Flanger;
+					}
+					else if(c == 'X')
+					{
+						state->effectType = EffectType::Wobble;
+						state->effectParams = 12;
+					}
+					else if(c == 'A')
+					{
+						state->effectType = EffectType::SideChain;
+					}
+					else if(c == 'D')
+					{
+						state->effectType = EffectType::TapeStop;
+						state->effectParams = effectParams[i];
+					}
 				}
 			}
 			else
@@ -213,7 +308,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 					CreateButton();
 
 					// Create new hold state
-					state = new TempButtonState(mapTime, (uint32)c);
+					state = new TempButtonState(mapTime);
 					uint32 div = (uint32)block.ticks.size();
 					
 					if(i < 4)

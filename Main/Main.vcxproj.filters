@@ -144,13 +144,25 @@
     <ClInclude Include="Audio\AudioPlayback.hpp">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="Audio\Output.hpp">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
     <ClInclude Include="Audio\Audio.hpp">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
     <ClInclude Include="Audio\AudioEffects.hpp">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\AudioStream.hpp">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\AudioOutput.hpp">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\AudioBase.hpp">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\Audio_Impl.hpp">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\DSP.hpp">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
   </ItemGroup>
@@ -245,10 +257,19 @@
     <ClCompile Include="Audio\AudioPlayback.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="Audio\Output.cpp">
+    <ClCompile Include="Audio\Audio.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="Audio\Audio.cpp">
+    <ClCompile Include="Audio\AudioStream.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\AudioOutput.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\AudioBase.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\DSP.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
   </ItemGroup>

@@ -3,11 +3,12 @@
 #include "Shared/Unique.hpp"
 #include "Shared/File.hpp"
 
-class FileStreamBase : public BinaryStream, Unique
+class FileStreamBase : public BinaryStream
 {
 protected:
-	File& m_file;
+	File* m_file = nullptr;
 public:
+	FileStreamBase()= default;
 	FileStreamBase(File& file, bool isReading);
 	virtual void Seek(size_t pos);
 	virtual size_t Tell() const;
@@ -19,14 +20,16 @@ public:
 class FileReader : public FileStreamBase
 {
 public:
+	FileReader() = default;
 	FileReader(File& file);
-	virtual void Serialize(void* data, size_t len);
+	virtual size_t Serialize(void* data, size_t len);
 };
 
 /* Stream that writes to a buffer */
 class FileWriter : public FileStreamBase
 {
 public:
+	FileWriter() = default;
 	FileWriter(File& file);
-	virtual void Serialize(void* data, size_t len);
+	virtual size_t Serialize(void* data, size_t len);
 };

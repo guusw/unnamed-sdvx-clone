@@ -28,7 +28,7 @@ void BeatmapPlayback::Update(MapTime newTime)
 	if(newTime < m_playbackTime)
 	{
 		// Don't allow backtracking
-		Logf("New time was before last time %ull -> %ull", Logger::Warning, m_playbackTime, newTime);
+		//Logf("New time was before last time %ull -> %ull", Logger::Warning, m_playbackTime, newTime);
 		return;
 	}
 

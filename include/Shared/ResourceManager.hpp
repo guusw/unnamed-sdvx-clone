@@ -55,7 +55,7 @@ public:
 		}
 		if(numCleanedUp > 0)
 		{
-			Logf("Cleaned up %d resource(s) of %s", Logger::Info, numCleanedUp, Utility::TypeInfo<T>::name);
+			//Logf("Cleaned up %d resource(s) of %s", Logger::Info, numCleanedUp, Utility::TypeInfo<T>::name);
 		}
 	}
 	virtual void ReleaseAll()

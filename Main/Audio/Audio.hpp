@@ -1,4 +1,5 @@
 #pragma once
+#include "AudioStream.hpp"
 
 extern class Audio* g_audio;
 
@@ -9,6 +10,12 @@ public:
 	~Audio();
 	bool Init(class Window& window);
 	void SetGlobalVolume(float vol);
+
+	// Opens a stream at location
+	AudioStream CreateStream(const String& path);
+
+	// Private
+	class Audio_Impl* GetImpl();
 
 	int64 audioLatency;
 

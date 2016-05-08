@@ -172,7 +172,7 @@ public:
 			}
 		}
 
-delete[](uint8*)input;
+		delete[](uint8*)input;
 	}
 
 	/* Window show hide, positioning, etc.*/
