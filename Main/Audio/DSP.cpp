@@ -232,3 +232,15 @@ void RetriggerDSP::Process(float*& out, uint32 numSamples)
 		}
 	}
 }
+
+void WobbleDSP::Process(float*& out, uint32 numSamples)
+{
+	float f = 1- abs(cos(Math::pi * ((float)m_currentSample / (float)delay)));
+	float freq = 50.0f + f * audio->GetSampleRate() * 0.2f;
+	SetLowPass(1.5f, freq);
+
+	BQFDSP::Process(out, numSamples);
+
+	m_currentSample += numSamples;
+	m_currentSample %= delay;
+}

@@ -5,9 +5,8 @@
 
 DSP::~DSP()
 {
-	if(audioBase)
-		audioBase->RemoveDSP(this);
-	audioBase = nullptr;
+	// Make sure this is removed from parent
+	assert(!audioBase);
 }
 
 AudioBase::~AudioBase()
@@ -15,7 +14,6 @@ AudioBase::~AudioBase()
 	// Check this to make sure the audio is not being destroyed while it is still registered
 	assert(!audio);
 	assert(DSPs.empty());
-	
 }
 void AudioBase::ProcessDSPs(float*& out, uint32 numSamples)
 {

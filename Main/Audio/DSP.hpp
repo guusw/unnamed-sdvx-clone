@@ -101,3 +101,12 @@ private:
 	uint32 m_loops = 0;
 	uint32 m_currentSample = 0;
 };
+
+class WobbleDSP : public BQFDSP
+{
+public:
+	uint32 delay;
+	virtual void Process(float*& out, uint32 numSamples);
+private:
+	uint32 m_currentSample = 0;
+};

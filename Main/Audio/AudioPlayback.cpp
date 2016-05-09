@@ -81,11 +81,13 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 	DSP*& dsp = m_buttonDSPs[index];
 	switch(object->effectType)
 	{
-	default:
 	case EffectType::Bitcrush:
-		dsp = new BitCrusherDSP();
-		((BitCrusherDSP*)dsp)->period = object->effectParam;
+	{
+		BitCrusherDSP* bc = new BitCrusherDSP();
+		bc->period = object->effectParam;
+		dsp = bc;
 		break;
+	}
 	case EffectType::Gate:
 	{
 		GateDSP* gate = new GateDSP();
@@ -111,6 +113,16 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 		dsp = re;
 		break;
 	}
+	case EffectType::Wobble:
+	{
+		WobbleDSP* wb = new WobbleDSP();
+		double delay = (barDelay / object->effectParam) / 1000.0;
+		wb->delay = (uint32)(delay * g_audio->GetSampleRate());
+		dsp = wb;
+		break;
+	}
+	default:
+		break;
 	}
 
 	if(dsp)
@@ -164,19 +176,22 @@ DSP* AudioPlayback::m_InitDSP(LaserEffectType type)
 	DSP* ret = nullptr;
 	switch(type)
 	{
-	default:
 	case LaserEffectType::Bitcrush:
 		ret = new BitCrusherDSP();
 		((BitCrusherDSP*)ret)->mix = 0.85f * m_laserEffectMix;
 		break;
 	case LaserEffectType::PeakingFilter:
-	case LaserEffectType::HighPassFilter:
 	case LaserEffectType::LowPassFilter:
+	case LaserEffectType::HighPassFilter:
 		ret = new BQFDSP();
 		break;
 	}
-	ret->priority = 0;
-	m_music->AddDSP(ret);
+
+	if(ret)
+	{
+		ret->priority = 0;
+		m_music->AddDSP(ret);
+	}
 
 	return ret;
 }
@@ -184,6 +199,7 @@ void AudioPlayback::m_CleanupDSP(DSP*& ptr)
 {
 	if(ptr)
 	{
+		m_music->RemoveDSP(ptr);
 		delete ptr;
 		ptr = nullptr;
 	}
@@ -192,9 +208,10 @@ void AudioPlayback::m_CleanupDSP(DSP*& ptr)
 void AudioPlayback::m_SetLaserEffectParameter(float input)
 {
 	assert(input >= 0.0f && input <= 1.0f);
+	assert(m_laserDSP);
+
 	switch(m_laserEffectType)
 	{
-	default:
 	case LaserEffectType::Bitcrush:
 	{
 		((BitCrusherDSP*)m_laserDSP)->period = (uint32)(input * (64 * m_laserEffectMix));
