@@ -58,6 +58,10 @@ void BeatmapPlayback::Update(MapTime newTime)
 		for(auto it = objStart; it < objEnd; it++)
 		{
 			MultiObjectState* obj = **it;
+			if(obj->type == ObjectType::Hold || obj->type == ObjectType::Laser)
+			{
+				m_holdObjects.Add(*obj);
+			}
 			m_hittableObjects.Add(*it);
 			OnObjectEntered.Call(*it);
 		}
@@ -74,6 +78,7 @@ void BeatmapPlayback::Update(MapTime newTime)
 			if((obj->hold.duration + obj->time) < objectPassTime)
 			{
 				OnObjectLeaved.Call(*it);
+				m_holdObjects.erase(*it);
 				it = m_hittableObjects.erase(it);
 				continue;
 			}
@@ -83,6 +88,7 @@ void BeatmapPlayback::Update(MapTime newTime)
 			if((obj->laser.duration + obj->time) < objectPassTime)
 			{
 				OnObjectLeaved.Call(*it);
+				m_holdObjects.erase(*it);
 				it = m_hittableObjects.erase(it);
 				continue;
 			}
@@ -106,24 +112,39 @@ Set<ObjectState*>& BeatmapPlayback::GetHittableObjects()
 }
 Vector<ObjectState*> BeatmapPlayback::GetObjectsInRange(MapTime range)
 {
+	static const uint32 earlyVisiblity = 200;
 	const TimingPoint& tp = GetCurrentTimingPoint();
 	MapTime end = m_playbackTime + range;
+	MapTime begin = m_playbackTime - earlyVisiblity;
 	Vector<ObjectState*> ret;
 
-	// Always add hold objects
-	for(auto& ho : m_hittableObjects)
+	// Iterator
+	ObjectState** obj = m_currentObj;
+
+	// Offset the current object pointer to before the current time value
+	while(obj != &m_objects.front())
 	{
-		ret.Add(ho);
+		// End time of object at -1 from current pointer
+		MapTime objEnd = obj[-1]->time;
+
+		if(objEnd < begin)
+			break;
+		obj -= 1;
+	}
+
+	// Add hold objects
+	for(auto& ho : m_holdObjects)
+	{
+		ret.AddUnique(ho);
 	}
 
 	// Return all objects that lie after the currently queued object and fall within the given range
-	ObjectState** obj = m_currentObj;
 	while(!IsEndObject(obj))
 	{
 		if((*obj)->time > end)
 			break; // No more objects
 
-		ret.Add(*obj);
+		ret.AddUnique(*obj);
 		obj += 1; // Next
 	}
 

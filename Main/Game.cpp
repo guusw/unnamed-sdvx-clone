@@ -209,7 +209,7 @@ public:
 			rq.Draw(textTransform, guiQuad, guiColorMaterial, params);
 		}
 	}
-	
+	// Main GUI/HUD Rendering loop
 	virtual void RenderHUD(float DeltaTime)
 	{
 		RenderState guiRs;
@@ -235,7 +235,7 @@ public:
 		float currentBPM = (float)(60000.0 / tp.beatDuration);
 		textPos.y += RenderText(guiRq, Utility::Sprintf("BPM: %.1f", currentBPM), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Time Signature: %d/4", tp.measure), textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("Laser input: [L:%f] [R:%f]", m_scoring.laserInput[0], m_scoring.laserInput[1]), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("Laser Filter Input: %f (x%f)", m_scoring.GetLaserOutput(), 1.0f), textPos).y;
 		for(uint32 i = 0; i < 2; i++)
 		{
 			if(m_scoring.activeLaserObjects[i])

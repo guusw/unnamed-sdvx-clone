@@ -22,6 +22,9 @@ public:
 	mutex lock;
 	Vector<AudioBase*> itemsToRender;
 	Vector<DSP*> globalDSPs;
+
+	class LimiterDSP* limiter = nullptr;
+
 	thread audioThread;
 	bool runAudioThread = false;
 	AudioOutput* output = nullptr;

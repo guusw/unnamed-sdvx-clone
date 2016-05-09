@@ -22,17 +22,30 @@ public:
 	float a1 = 0.0f;
 	float a2 = 0.0f;
 
-	// Delayed samples
-	static const uint32 order = 2;
-
-	// FIR Delay buffers
-	float zb[2][order];
-	// IIR Delay buffers
-	float za[2][order];
+	float mix = 1.0f;
 
 	virtual void Process(float*& out, uint32 numSamples);
 
 	// Sets the filter to behave as a peaking filter
 	void SetPeaking(float bandWidth, float freq, float gain);
 	void SetBandPass(float bandWidth, float freq);
+
+private:
+	// Delayed samples
+	static const uint32 order = 2;
+	// FIR Delay buffers
+	float zb[2][order];
+	// IIR Delay buffers
+	float za[2][order];
+};
+
+// Basic limiter
+class LimiterDSP : public DSP
+{
+public:
+	float releaseTime = 0.6f;
+	virtual void Process(float*& out, uint32 numSamples);
+private:
+	float m_currentMaxVolume = 1.0f;
+	float m_currentReleaseTimer = releaseTime;
 };

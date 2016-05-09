@@ -270,7 +270,7 @@ void Track::DrawObjectState(RenderQueue& rq, class BeatmapPlayback& playback, Ob
 		buttonTransform *= Transform::Scale({ 1.0f, scale, 1.0f });
 		rq.Draw(buttonTransform, mesh, mat, params);
 	}
-	else // Draw laser
+	else if(obj->type == ObjectType::Laser) // Draw laser
 	{
 		LaserObjectState* laser = (LaserObjectState*)obj;
 

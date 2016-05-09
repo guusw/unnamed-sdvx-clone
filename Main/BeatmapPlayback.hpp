@@ -81,6 +81,8 @@ private:
 
 	// Contains all the objects that are in the current valid timing area
 	Set<ObjectState*> m_hittableObjects;
+	// Hold objects to render even when their start time is not in the current visibility range
+	Set<ObjectState*> m_holdObjects;
 
 	float m_barTime;
 

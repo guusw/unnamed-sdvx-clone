@@ -54,7 +54,8 @@ public:
 	// Get laser roll values
 	// these range from -1 to 1, 0 being the center, and 1 the outer extreme
 	float GetLaserRollOutput(uint32 index);
-	// this combines the 2 active lasers to always generate a 0-1 value
+	// This combines the 2 active lasers to always generate a 0-1 value
+	// This is the value that goes towards the filter on the music controlled by the lasers
 	float GetLaserOutput();
 
 	Delegate<uint32, MapTime> OnButtonScore;
@@ -105,6 +106,10 @@ public:
 	MapTime lastHoldDuration[6] = { 0 };
 
 private:
+	// Sets the new interpolation values for laser output
+	void m_UpdateLaserOutput(float deltaTime, bool interpolate = true);
+	// Laser output without interpolation
+	float m_GetLaserOutputRaw();
 	void m_RegisterHit(ObjectState* obj);
 	void m_OnObjectEntered(ObjectState* obj);
 	void m_OnObjectLeaved(ObjectState* obj);
@@ -116,9 +121,11 @@ private:
 	uint32 m_holdTickCounter;
 	MapTime m_lastTime;
 
-	// Used to calculate average hit delay
-	int64 m_hitNotesDelta;
-	int64 m_numNotesHit;
+	// Lerp for laser output
+	float m_laserOutputSource = 0.0f;
+	float m_laserOutputTarget = 0.0f;
+	float m_timeSinceOutputSet = 0.0f;
+
 	class BeatmapPlayback* m_playback;
 };
 

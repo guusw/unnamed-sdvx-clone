@@ -16,7 +16,7 @@
 static uint32_t freq = 44100;
 static uint32_t channels = 2;
 static uint32_t numBuffers = 2;
-static uint32_t bufferLength = 50;
+static uint32_t bufferLength = 20;
 static REFERENCE_TIME bufferDuration = (REFERENCE_TIME)(bufferLength * REFTIMES_PER_MILLISEC);
 
 AudioOutput::AudioOutput()

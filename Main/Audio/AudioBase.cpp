@@ -34,11 +34,13 @@ void AudioBase::AddDSP(DSP* dsp)
 		return l->priority < r->priority;
 	});
 	dsp->audioBase = this;
+	dsp->audio = audio;
 }
 void AudioBase::RemoveDSP(DSP* dsp)
 {
 	DSPs.Remove(dsp);
 	dsp->audioBase = nullptr;
+	dsp->audio = nullptr;
 }
 
 void AudioBase::Deregister()

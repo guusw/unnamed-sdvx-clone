@@ -116,10 +116,12 @@ void AudioPlayback::m_SetLaserEffectParameter(float input)
 	switch(m_laserEffectType)
 	{
 	default:
-		float gain = 10.0f;
-		if(input < 0.2f) // Fade in
-			gain = input / 0.2f * gain;
-		((BQFDSP*)m_laserDSP)->SetPeaking(3.0f, 100.0f + input * 8000.0f, gain);
+		float gain = 17.0f;
+		if(input < 0.1f) // Fade in
+			gain = (input / 0.1f) * gain;
+		input = pow(input, 2); // Lean towards more bass
+		float width = 1.0f + 2.0f * input;
+		((BQFDSP*)m_laserDSP)->SetPeaking(width, 10.0f + input * 8000.0f, gain);
 		break;
 	}
 }

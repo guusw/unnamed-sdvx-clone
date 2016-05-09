@@ -70,6 +70,9 @@ template<> struct TObjectState<void> : public ObjectTypeData_Base
 {
 	TObjectState() : ObjectTypeData_Base(ObjectType::Invalid) {};
 
+	// Sort object states by their time and other properties
+	static void SortArray(Vector<TObjectState<void>*>& arr);
+
 	// Always allow casting from typeless object to Union State object
 	operator MultiObjectState*() { return (MultiObjectState*)this; }
 	operator const MultiObjectState*() const { return (MultiObjectState*)this; }

@@ -170,3 +170,18 @@ bool Beatmap::m_Serialize(BinaryStream& stream)
 	return true;
 }
 
+// Object array sorting
+void TObjectState<void>::SortArray(Vector<TObjectState<void>*>& arr)
+{
+	arr.Sort([](const ObjectState* l, const ObjectState* r)
+	{
+		if(l->time == r->time)
+		{
+			// Sort laser slams to come first
+			bool ls = l->type == ObjectType::Laser && (((LaserObjectState*)l)->flags & LaserObjectState::flag_Instant);
+			bool rs = r->type == ObjectType::Laser && (((LaserObjectState*)r)->flags & LaserObjectState::flag_Instant);
+			return ls > rs;
+		}
+		return l->time < r->time;
+	});
+}

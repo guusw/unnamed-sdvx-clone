@@ -11,15 +11,14 @@ public:
 	// Adds a new element and returns it
 	I& Add(const I& obj = T()) { push_back(obj); return back(); };
 	I& AddZeroed() { push_back(I()); memset(&back(), 0, sizeof(I)); return back(); };
-	I& AddUnique(I& obj)
+	void AddUnique(const I& obj)
 	{
 		if(!Contains(obj))
 			Add(obj);
-		return obj;
 	}
 	
 	// Removes the first or all entries of <obj>
-	void Remove(I& obj, bool all = true)
+	void Remove(const I& obj, bool all = true)
 	{
 		for(auto it = begin(); it != end();)
 		{

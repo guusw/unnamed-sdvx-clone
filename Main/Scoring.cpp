@@ -11,8 +11,6 @@ const MapTime Scoring::maxLaserHitTime = 100;
 Scoring::Scoring()
 {
 	currentComboCounter = 0;
-	m_hitNotesDelta = 0;
-	m_numNotesHit = 0;
 	m_holdTickCounter = 0;
 	m_lastTime = 0;
 	laserPositions[0] = 0.0f;
@@ -45,6 +43,7 @@ void Scoring::Tick(float deltaTime)
 
 	Vector<uint32> buttonsToAutoHit;
 
+	// Perform objects in the hit queue
 	for(auto it = objects.begin(); it != objects.end(); it++)
 	{
 		MapTime hitDelta = GetObjectHitDelta(*it);
@@ -116,10 +115,15 @@ void Scoring::Tick(float deltaTime)
 			MapTime endTime = laser->duration + laser->time;
 			MapTime endDelta = time - endTime;
 
-			if(activeLaserObjects[laserIndex] != laser)
+			if(!activeLaserObjects[laserIndex])
 			{
+				// Allow early hit on laser slams
+				MapTime earlyHitWindow = 0;
+				if((laser->flags & LaserObjectState::flag_Instant) != 0)
+					earlyHitWindow = maxLaserHitTime;
+
 				// Laser entered timing window
-				if(time >= mobj->time && endDelta < maxLaserHitTime)
+				if((time + earlyHitWindow) > mobj->time && endDelta < maxLaserHitTime)
 				{
 					// Initialy active
 					laserActive[laserIndex] = true;
@@ -138,6 +142,7 @@ void Scoring::Tick(float deltaTime)
 	}
 
 	// Tick lasers
+	bool interpolateOutput = true;
 	for(uint32 i = 0; i < 2; i++)
 	{
 		LaserObjectState* laser = activeLaserObjects[i];
@@ -173,12 +178,11 @@ void Scoring::Tick(float deltaTime)
 		float laserTargetNew = m_SampleLaserPosition(time, activeLaserObjects[i]);
 		laserTargetPositions[i] = laserTargetNew;
 
-		// Delta from current cursor to laser position
-		//float targetDelta = laserTargetPositions[i] - laserPositions[i];
-		float targetDelta = laser->points[1] - laser->points[0];
+		// The direction in which the laser segment is moving
+		float laserDelta = laser->points[1] - laser->points[0];
 
 		// Whenether the user is holding the right direction
-		bool isBeingControlled = Math::Sign(targetDelta) == Math::Sign(laserInput[i]) || autoplay;
+		bool isBeingControlled = Math::Sign(laserDelta) == Math::Sign(laserInput[i]) || autoplay;
 
 		MapTime hitDelta = time - laser->time;
 		MapTime endTime = laser->duration + laser->time;
@@ -193,9 +197,10 @@ void Scoring::Tick(float deltaTime)
 				currentMaxScore++;
 				m_AddCombo();
 				OnLaserSlamHit.Call(i);
-				laserPositions[i] = laserTargetNew;
+				laserPositions[i] = laser->points[1];
 				objects.erase(*laser);
 				AdvanceLaser();
+				interpolateOutput = false; // Instant filter changes
 			}
 			else if(hitDelta > maxLaserHitTime)
 			{
@@ -217,7 +222,7 @@ void Scoring::Tick(float deltaTime)
 			// Handle miss time
 			if(!isBeingControlled)
 			{
-				if(targetDelta != 0.0f)
+				if(laserDelta != 0.0f)
 					laserMissDuration[i] += delta;
 			}
 			else
@@ -257,55 +262,26 @@ void Scoring::Tick(float deltaTime)
 				laserHoldObjects[i] = nullptr;
 				laserActive[i] = false;
 			}
+
 		}
 
-		//if(delta > maxLaserHitTime)
-		//{
-		//
-		//}
-
-		//const float laserTreshold = 0.05f;
-		//if(!queuedLaserObjects[i])
-		//{
-		//	if(delta > maxEarlyHitTime)
-		//	{
-		//		// Laser combo break
-		//		currentComboCounter = 0;
-		//	}
-		//	else
-		//	{
-		//		// Snap on
-		//		if(abs(targetDelta) < laserTreshold)
-		//		{
-		//			queuedLaserObjects[i] = laser;
-		//		}
-		//	}
-		//}
-		//else
-		//{
-		//	if(laserInput[i] != 0.0f && Math::Sign(targetDelta) == Math::Sign(laserInput))
-		//	{
-		//		laserPositions[i] = laserTargetPositions[i];
-		//	}
-		//	if(targetDelta > laserTreshold)
-		//	{
-		//		// Laser combo break
-		//		currentComboCounter = 0;
-		//	}
-		//}
-
-		// Check if laser slam was hit
-		//if((laser->flags & LaserObjectState::flag_Instant) != 0 && !laserSlamHit[i])
-		//{
-		//	OnLaserSlamHit.Call(i);
-		//	laserSlamHit[i] = true;
-		//}
-
-		if(autoplay)
+		// Advance to next slam segment if possible (Early hit)
+		if(laser->next && (laser->next->flags & LaserObjectState::flag_Instant) != 0)
 		{
-			laserPositions[i] = laserTargetPositions[i];
+			float nextDir = laser->next->points[1] - laser->next->points[0];
+			if(Math::Sign(nextDir) != laserDelta)
+			{
+				MapTime delta = time - laser->next->time;
+				if(nextDir == Math::Sign(laserInput[i]) && delta > -maxLaserHitTime)
+				{
+					AdvanceLaser();
+				}
+			}
 		}
 	}
+
+	// Update the interpolation of laser output values
+	m_UpdateLaserOutput(deltaTime, interpolateOutput);
 }
 ScoreHitRating Scoring::GetHitRatingFromDelta(MapTime delta)
 {
@@ -383,61 +359,6 @@ void Scoring::OnButtonReleased(uint32 buttonCode)
 		lastHoldDuration[buttonCode] = 0;
 	}
 }
-bool Scoring::IsActive(ObjectState* object) const
-{
-	MultiObjectState* mobj = *object;
-	if(mobj->type == ObjectType::Hold)
-	{
-		if(activeHoldObjects[mobj->hold.index] == (HoldObjectState*)object)
-			return true;
-	}
-	else if(mobj->type == ObjectType::Laser)
-	{
-		if(activeLaserObjects[mobj->laser.index])
-		{
-			return laserActive[mobj->laser.index];
-		}
-	}
-	return false;
-}
-float Scoring::GetLaserRollOutput(uint32 index)
-{
-	assert(index >= 0 && index <= 1);
-	if(activeLaserObjects[index])
-	{
-		if(index == 0)
-			return -laserTargetPositions[index];
-		if(index == 1)
-			return (1.0f - laserTargetPositions[index]);
-	}
-	return 0.0f;
-}
-float Scoring::GetLaserOutput()
-{
-	float val = 0.0f;
-	float max = 0.0f;
-	for(int32 i = 0; i < 2; i++)
-	{
-		if(activeLaserObjects[i])
-		{
-			float actual = laserTargetPositions[i];
-			// Undo laser extension
-			if((activeLaserObjects[i]->flags & LaserObjectState::flag_Extended) != 0)
-			{
-				actual += 0.5f;
-				actual *= 0.5f;
-			}
-			if(i == 1) // Second laser goes the other way
-				actual = 1.0f - actual;
-			val += actual;
-			max += 1.0f;
-		}
-	}
-	if(max == 0.0f)
-		return 0.0f;
-	return val / max;
-}
-
 void Scoring::m_RegisterHit(ObjectState* obj)
 {
 	MultiObjectState* mobj = *obj;
@@ -472,7 +393,6 @@ MapTime Scoring::GetObjectHitDelta(ObjectState* obj)
 	assert(m_playback);
 	return (m_playback->GetLastTime() - obj->time);
 }
-
 void Scoring::m_AddCombo(uint32 amount)
 {
 	OnComboChanged.Call(currentComboCounter + amount);
@@ -484,6 +404,75 @@ void Scoring::m_ResetCombo()
 	currentComboCounter = 0;
 }
 
+bool Scoring::IsActive(ObjectState* object) const
+{
+	MultiObjectState* mobj = *object;
+	if(mobj->type == ObjectType::Hold)
+	{
+		if(activeHoldObjects[mobj->hold.index] == (HoldObjectState*)object)
+			return true;
+	}
+	else if(mobj->type == ObjectType::Laser)
+	{
+		if(activeLaserObjects[mobj->laser.index])
+		{
+			return laserActive[mobj->laser.index];
+		}
+	}
+	return false;
+}
+float Scoring::GetLaserRollOutput(uint32 index)
+{
+	assert(index >= 0 && index <= 1);
+	if(activeLaserObjects[index])
+	{
+		if(index == 0)
+			return -laserTargetPositions[index];
+		if(index == 1)
+			return (1.0f - laserTargetPositions[index]);
+	}
+	return 0.0f;
+}
+
+static const float laserOutputInterpolationDuration = 0.2f;
+float Scoring::GetLaserOutput()
+{
+	float f = Math::Min(1.0f, m_timeSinceOutputSet / laserOutputInterpolationDuration);
+	return m_laserOutputSource + (m_laserOutputTarget - m_laserOutputSource) * f;
+}
+void Scoring::m_UpdateLaserOutput(float deltaTime, bool interpolate)
+{
+	m_timeSinceOutputSet += deltaTime;
+	float v = m_GetLaserOutputRaw();
+	float c = GetLaserOutput();
+	if(v != c)
+	{
+		m_laserOutputTarget = v;
+		m_laserOutputSource = c;
+		m_timeSinceOutputSet = interpolate ? 0.0f : laserOutputInterpolationDuration;
+	}
+}
+float Scoring::m_GetLaserOutputRaw()
+{
+	float val = 0.0f;
+	for(int32 i = 0; i < 2; i++)
+	{
+		if(activeLaserObjects[i] && laserActive[i])
+		{
+			float actual = laserTargetPositions[i];
+			// Undo laser extension
+			if((activeLaserObjects[i]->flags & LaserObjectState::flag_Extended) != 0)
+			{
+				actual += 0.5f;
+				actual *= 0.5f;
+			}
+			if(i == 1) // Second laser goes the other way
+				actual = 1.0f - actual;
+			val = Math::Max(actual, val);
+		}
+	}
+	return val;
+}
 float Scoring::m_SampleLaserPosition(MapTime time, LaserObjectState* laser)
 {
 	time -= laser->time;

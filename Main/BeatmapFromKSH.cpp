@@ -178,6 +178,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 					type = LaserEffectType::PeakingFilter;
 				}
 				EventObjectState* evt = new EventObjectState();
+				evt->time = mapTime;
 				evt->key = EventKey::LaserEffectType;
 				evt->effectVal = type;
 				m_objectStates.Add(*evt);
@@ -187,6 +188,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 				// Inser filter type change event
 				float gain = (float)atol(*p.second) / 100.0f;
 				EventObjectState* evt = new EventObjectState();
+				evt->time = mapTime;
 				evt->key = EventKey::LaserEffectMix;
 				evt->floatVal = gain;
 				m_objectStates.Add(*evt);
@@ -440,9 +442,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 	}
 
 	// Re-sort collection to fix some inconsistencies caused by corrections after laser slams
-	m_objectStates.Sort([](const ObjectState* l, const ObjectState* r) {
-		return l->time < r->time;
-	});
+	ObjectState::SortArray(m_objectStates);
 
 	return true;
 }

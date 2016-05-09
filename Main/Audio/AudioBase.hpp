@@ -9,6 +9,7 @@ public:
 
 	uint32 priority = 0;
 	class AudioBase* audioBase = nullptr;
+	class Audio_Impl* audio = nullptr;
 };
 
 class AudioBase

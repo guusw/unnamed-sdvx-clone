@@ -3,6 +3,7 @@
 #include "Window.hpp"
 #include "AudioStream.hpp"
 #include "Audio_Impl.hpp"
+#include "DSP.hpp"
 
 Audio* g_audio = nullptr;
 Audio_Impl impl;
@@ -31,6 +32,7 @@ void Audio_Impl::AudioThread()
 			memset(data, 0, sizeof(float) * 2 * numSamples);
 
 			// Render items
+			lock.lock();
 			for(auto& i : itemsToRender)
 			{
 				memset(tempData, 0, sizeof(float) * (2 * numSamples + guardBand));
@@ -42,11 +44,9 @@ void Audio_Impl::AudioThread()
 				{
 					data[i * 2 + 0] += tempData[i * 2];
 					data[i * 2 + 1] += tempData[i * 2 + 1];
-
-					// Hard limiting
-					data[i * 2 + 0] = Math::Clamp(data[i * 2 + 0], -1.0f, 1.0f);
-					data[i * 2 + 1] = Math::Clamp(data[i * 2 + 1], -1.0f, 1.0f);
 				}
+
+				
 
 #if _DEBUG
 				// Check for memory corruption
@@ -57,17 +57,28 @@ void Audio_Impl::AudioThread()
 				}
 #endif
 			}
+			lock.unlock();
+
+			// Process global DSPs
+			for(auto dsp : globalDSPs)
+			{
+				dsp->Process(data, numSamples);
+			}
 
 			f += adv * numSamples;
 			output->End(numSamples);
 
 			delete[] tempData;
-			Sleep(sleepDuration);
 		}
+		Sleep(sleepDuration);
 	}
 }
 void Audio_Impl::Start()
 {
+	limiter = new LimiterDSP();
+	limiter->audio = this;
+	globalDSPs.Add(limiter);
+
 	impl.runAudioThread = true;
 	impl.audioThread = thread(&Audio_Impl::AudioThread, &impl);
 }
@@ -77,6 +88,9 @@ void Audio_Impl::Stop()
 	runAudioThread = false;
 	if(audioThread.joinable())
 		audioThread.join();
+
+	delete limiter;
+	globalDSPs.Remove(limiter);
 }
 void Audio_Impl::Register(AudioBase* audio)
 {
