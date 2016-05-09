@@ -165,6 +165,9 @@
     <ClInclude Include="Audio\DSP.hpp">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
+    <ClInclude Include="Audio\Sample.hpp">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -270,6 +273,9 @@
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
     <ClCompile Include="Audio\DSP.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\Sample.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
   </ItemGroup>

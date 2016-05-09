@@ -15,12 +15,11 @@ public:
 	// Call this after you're done filling the output buffer
 	void End(uint32_t numSamples);
 
-	// Returns the buffer length in milliseconds
-	uint32_t GetBufferLength() const;
 	uint32_t GetNumChannels() const;
 	uint32_t GetSampleRate() const;
-	double GetSecondsPerSample() const;
 
+	// The actual length of the buffer in seconds
+	double GetBufferLength() const;
 
 private:
 	AudioOutput& operator=(const AudioOutput&) = delete;
@@ -34,4 +33,6 @@ private:
 
 	// The output wave buffer
 	uint32_t m_numBufferFrames;
+
+	double m_bufferLength;
 };

@@ -7,6 +7,7 @@ DSP::~DSP()
 {
 	if(audioBase)
 		audioBase->RemoveDSP(this);
+	audioBase = nullptr;
 }
 
 AudioBase::~AudioBase()
@@ -25,6 +26,7 @@ void AudioBase::ProcessDSPs(float*& out, uint32 numSamples)
 }
 void AudioBase::AddDSP(DSP* dsp)
 {
+	audio->lock.lock();
 	DSPs.AddUnique(dsp);
 	// Sort by priority
 	DSPs.Sort([](DSP* l, DSP* r)
@@ -35,12 +37,16 @@ void AudioBase::AddDSP(DSP* dsp)
 	});
 	dsp->audioBase = this;
 	dsp->audio = audio;
+	audio->lock.unlock();
 }
 void AudioBase::RemoveDSP(DSP* dsp)
 {
+	audio->lock.lock();
 	DSPs.Remove(dsp);
+	assert(!DSPs.Contains(dsp));
 	dsp->audioBase = nullptr;
 	dsp->audio = nullptr;
+	audio->lock.unlock();
 }
 
 void AudioBase::Deregister()

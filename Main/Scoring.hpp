@@ -50,6 +50,7 @@ public:
 
 	// Check if a hold object or laser is currently being held
 	bool IsActive(ObjectState* object) const;
+	bool IsLaserActive() const;
 
 	// Get laser roll values
 	// these range from -1 to 1, 0 being the center, and 1 the outer extreme

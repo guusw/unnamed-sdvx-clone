@@ -26,6 +26,7 @@
     <ClCompile Include="Audio\AudioStream.cpp" />
     <ClCompile Include="Audio\AudioOutput.cpp" />
     <ClCompile Include="Audio\DSP.cpp" />
+    <ClCompile Include="Audio\Sample.cpp" />
     <ClCompile Include="Background.cpp" />
     <ClCompile Include="Beatmap.cpp" />
     <ClCompile Include="BeatmapFromKSH.cpp" />
@@ -75,6 +76,7 @@
     <ClInclude Include="Audio\AudioOutput.hpp" />
     <ClInclude Include="Audio\Audio_Impl.hpp" />
     <ClInclude Include="Audio\DSP.hpp" />
+    <ClInclude Include="Audio\Sample.hpp" />
     <ClInclude Include="Background.hpp" />
     <ClInclude Include="Beatmap.hpp" />
     <ClInclude Include="BeatmapObjects.hpp" />

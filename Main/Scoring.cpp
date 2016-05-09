@@ -151,6 +151,8 @@ void Scoring::Tick(float deltaTime)
 
 		auto AdvanceLaser = [&]()
 		{
+			// Remove current segment from hittable objects queue
+			objects.erase(*laser);
 			if(laser->next)
 			{
 				activeLaserObjects[i] = laser->next;
@@ -181,16 +183,29 @@ void Scoring::Tick(float deltaTime)
 		// The direction in which the laser segment is moving
 		float laserDelta = laser->points[1] - laser->points[0];
 
-		// Whenether the user is holding the right direction
-		bool isBeingControlled = Math::Sign(laserDelta) == Math::Sign(laserInput[i]) || autoplay;
-
+		// Current section hit timings
 		MapTime hitDelta = time - laser->time;
 		MapTime endTime = laser->duration + laser->time;
 		MapTime endDelta = time - endTime;
 
+		// Autoplay just mimics the wanted direction
+		if(autoplay)
+		{
+			if(!laser->prev && hitDelta < 0)
+				laserInput[i] = 0.0f; // Wait for the right moment
+			else if(laserDelta == 0.0f)
+				laserInput[i] = 0.0f;
+			else
+				laserInput[i] = (laserDelta < 0.0f) ? -1.0f : 1.0f;
+		}
+
+		// Whenether the user is holding the right direction
+		bool isBeingControlled = Math::Sign(laserDelta) == Math::Sign(laserInput[i]);
+
+
 		if((laser->flags & LaserObjectState::flag_Instant) != 0)
 		{
-			if(isBeingControlled)
+			if(isBeingControlled && (!laser->prev || hitDelta > 0))
 			{
 				// Got it
 				currentHitScore++; // 1 Point for laser slams
@@ -198,9 +213,11 @@ void Scoring::Tick(float deltaTime)
 				m_AddCombo();
 				OnLaserSlamHit.Call(i);
 				laserPositions[i] = laser->points[1];
-				objects.erase(*laser);
 				AdvanceLaser();
 				interpolateOutput = false; // Instant filter changes
+
+				// Register statistic
+				hitStats.Add(HitStat(time, hitDelta));
 			}
 			else if(hitDelta > maxLaserHitTime)
 			{
@@ -209,6 +226,9 @@ void Scoring::Tick(float deltaTime)
 				currentMaxScore++; // miss 1 Point for laser slams
 				laserActive[i] = false;
 				AdvanceLaser();
+
+				// Register statistic
+				hitStats.Add(HitStat(time, hitDelta));
 			}
 		}
 		else
@@ -421,6 +441,11 @@ bool Scoring::IsActive(ObjectState* object) const
 	}
 	return false;
 }
+bool Scoring::IsLaserActive() const
+{
+	return laserActive[0] || laserActive[1];
+}
+
 float Scoring::GetLaserRollOutput(uint32 index)
 {
 	assert(index >= 0 && index <= 1);
@@ -465,6 +490,7 @@ float Scoring::m_GetLaserOutputRaw()
 			{
 				actual += 0.5f;
 				actual *= 0.5f;
+				assert(actual >= 0.0f && actual <= 1.0f);
 			}
 			if(i == 1) // Second laser goes the other way
 				actual = 1.0f - actual;

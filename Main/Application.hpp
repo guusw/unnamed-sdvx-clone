@@ -1,6 +1,7 @@
 #pragma once
 #include "Texture.hpp"
 #include "Material.hpp"
+#include "Sample.hpp"
 #include "RenderQueue.hpp"
 #include "RenderState.hpp"
 
@@ -30,6 +31,7 @@ public:
 
 	Texture LoadTexture(const String& name);
 	Material LoadMaterial(const String& name);
+	Sample LoadSample(const String& name);
 
 	float GetAppTime() const { return m_lastUpdateTime; }
 

@@ -51,6 +51,9 @@ class Game_Impl : public Game
 	// Combo gain animation
 	Timer m_comboAnimation;
 
+	Sample m_slamSample;
+	Sample m_clickSamples[2];
+
 public:
 
 	~Game_Impl()
@@ -84,6 +87,9 @@ public:
 			return false;
 
 		if(!InitGameplay())
+			return false;
+
+		if(!InitSFX())
 			return false;
 
 		// Intialize track graphics
@@ -231,6 +237,7 @@ public:
 		textPos.y += RenderText(guiRq, bms.title, textPos).y;
 		textPos.y += RenderText(guiRq, bms.artist, textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("RenderTime: %.2f ms", DeltaTime * 1000.0f), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("Audio Offset: %d ms", g_audio->audioLatency), textPos).y;
 
 		float currentBPM = (float)(60000.0 / tp.beatDuration);
 		textPos.y += RenderText(guiRq, Utility::Sprintf("BPM: %.1f", currentBPM), textPos).y;
@@ -364,6 +371,14 @@ public:
 			//playbackPosition += 5.0f;
 			//BASS_ChannelSetPosition(m_audio, BASS_ChannelSeconds2Bytes(m_audio, playbackPosition), BASS_POS_BYTE);
 		}
+		else if(key == VK_ADD)
+		{
+			g_audio->audioLatency += 1;
+		}
+		else if(key == VK_SUBTRACT)
+		{
+			g_audio->audioLatency -= 1;
+		}
 		else
 		{
 			// Handle button mappings
@@ -430,6 +445,7 @@ public:
 		CameraShake shake(0.2f, 0.5f, 170.0f);
 		shake.amplitude = Vector3(0.02f, 0.01f, 0.0f); // Mainly x-axis
 		m_camera.AddCameraShake(shake);
+		m_slamSample->Play();
 	}
 	void OnButtonHit(uint32 buttonIdx, ObjectState* hitObject)
 	{
@@ -446,7 +462,46 @@ public:
 	{
 		m_comboAnimation.Restart();
 	}
+	void OnEventChanged(EventKey key, EventData data)
+	{
+		if(key == EventKey::LaserEffectType)
+		{
+			m_audioPlayback.SetLaserEffect(data.effectVal);
+		}
+		else if(key == EventKey::LaserEffectMix)
+		{
+			m_audioPlayback.SetLaserEffectMix(data.floatVal);
+		}
+		else if(key == EventKey::TrackRollBehaviour)
+		{
+		}
+		else if(key == EventKey::SlamVolume)
+		{
+			m_slamSample->SetVolume(data.floatVal);
+		}
+	}
+	
+	// These functions register / remove DSP's for the effect buttons
+	// the actual hearability of these is toggled in the tick by wheneter the buttons are held down
+	void OnFXBegin(HoldObjectState* object)
+	{
+		assert(object->index >= 4 && object->index <= 5);
+		m_audioPlayback.SetEffect(object->index - 4, object, m_playback);
+	}
+	void OnFXEnd(HoldObjectState* object)
+	{
+		assert(object->index >= 4 && object->index <= 5);
+		m_audioPlayback.ClearEffect(object->index - 4);
+	}
 
+	// Loads sound effects
+	bool InitSFX()
+	{
+		CheckedLoad(m_slamSample = g_application->LoadSample("laser_slam"));
+		CheckedLoad(m_clickSamples[0] = g_application->LoadSample("click-01"));
+		CheckedLoad(m_clickSamples[1] = g_application->LoadSample("click-02"));
+		return true;
+	}
 	bool InitGameplay()
 	{
 		// Input
@@ -454,8 +509,12 @@ public:
 
 		// Playback and timing
 		m_playback = BeatmapPlayback(*m_beatmap);
+		m_playback.OnEventChanged.Add(this, &Game_Impl::OnEventChanged);
+		m_playback.OnFXBegin.Add(this, &Game_Impl::OnFXBegin);
+		m_playback.OnFXEnd.Add(this, &Game_Impl::OnFXEnd);
 		if(!m_playback.Reset())
 			return false;
+
 		m_scoring.SetPlayback(m_playback);
 		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
 		m_scoring.OnLaserSlamHit.Add(this, &Game_Impl::OnLaserSlamHit);
@@ -494,12 +553,29 @@ public:
 		if(playbackPositionMs < g_audio->audioLatency)
 			playbackPositionMs = 0;
 		else
-			playbackPositionMs += (MapTime)g_audio->audioLatency;
+			playbackPositionMs -= (MapTime)g_audio->audioLatency;
 		if(playbackPositionMs > 0)
 			m_playback.Update(playbackPositionMs);
 
+		MapTime delta = playbackPositionMs - m_lastMapTime;
+		uint32 beatStart = 0;
+		uint32 numBeats = m_playback.CountBeats(m_lastMapTime, delta, beatStart, 1);
+		if(numBeats > 0)
+		{
+			// Click Track
+			uint32 beat = beatStart % m_playback.GetCurrentTimingPoint().measure;
+			if(beat == 0)
+			{
+				m_clickSamples[0]->Play();
+			}
+			else
+			{
+				m_clickSamples[1]->Play();
+			}
+		}
+
 		// Update music filter states
-		m_audioPlayback.SetLaserFilterInput(m_scoring.GetLaserOutput());
+		m_audioPlayback.SetLaserFilterInput(m_scoring.GetLaserOutput(), m_scoring.IsLaserActive());
 		m_audioPlayback.Tick(m_playback, deltaTime);
 
 		// Update scoring

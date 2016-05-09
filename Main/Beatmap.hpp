@@ -19,6 +19,12 @@ struct BeatmapSettings
 	String audioFX;
 	// Path to the jacket image
 	String jacketPath;
+
+	// Initial audio settings
+	float slamVolume = 1.0f;
+	float laserEffectMix = 1.0f;
+	LaserEffectType laserEffectType = LaserEffectType::PeakingFilter;
+
 };
 
 /*

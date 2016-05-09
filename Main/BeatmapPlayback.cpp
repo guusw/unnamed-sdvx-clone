@@ -32,6 +32,15 @@ void BeatmapPlayback::Update(MapTime newTime)
 		return;
 	}
 
+	// Fire initial effect changes
+	if(m_playbackTime == 0)
+	{
+		const BeatmapSettings& settings = m_beatmap->GetMapSettings();
+		OnEventChanged.Call(EventKey::LaserEffectMix, settings.laserEffectMix);
+		OnEventChanged.Call(EventKey::LaserEffectType, settings.laserEffectType);
+		OnEventChanged.Call(EventKey::SlamVolume, settings.slamVolume);
+	}
+
 	// Count bars
 	uint32 beatID = 0;
 	uint32 nBeats = CountBeats(m_playbackTime - delta, delta, beatID);
@@ -58,7 +67,7 @@ void BeatmapPlayback::Update(MapTime newTime)
 		for(auto it = objStart; it < objEnd; it++)
 		{
 			MultiObjectState* obj = **it;
-			if(obj->type == ObjectType::Hold || obj->type == ObjectType::Laser)
+			if(obj->type == ObjectType::Hold || obj->type == ObjectType::Laser || obj->type == ObjectType::Single)
 			{
 				m_holdObjects.Add(*obj);
 			}
@@ -75,12 +84,21 @@ void BeatmapPlayback::Update(MapTime newTime)
 		MultiObjectState* obj = **it;
 		if(obj->type == ObjectType::Hold)
 		{
-			if((obj->hold.duration + obj->time) < objectPassTime)
+			MapTime endTime = obj->hold.duration + obj->time;
+			if(endTime < objectPassTime)
 			{
 				OnObjectLeaved.Call(*it);
-				m_holdObjects.erase(*it);
 				it = m_hittableObjects.erase(it);
 				continue;
+			}
+			if(obj->hold.effectType != EffectType::None && // Hold button with effect
+				obj->time <= m_playbackTime && endTime > m_playbackTime) // Hold button in active range
+			{
+				if(!m_effectObjects.Contains(*obj))
+				{
+					OnFXBegin.Call((HoldObjectState*)*it);
+					m_effectObjects.Add(*obj);
+				}
 			}
 		}
 		else if(obj->type == ObjectType::Laser)
@@ -88,7 +106,6 @@ void BeatmapPlayback::Update(MapTime newTime)
 			if((obj->laser.duration + obj->time) < objectPassTime)
 			{
 				OnObjectLeaved.Call(*it);
-				m_holdObjects.erase(*it);
 				it = m_hittableObjects.erase(it);
 				continue;
 			}
@@ -102,6 +119,58 @@ void BeatmapPlayback::Update(MapTime newTime)
 				continue;
 			}
 		}
+		else if(obj->type == ObjectType::Event)
+		{
+			EventObjectState* evt = (EventObjectState*)obj;
+			if(obj->time < (m_playbackTime+2)) // Tiny offset to make sure events are triggered before they are needed
+			{
+				// Trigger event
+				OnEventChanged.Call(evt->key, evt->data);
+				m_eventMapping[evt->key] = evt->data;
+				it = m_hittableObjects.erase(it);
+				continue;
+			}
+		}
+		it++;
+	}
+
+	// Remove passed hold objects
+	for(auto it = m_holdObjects.begin(); it != m_holdObjects.end();)
+	{
+		MultiObjectState* obj = **it;
+		if(obj->type == ObjectType::Hold)
+		{
+			MapTime endTime = obj->hold.duration + obj->time;
+			if(endTime < objectPassTime)
+			{
+				it = m_holdObjects.erase(it);
+				continue;
+			}
+			if(endTime < m_playbackTime)
+			{
+				if(m_effectObjects.Contains(*it))
+				{
+					OnFXEnd.Call((HoldObjectState*)*it);
+					m_effectObjects.erase(*it);
+				}
+			}
+		}
+		else if(obj->type == ObjectType::Laser)
+		{
+			if((obj->laser.duration + obj->time) < objectPassTime)
+			{
+				it = m_holdObjects.erase(it);
+				continue;
+			}
+		}
+		else if(obj->type == ObjectType::Single)
+		{
+			if(obj->time < objectPassTime)
+			{
+				it = m_holdObjects.erase(it);
+				continue;
+			}
+		}
 		it++;
 	}
 }
@@ -110,6 +179,7 @@ Set<ObjectState*>& BeatmapPlayback::GetHittableObjects()
 {
 	return m_hittableObjects;
 }
+
 Vector<ObjectState*> BeatmapPlayback::GetObjectsInRange(MapTime range)
 {
 	static const uint32 earlyVisiblity = 200;
@@ -118,26 +188,14 @@ Vector<ObjectState*> BeatmapPlayback::GetObjectsInRange(MapTime range)
 	MapTime begin = m_playbackTime - earlyVisiblity;
 	Vector<ObjectState*> ret;
 
-	// Iterator
-	ObjectState** obj = m_currentObj;
-
-	// Offset the current object pointer to before the current time value
-	while(obj != &m_objects.front())
-	{
-		// End time of object at -1 from current pointer
-		MapTime objEnd = obj[-1]->time;
-
-		if(objEnd < begin)
-			break;
-		obj -= 1;
-	}
-
 	// Add hold objects
 	for(auto& ho : m_holdObjects)
 	{
 		ret.AddUnique(ho);
 	}
 
+	// Iterator
+	ObjectState** obj = m_currentObj;
 	// Return all objects that lie after the currently queued object and fall within the given range
 	while(!IsEndObject(obj))
 	{

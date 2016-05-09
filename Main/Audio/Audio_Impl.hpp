@@ -19,6 +19,9 @@ public:
 	// Removes an AudioBase so it is no longer rendered
 	void Deregister(AudioBase* audio);
 
+	uint32 GetSampleRate() const;
+	double GetSecondsPerSample() const;
+
 	mutex lock;
 	Vector<AudioBase*> itemsToRender;
 	Vector<DSP*> globalDSPs;

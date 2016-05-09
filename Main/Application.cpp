@@ -306,6 +306,13 @@ Material Application::LoadMaterial(const String& name)
 	assert(ret);
 	return ret;
 }
+Sample Application::LoadSample(const String& name)
+{
+	String path = String("audio/") + name + ".wav";
+	Sample ret = g_audio->CreateSample(path);
+	assert(ret);
+	return ret;
+}
 
 Transform Application::GetGUIProjection() const
 {

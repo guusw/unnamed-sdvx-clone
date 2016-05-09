@@ -38,6 +38,15 @@ enum class EventKey : uint8
 	TrackRollBehaviour, // uint8
 };
 
+enum class TrackRollBehaviour : uint8
+{
+	Normal,
+	Bigger,
+	Biggest,
+	Keep,
+	Zero,
+};
+
 // Common data for all object types
 struct ObjectTypeData_Base
 {
@@ -124,6 +133,31 @@ struct ObjectTypeData_Laser
 	static const uint8 flag_Extended = 0x2;
 };
 
+struct EventData
+{
+	EventData() = default;
+	template<typename T>
+	EventData(const T& obj)
+	{
+		static_assert(sizeof(T) <= 4, "Invalid object size");
+		memset(this, 0, 4);
+		memcpy(this, &obj, sizeof(T));
+	}
+	union
+	{
+		float floatVal;
+		int32 intVal;
+		uint8 byteVal;
+		LaserEffectType effectVal;
+	};
+
+	// Address of operator that returns a pointer to 32-bit data
+	uint32* operator&()
+	{
+		return (uint32*)this;
+	}
+};
+
 // An event segment, these set various settings at a given point, such as an effect volume, the roll behaviour of the track, etc.
 struct ObjectTypeData_Event
 {
@@ -131,13 +165,7 @@ struct ObjectTypeData_Event
 	EventKey key;
 
 	// Always 32 bits of data, but the one used depends on the key
-	union 
-	{
-		float floatVal;
-		int32 intVal;
-		uint8 byteVal;
-		LaserEffectType effectVal;
-	};
+	EventData data;
 
 	static const ObjectType staticType = ObjectType::Event;
 };

@@ -55,11 +55,27 @@ public:
 	// Value from 0 to 1 that indicates how far in a single bar the playback is
 	float GetBarTime() const;
 
+	// Gets the currently set value of a value set by events in the beatmap
+	const EventData& GetEventData(EventKey key);
+	// Retrieve event data as any 32-bit type
+	template<typename T>
+	const T& GetEventData(EventKey key)
+	{
+		assert(sizeof(T) <= 4);
+		return *(T*)&GetEventData(key);
+	}
+
 	/* Playback events */
 	// Called when an object became within the 'hittableObjectTreshold'
 	Delegate<ObjectState*> OnObjectEntered;
 	// Called after an object has passed the duration it can be hit in
 	Delegate<ObjectState*> OnObjectLeaved;
+	// Called when an FX button with effect enters
+	Delegate<HoldObjectState*> OnFXBegin;
+	// Called when an FX button with effect leaves
+	Delegate<HoldObjectState*> OnFXEnd;
+
+	Delegate<EventKey, EventData> OnEventChanged;
 
 private:
 	TimingPoint** m_currentTiming = nullptr;
@@ -83,6 +99,11 @@ private:
 	Set<ObjectState*> m_hittableObjects;
 	// Hold objects to render even when their start time is not in the current visibility range
 	Set<ObjectState*> m_holdObjects;
+	// Hold buttons with effects that are active
+	Set<ObjectState*> m_effectObjects;
+
+	// Current state of events
+	Map<EventKey, EventData> m_eventMapping;
 
 	float m_barTime;
 

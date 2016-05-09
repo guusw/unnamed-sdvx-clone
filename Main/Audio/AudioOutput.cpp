@@ -16,7 +16,7 @@
 static uint32_t freq = 44100;
 static uint32_t channels = 2;
 static uint32_t numBuffers = 2;
-static uint32_t bufferLength = 20;
+static uint32_t bufferLength = 10;
 static REFERENCE_TIME bufferDuration = (REFERENCE_TIME)(bufferLength * REFTIMES_PER_MILLISEC);
 
 AudioOutput::AudioOutput()
@@ -94,6 +94,8 @@ bool AudioOutput::Init()
 	// Get the number of buffer frames
 	m_audioClient->GetBufferSize(&m_numBufferFrames);
 
+	m_bufferLength = (double)m_numBufferFrames / (double)m_format->nSamplesPerSec;
+
 	res = m_audioClient->Start();
 	return true;
 }
@@ -106,7 +108,6 @@ AudioOutput::~AudioOutput()
 	SAFE_RELEASE(m_audioClient);
 	SAFE_RELEASE(m_audioRenderClient);
 }
-
 bool AudioOutput::Begin(float*& buffer, uint32_t& numSamples)
 {
 	// See how much buffer space is available.
@@ -129,23 +130,15 @@ void AudioOutput::End(uint32_t numSamples)
 		m_audioRenderClient->ReleaseBuffer(numSamples, 0);
 	}
 }
-
-uint32_t AudioOutput::GetBufferLength() const
-{
-	return bufferLength;
-}
-
 uint32_t AudioOutput::GetNumChannels() const
 {
 	return m_format->nChannels;
 }
-
 uint32_t AudioOutput::GetSampleRate() const
 {
 	return m_format->nSamplesPerSec;
 }
-
-double AudioOutput::GetSecondsPerSample() const
+double AudioOutput::GetBufferLength() const
 {
-	return 1.0 / (double)m_format->nSamplesPerSec;
+	return m_bufferLength;
 }

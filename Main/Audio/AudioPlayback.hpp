@@ -30,13 +30,17 @@ public:
 	bool IsPaused() const { return m_paused; }
 
 	// Sets either button effect 0 or 1
-	void SetEffect(uint8 index, EffectType type, EffectParam param);
+	void SetEffect(uint32 index, HoldObjectState* object, class BeatmapPlayback& playback);
+	void ClearEffect(uint32 index);
 
 	// Sets the effect to be used for lasers
 	void SetLaserEffect(LaserEffectType type);
 
 	// The input which controls the laser filter amount
-	void SetLaserFilterInput(float input);
+	void SetLaserFilterInput(float input, bool active = false);
+
+	// Set the mix value of the effect on lasers
+	void SetLaserEffectMix(float mix);
 
 private:
 	class DSP* m_InitDSP(LaserEffectType type);
@@ -45,10 +49,11 @@ private:
 	AudioStream m_music;
 	bool m_paused = false;
 
-	float m_lastLaserInput;
+	float m_laserEffectMix = 1.0f;
 	LaserEffectType m_laserEffectType = LaserEffectType::PeakingFilter;
-	class DSP* m_laserDSP;
+	class DSP* m_laserDSP = nullptr;
 
 	uint32 m_buttonEffectParams[2] = { 0 };
 	EffectType m_buttonEffectTypes[2] = { EffectType::None };
+	class DSP* m_buttonDSPs[2] = { nullptr };
 };

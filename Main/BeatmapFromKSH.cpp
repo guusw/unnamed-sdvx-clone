@@ -38,6 +38,28 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 	if(!kshootMap.Init(input))
 		return false;
 
+	auto ParseFilterType = [](const String& str)
+	{
+		LaserEffectType type = LaserEffectType::None;
+		if(str == "hpf1")
+		{
+			type = LaserEffectType::HighPassFilter;
+		}
+		else if(str == "lpf1")
+		{
+			type = LaserEffectType::LowPassFilter;
+		}
+		else if(str == "fx;bitc")
+		{
+			type = LaserEffectType::Bitcrush;
+		}
+		else if(str == "peak")
+		{
+			type = LaserEffectType::PeakingFilter;
+		}
+		return type;
+	};
+
 	// Process map settings
 	for(auto& s : kshootMap.settings)
 	{
@@ -67,6 +89,18 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 		else if(s.first == "o")
 		{
 			m_settings.offset = atol(*s.second);
+		}
+		else if(s.first == "filtertype")
+		{
+			m_settings.laserEffectType = ParseFilterType(s.second);
+		}
+		else if(s.first == "pfiltergain")
+		{
+			m_settings.laserEffectMix = (float)atol(*s.second) / 100.0f;
+		}
+		else if(s.first == "chokkakuvol")
+		{
+			m_settings.slamVolume = (float)atol(*s.second) / 100.0f;
 		}
 	}
 
@@ -160,27 +194,10 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 			else if(p.first == "filtertype")
 			{
 				// Inser filter type change event
-				LaserEffectType type = LaserEffectType::None;
-				if(p.second == "hpf1")
-				{
-					type = LaserEffectType::HighPassFilter;
-				}
-				else if(p.second == "lpf1")
-				{
-					type = LaserEffectType::LowPassFilter;
-				}
-				else if(p.second == "fx;bitc")
-				{
-					type = LaserEffectType::Bitcrush;
-				}
-				else if(p.second == "peak")
-				{
-					type = LaserEffectType::PeakingFilter;
-				}
 				EventObjectState* evt = new EventObjectState();
 				evt->time = mapTime;
 				evt->key = EventKey::LaserEffectType;
-				evt->effectVal = type;
+				evt->data.effectVal = ParseFilterType(p.second);
 				m_objectStates.Add(*evt);
 			}
 			else if(p.first == "pfiltergain")
@@ -190,7 +207,16 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 				EventObjectState* evt = new EventObjectState();
 				evt->time = mapTime;
 				evt->key = EventKey::LaserEffectMix;
-				evt->floatVal = gain;
+				evt->data.floatVal = gain;
+				m_objectStates.Add(*evt);
+			}
+			else if(p.first == "chokkakuvol")
+			{
+				float vol = (float)atol(*p.second) / 100.0f;
+				EventObjectState* evt = new EventObjectState();
+				evt->time = mapTime;
+				evt->key = EventKey::LaserEffectMix;
+				evt->data.floatVal = vol;
 				m_objectStates.Add(*evt);
 			}
 		}
@@ -260,7 +286,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 					if(c == 'B')
 					{
 						state->effectType = EffectType::Bitcrush;
-						state->effectParams = effectParams[i];
+						state->effectParams = effectParams[i-4];
 					}
 					else if(c >= 'G' && c <= 'L') // Gate 4/8/16/32/12/24
 					{
@@ -291,14 +317,14 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 						state->effectType = EffectType::Wobble;
 						state->effectParams = 12;
 					}
-					else if(c == 'A')
+					else if(c == 'D')
 					{
 						state->effectType = EffectType::SideChain;
 					}
-					else if(c == 'D')
+					else if(c == 'A')
 					{
 						state->effectType = EffectType::TapeStop;
-						state->effectParams = effectParams[i];
+						state->effectParams = effectParams[i-4];
 					}
 				}
 			}

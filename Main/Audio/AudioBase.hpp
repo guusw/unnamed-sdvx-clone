@@ -2,6 +2,8 @@
 
 class DSP
 {
+protected:
+	DSP() = default; // Abstract
 public:
 	virtual ~DSP();
 	// Process <numSamples> amount of samples in stereo float format

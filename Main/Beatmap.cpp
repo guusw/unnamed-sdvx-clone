@@ -90,7 +90,7 @@ bool MultiObjectState::StaticSerialize(BinaryStream& stream, MultiObjectState*& 
 		break;
 	case ObjectType::Event:
 		stream << (uint8&)obj->event.key;
-		stream << (uint32&)obj->event.intVal;
+		stream << *&obj->event.data;
 		break;
 	}
 

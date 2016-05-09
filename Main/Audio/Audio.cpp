@@ -26,18 +26,33 @@ void Audio_Impl::AudioThread()
 #endif
 
 			float* tempData = new float[numSamples * 2 + guardBand];
-			double adv = output->GetSecondsPerSample();
+			uint32* guardBuffer = (uint32*)tempData + 2 * numSamples;
+			double adv = GetSecondsPerSample();
 
 			// Clear buffer
 			memset(data, 0, sizeof(float) * 2 * numSamples);
 
 			// Render items
 			lock.lock();
-			for(auto& i : itemsToRender)
+			for(auto& item : itemsToRender)
 			{
 				memset(tempData, 0, sizeof(float) * (2 * numSamples + guardBand));
-				i->Process(tempData, numSamples);
-				i->ProcessDSPs(tempData, numSamples);
+				item->Process(tempData, numSamples);
+#if _DEBUG
+				// Check for memory corruption
+				for(uint32 i = 0; i < guardBand; i++)
+				{
+					assert(guardBuffer[i] == 0);
+				}
+#endif
+				item->ProcessDSPs(tempData, numSamples);
+#if _DEBUG
+				// Check for memory corruption
+				for(uint32 i = 0; i < guardBand; i++)
+				{
+					assert(guardBuffer[i] == 0);
+				}
+#endif
 
 				// Mix into buffer
 				for(uint32 i = 0; i < numSamples; i++)
@@ -45,17 +60,6 @@ void Audio_Impl::AudioThread()
 					data[i * 2 + 0] += tempData[i * 2];
 					data[i * 2 + 1] += tempData[i * 2 + 1];
 				}
-
-				
-
-#if _DEBUG
-				// Check for memory corruption
-				uint32* guardBuffer = (uint32*)tempData + 2 * numSamples;
-				for(uint32 i = 0; i < guardBand; i++)
-				{
-					assert(guardBuffer[i] == 0);
-				}
-#endif
 			}
 			lock.unlock();
 
@@ -77,6 +81,7 @@ void Audio_Impl::Start()
 {
 	limiter = new LimiterDSP();
 	limiter->audio = this;
+	limiter->releaseTime = 0.05f;
 	globalDSPs.Add(limiter);
 
 	impl.runAudioThread = true;
@@ -105,6 +110,14 @@ void Audio_Impl::Deregister(AudioBase* audio)
 	itemsToRender.Remove(audio);
 	audio->audio = nullptr;
 	lock.unlock();
+}
+uint32 Audio_Impl::GetSampleRate() const
+{
+	return output->GetSampleRate();
+}
+double Audio_Impl::GetSecondsPerSample() const
+{
+	return 1.0 / (double)GetSampleRate();
 }
 
 Audio::Audio()
@@ -145,11 +158,20 @@ bool Audio::Init(class Window& window)
 void Audio::SetGlobalVolume(float vol)
 {
 }
-AudioStream Audio::CreateStream(const String& path)
+uint32 Audio::GetSampleRate() const
 {
-	return AudioStreamRes::Create(this, path);
+	return impl.output->GetSampleRate();
 }
 class Audio_Impl* Audio::GetImpl()
 {
 	return &impl;
+}
+
+AudioStream Audio::CreateStream(const String& path)
+{
+	return AudioStreamRes::Create(this, path);
+}
+Sample Audio::CreateSample(const String& path)
+{
+	return SampleRes::Create(this, path);
 }

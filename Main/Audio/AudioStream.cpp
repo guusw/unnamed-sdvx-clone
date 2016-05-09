@@ -33,6 +33,7 @@ class AudioStreamOGG_Impl : public AudioStreamRes
 	Timer m_deltaTimer;
 	Timer m_streamTimer;
 	double m_streamTimeOffset = 0.0f;
+	double m_offsetCorrection = 0.0f;
 	bool m_paused = false;
 	bool m_playing = false;
 
@@ -82,7 +83,7 @@ public:
 		if(m_paused)
 		{
 			m_paused = false;
-			ResyncTiming();
+			RestartTiming();
 		}
 	}
 	virtual void Pause() override
@@ -96,7 +97,7 @@ public:
 		else
 		{
 			m_paused = false;
-			ResyncTiming();
+			RestartTiming();
 		}
 	}
 	
@@ -110,10 +111,16 @@ public:
 	}
 	double GetPositionSeconds() const
 	{
+		double samplePosTime = SamplesToSeconds(m_samplePos);;
 		if(m_paused)
-			return SamplesToSeconds(m_samplePos);
+			return samplePosTime;
 		else
-			return m_streamTimeOffset + m_streamTimer.SecondsAsDouble();
+		{
+			double ret = m_streamTimeOffset + m_streamTimer.SecondsAsDouble() - m_offsetCorrection;
+			if((ret - samplePosTime) > 0.2f) // Prevent time from running of when the application freezes
+				return samplePosTime;
+			return ret;
+		}
 	}
 	virtual int32 GetPosition() const override
 	{
@@ -135,8 +142,6 @@ public:
 	{
 		if(!m_playing || m_paused)
 			return;
-
-		Timer t;
 
 		m_lock.lock();
 
@@ -192,20 +197,27 @@ public:
 		m_samplePos = (uint32)ov_pcm_tell(&m_ovf) - m_remainingBufferData;
 		double timingDelta = GetPositionSeconds() - SamplesToSeconds(m_samplePos);
 
-		if(abs(timingDelta) > 0.2)
+		// This is to stabilize the running timer with the actual audio stream, the delta is added for 50% as an offset to this timer 
+		if(abs(timingDelta) > 0.001)
 		{
-			Logf("AudioStream Resync, timing was %f wrong", Logger::Warning, (float)timingDelta);
-
-			ResyncTiming();
+			ResyncTiming(timingDelta);
 		}
 
 		m_lock.unlock();
 	}
-	void ResyncTiming()
+	void ResyncTiming(double delta)
+	{
+		if(abs(delta) > 0.5)
+			RestartTiming();
+		else
+			m_offsetCorrection += delta * 0.5;
+	}
+	void RestartTiming()
 	{
 		m_streamTimeOffset = SamplesToSeconds(m_samplePos); // Add audio latency to this offset
 		m_samplePos = 0;
 		m_streamTimer.Restart();
+		m_offsetCorrection = 0.0f;
 	}
 
 private:
