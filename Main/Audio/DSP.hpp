@@ -110,3 +110,49 @@ public:
 private:
 	uint32 m_currentSample = 0;
 };
+
+// Referenced http://www.musicdsp.org/files/phaser.cpp
+class PhaserDSP : public DSP
+{ 
+public:
+	uint32 delay;
+	uint32 time = 0;
+
+	// Frequency range
+	float dmin = 1000.0f;
+	float dmax = 4000.0f;
+	float fb = 0.2f; //feedback
+	float depth = 1.0f;
+	
+	virtual void Process(float*& out, uint32 numSamples);
+
+private:
+	// All pass filter
+	struct APF
+	{
+		float Update(float in);
+		float a1 = 0.0f;
+		float za = 0.0f;
+	};
+
+	APF filters[2][6];
+	float za[2] = { 0.0f };
+};
+
+class FlangerDSP : public DSP
+{
+public:
+	// Length of the effect
+	uint32 delay = 0;
+	uint32 time = 0;
+
+	// Delay range
+	uint32 min = 0;
+	uint32 max = 0;
+
+	virtual void Process(float*& out, uint32 numSamples);
+private:
+	Vector<float> m_sampleBuffer;
+	uint32 m_loops = 0;
+	uint32 m_currentSample = 0;
+};

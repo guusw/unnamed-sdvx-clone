@@ -244,3 +244,84 @@ void WobbleDSP::Process(float*& out, uint32 numSamples)
 	m_currentSample += numSamples;
 	m_currentSample %= delay;
 }
+
+void PhaserDSP::Process(float*& out, uint32 numSamples)
+{
+	for(uint32 i = 0; i < numSamples; i++)
+	{
+		float f = ((float)time / (float)delay) * Math::pi * 2.0f;
+
+		//calculate and update phaser sweep lfo...
+		float d = dmin + (dmax - dmin) * ((sin(f) + 1.0f) / 2.0f);
+		d /= (float)audio->GetSampleRate();
+
+		//calculate output per channel
+		for(uint32 c = 0; c < 2; c++)
+		{
+			APF* filters1 = filters[c];
+
+			//update filter coeffs
+			float a1 = (1.f - d) / (1.f + d);
+			for(int i = 0; i < 6; i++)
+				filters1[i].a1 = a1;
+
+			float filtered = filters1[0].Update(
+				filters1[1].Update(
+					filters1[2].Update(
+						filters1[3].Update(
+							filters1[4].Update(
+								filters1[5].Update(out[i * 2 + c] + za[c] * fb))))));
+			// Store filter feedback
+			za[c] = filtered;
+
+			// Final sample
+			out[i * 2 + c] = out[i * 2 + c] + filtered * depth;
+		}
+
+		time++;
+	}
+}
+float PhaserDSP::APF::Update(float in)
+{
+	float y = in * -a1 + za;
+	za = y * a1 + in;
+	return y;
+}
+
+void FlangerDSP::Process(float*& out, uint32 numSamples)
+{
+	if(m_sampleBuffer.size() != (max*2))
+		m_sampleBuffer.resize(max*2);
+
+	float* data = m_sampleBuffer.data();
+
+	for(uint32 i = 0; i < numSamples; i++)
+	{
+		float f = ((float)time / (float)delay) * Math::pi * 2.0f;
+		uint32 d = (uint32)(min + ((max - 1) - min) * (sin(f) * 0.5f + 0.5f));
+
+
+		// Shift samples
+		float s0 = data[0];
+		float s1 = data[1];
+		for(uint32 i = 1; i < m_sampleBuffer.size() / 2; i++)
+		{
+			float t;
+			t = data[i * 2];
+			data[i * 2] = s0;
+			s0 = t;
+			t = data[i * 2+1];
+			data[i * 2+1] = s1;
+			s1 = t;
+		}
+		// Inject new sample
+		data[0] = out[i*2];
+		data[1] = out[i*2+1];
+
+		// Apply delay
+		out[i * 2] += data[d * 2];
+		out[i * 2 + 1] += data[d * 2+1];
+
+		time++;
+	}
+}

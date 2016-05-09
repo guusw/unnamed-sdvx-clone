@@ -593,8 +593,12 @@ public:
 	// SKips ahead to the right before the first object in the map
 	void SkipIntro()
 	{
-		ObjectState* firstObj = m_beatmap->GetLinearObjects().front();
-		MapTime skipTime = firstObj->time - 1000;
+		ObjectState** firstObj = &m_beatmap->GetLinearObjects().front();
+		while((*firstObj)->type == ObjectType::Event && firstObj != &m_beatmap->GetLinearObjects().back())
+		{
+			firstObj++;
+		}
+		MapTime skipTime = (*firstObj)->time - 1000;
 		if(skipTime > m_lastMapTime)
 		{
 			m_audioPlayback.SetPosition(skipTime);

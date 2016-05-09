@@ -121,6 +121,30 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 		dsp = wb;
 		break;
 	}
+	case EffectType::Phaser:
+	{
+		PhaserDSP* phs = new PhaserDSP();
+		double delay = (barDelay) / 1000.0;
+		phs->delay = (uint32)(delay * g_audio->GetSampleRate());
+		phs->dmin = 800.f;
+		phs->dmax = 8000.f;
+		phs->depth = 0.8f;
+		phs->fb = 0.5f;
+		phs->time = object->time;
+		dsp = phs;
+		break;
+	}
+	case EffectType::Flanger:
+	{
+		FlangerDSP* fl = new FlangerDSP();
+		double delay = (barDelay) / 1000.0;
+		fl->delay = (uint32)(delay * g_audio->GetSampleRate());
+		fl->min = 2;
+		fl->max = 40;
+		fl->time = object->time;
+		dsp = fl;
+		break;
+	}
 	default:
 		break;
 	}
