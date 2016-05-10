@@ -14,7 +14,7 @@ Window* g_gameWindow = nullptr;
 Application* g_application = nullptr;
 Game* g_game = nullptr;
 // Use rotated 16:9 as aspect ratio
-float g_aspectRatio = 1.0f / (16.0f / 9.0f);
+float g_aspectRatio = 1.0f /(16.0f / 9.0f);
 static float g_screenHeight = 1000.0f;
 Vector2i g_resolution;
 

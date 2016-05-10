@@ -17,7 +17,7 @@ bool BeatmapPlayback::Reset()
 	m_playbackTime = 0;
 	m_currentObj = &m_objects.front();
 	m_currentTiming = &m_timingPoints.front();
-
+		
 	m_barTime = 0;
 	return true;
 }
@@ -239,6 +239,13 @@ float BeatmapPlayback::DurationToBarDistance(MapTime duration)
 	const TimingPoint& tp = GetCurrentTimingPoint();
 	return (float)((double)duration / (tp.beatDuration * (double)tp.measure));
 }
+
+float BeatmapPlayback::DurationToBarDistanceAtTime(MapTime time, MapTime duration)
+{
+	const TimingPoint* tp = GetTimingPointAt(time);
+	return (float)((double)duration / (tp->beatDuration * (double)tp->measure));
+}
+
 float BeatmapPlayback::TimeToBarDistance(MapTime time)
 {
 	const TimingPoint& tp = GetCurrentTimingPoint();

@@ -113,6 +113,9 @@ struct ObjectTypeData_Hold : public ObjectTypeData_Button
 // A laser segment
 struct ObjectTypeData_Laser
 {
+	// Retrieves the starting laser point
+	TObjectState<ObjectTypeData_Laser>* GetRoot();
+
 	// Duration of laser segment
 	MapTime duration = 0;
 	// 0 or 1 for left and right respectively

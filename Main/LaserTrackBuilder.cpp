@@ -47,6 +47,7 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 		Rect centerLowerUv = Rect(textureBorder, invTextureBorder, invTextureBorder, 1.0f);
 
 		// Generate positions for middle top and bottom
+		float slamLength = playback.DurationToBarDistanceAtTime(laser->time, slamDuration) * laserLengthScale;
 		Rect3D centerMiddle = Rect3D(left, slamLength, right, 0.0f);
 		Rect3D centerBottom = centerMiddle;
 		centerBottom.size.y = realBorderSize * perspectiveHeightScale;
@@ -122,7 +123,8 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 		float prevLength = 0.0f;
 		if(laser->prev && (laser->prev->flags & LaserObjectState::flag_Instant) != 0)
 		{
-			prevLength = slamLength;
+			// Previous slam length
+			prevLength = playback.DurationToBarDistanceAtTime(laser->prev->time, slamDuration) * laserLengthScale;
 		}
 
 		// Connecting center points
@@ -206,7 +208,7 @@ Mesh LaserTrackBuilder::GenerateTrackExit(class BeatmapPlayback& playback, Laser
 	float prevLength = 0.0f;
 	if((laser->flags & LaserObjectState::flag_Instant) != 0)
 	{
-		prevLength = slamLength;
+		prevLength = playback.DurationToBarDistanceAtTime(laser->time, slamDuration) * laserLengthScale;
 	}
 	else
 	{
@@ -247,7 +249,7 @@ void LaserTrackBuilder::m_RecalculateConstants()
 	realBorderSize = (actualLaserWidth - laserWidthNoBorder) * 0.5f;
 
 	// The length of the horizontal slam segments
-	slamLength = laserWidthNoBorder * perspectiveHeightScale * 3.0f;
+	slamDuration = 40;
 
 	// The effective area in which the center point of the laser can move
 	effectiveWidth = m_trackWidth - m_laserWidth;

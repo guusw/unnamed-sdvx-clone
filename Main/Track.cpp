@@ -12,11 +12,11 @@
 
 const float Track::trackWidth = 1.0f;
 const float Track::trackLength = 25.0f;
-const float Track::buttonWidth = trackWidth / 6;
+const float Track::buttonWidth = 1.0f / 6;
 const float Track::laserWidth = buttonWidth * 0.7f;
 const float Track::fxbuttonWidth = buttonWidth * 2;
 const float Track::buttonTrackWidth = buttonWidth * 4;
-const float Track::viewRange = 0.5f;
+const float Track::viewRange = .7f;
 
 Track::~Track()
 {
@@ -180,7 +180,7 @@ void Track::Tick(class BeatmapPlayback& playback, float deltaTime)
 	}
 	else
 	{
-		objectGlow -= 4.0f * deltaTime;
+		objectGlow -= 7.0f * deltaTime;
 		if(objectGlow < 0.0f)
 			objectGlow = 0.0f;
 	}
@@ -188,10 +188,6 @@ void Track::Tick(class BeatmapPlayback& playback, float deltaTime)
 	// Perform laser track cache cleanup, etc.
 	for(uint32 i = 0; i < 2; i++)
 	{
-		/// TODO: Add this back when lasers are fixedto support this
-		// Set the length of laser slams based on the approach rate
-		//m_laserTrackBuilder[i]->laserSlamHeight = Math::Clamp(buttonWidth / (viewRange / 1.2f), buttonWidth * 0.5f, buttonWidth * 4.0f);
-		//m_laserTrackBuilder[i]->laserSlamHeight = buttonWidth;
 		m_laserTrackBuilder[i]->Update(m_lastMapTime);
 	}
 }
@@ -279,8 +275,11 @@ void Track::DrawObjectState(RenderQueue& rq, class BeatmapPlayback& playback, Ob
 		{
 			MaterialParameterSet laserParams;
 
-			/// TODO: Add glow for lasers that are active
-			laserParams.SetParameter("objectGlow", active ? objectGlow : 0.0f);
+			// Make not yet hittable lasers slightly glowing
+			if((laser->GetRoot()->time + Scoring::maxLaserHitTime) > playback.GetLastTime())
+				laserParams.SetParameter("objectGlow", 0.2f);
+			else
+				laserParams.SetParameter("objectGlow", active ? objectGlow : 0.0f);
 			laserParams.SetParameter("mainTex", texture);
 
 			// Get the length of this laser segment

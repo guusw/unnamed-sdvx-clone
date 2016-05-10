@@ -563,15 +563,15 @@ public:
 		if(numBeats > 0)
 		{
 			// Click Track
-			uint32 beat = beatStart % m_playback.GetCurrentTimingPoint().measure;
-			if(beat == 0)
-			{
-				m_clickSamples[0]->Play();
-			}
-			else
-			{
-				m_clickSamples[1]->Play();
-			}
+			//uint32 beat = beatStart % m_playback.GetCurrentTimingPoint().measure;
+			//if(beat == 0)
+			//{
+			//	m_clickSamples[0]->Play();
+			//}
+			//else
+			//{
+			//	m_clickSamples[1]->Play();
+			//}
 		}
 
 		// Update music filter states

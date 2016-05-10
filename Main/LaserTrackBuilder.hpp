@@ -32,6 +32,9 @@ public:
 	float laserLengthScale;
 	float perspectiveHeightScale;
 
+	// The length of the horizontal slam segments
+	MapTime slamDuration;
+
 private:
 	// The uv coordinates to sample the laser without the border, or only the border
 	float textureBorder;
@@ -44,9 +47,6 @@ private:
 	float laserWidthNoBorder;
 	// World size of a single border around a laser
 	float realBorderSize;
-
-	// The length of the horizontal slam segments
-	float slamLength;
 
 	// The effective area in which the center point of the laser can move
 	float effectiveWidth;

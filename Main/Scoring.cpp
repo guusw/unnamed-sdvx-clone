@@ -247,7 +247,8 @@ void Scoring::Tick(float deltaTime)
 			}
 			else
 			{
-				laserMissDuration[i] = 0;
+				if(laserDelta != 0.0f)
+					laserMissDuration[i] = 0;
 			}
 
 			if(endDelta > 0) // Advance

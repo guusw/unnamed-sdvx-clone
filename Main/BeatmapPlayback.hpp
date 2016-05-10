@@ -46,6 +46,7 @@ public:
 	// A single bar is the duration of the amount of beats in the current time signature.
 	MapTime BarDistanceToDuration(float distance);
 	float DurationToBarDistance(MapTime time);
+	float DurationToBarDistanceAtTime(MapTime time, MapTime duration);
 
 	float TimeToBarDistance(MapTime time);
 

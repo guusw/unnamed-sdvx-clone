@@ -185,3 +185,11 @@ void TObjectState<void>::SortArray(Vector<TObjectState<void>*>& arr)
 		return l->time < r->time;
 	});
 }
+
+TObjectState<ObjectTypeData_Laser>* ObjectTypeData_Laser::GetRoot()
+{
+	TObjectState<ObjectTypeData_Laser>* ptr = (TObjectState<ObjectTypeData_Laser>*)this;
+	while(ptr->prev)
+		ptr = ptr->prev;
+	return ptr;
+}

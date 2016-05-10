@@ -78,7 +78,9 @@ bool KShootMap::Init(BinaryStream& input)
 	uint32_t bom = 0;
 	input.Serialize(&bom, 3);
 	if(bom != 0x00bfbbef) // Expected format for UTF-8
-		return false;
+	{
+		input.Seek(0);
+	}
 
 	uint32_t lineNumber = 0;
 	String line;
