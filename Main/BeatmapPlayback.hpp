@@ -66,6 +66,9 @@ public:
 		return *(T*)&GetEventData(key);
 	}
 
+	// Get interpolated top or bottom zoom as set by the map
+	float GetZoom(uint8 index);
+
 	/* Playback events */
 	// Called when an object became within the 'hittableObjectTreshold'
 	Delegate<ObjectState*> OnObjectEntered;
@@ -79,22 +82,30 @@ public:
 	Delegate<EventKey, EventData> OnEventChanged;
 
 private:
-	TimingPoint** m_currentTiming = nullptr;
-	ObjectState** m_currentObj = nullptr;
-
 	// Selects an object or timing point based on a given input state
 	// if allowReset is true the search starts from the start of the object list if current point lies beyond given input time
 	TimingPoint** m_SelectTimingPoint(MapTime time, bool allowReset = false);
 	ObjectState** m_SelectHitObject(MapTime time, bool allowReset = false);
+	ZoomControlPoint** m_SelectZoomObject(MapTime time);
 
 	// End object pointer, this is not a valid pointer, but points to the element after the last element
 	bool IsEndTiming(TimingPoint** obj);
 	bool IsEndObject(ObjectState** obj);
+	bool IsEndZoomPoint(ZoomControlPoint** obj);
 
 	// Current map position of this playback object
 	MapTime m_playbackTime;
 	Vector<TimingPoint*> m_timingPoints;
 	Vector<ObjectState*> m_objects;
+	Vector<ZoomControlPoint*> m_zoomPoints;
+
+	TimingPoint** m_currentTiming = nullptr;
+	ObjectState** m_currentObj = nullptr;
+	ZoomControlPoint** m_currentZoomPoint = nullptr;
+
+	// Used to calculate track zoom
+	ZoomControlPoint* m_zoomStartPoints[2] = { nullptr };
+	ZoomControlPoint* m_zoomEndPoints[2] = { nullptr };
 
 	// Contains all the objects that are in the current valid timing area
 	Set<ObjectState*> m_hittableObjects;

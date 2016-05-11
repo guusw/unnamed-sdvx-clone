@@ -4,6 +4,17 @@
 
 static const uint32 c_mapVersion = 1;
 
+Beatmap::~Beatmap()
+{
+	// Perform cleanup
+	for(auto tp : m_timingPoints)
+		delete tp;
+	for(auto obj : m_objectStates)
+		delete obj;
+	for(auto z : m_zoomControlPoints)
+		delete z;
+}
+
 bool Beatmap::Load(BinaryStream& input)
 {
 	ProfilerScope $("Load Beatmap");
@@ -36,6 +47,10 @@ Vector<TimingPoint*>& Beatmap::GetLinearTimingPoints()
 Vector<ObjectState*>& Beatmap::GetLinearObjects()
 {
 	return reinterpret_cast<Vector<ObjectState*>&>(m_objectStates);
+}
+Vector<ZoomControlPoint*>& Beatmap::GetZoomControlPoints()
+{
+	return m_zoomControlPoints;
 }
 
 bool MultiObjectState::StaticSerialize(BinaryStream& stream, MultiObjectState*& obj)

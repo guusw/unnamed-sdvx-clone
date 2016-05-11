@@ -22,6 +22,8 @@ public:
 	uint32 GetSampleRate() const;
 	double GetSecondsPerSample() const;
 
+	float globalVolume = 1.0f;
+
 	mutex lock;
 	Vector<AudioBase*> itemsToRender;
 	Vector<DSP*> globalDSPs;

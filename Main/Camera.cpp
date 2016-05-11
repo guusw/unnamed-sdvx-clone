@@ -92,27 +92,27 @@ RenderState Camera::CreateRenderState(bool clipped)
 
 	RenderState rs = g_application->GetRenderStateBase();
 
+	// Clamp zoom values
+	zoomBottom = Math::Clamp(zoomBottom, -1.0f, 1.0f);
+	zoomTop = Math::Clamp(zoomTop, -1.0f, 1.0f);
+
 	// Calculate Track positioning based on zoom values
 	static const float nearDistBase = 5.0f;
-	static const float nearDistZoom = 2.0f;
+	static const float nearDistZoom = 1.0f;
 	static const float maxNearPlane = 0.2f;
-	static const float heightMin = 0.3f;
-	static const float heightBase = 1.0f;
-	static const float heightMax = 1.5f;
 
-	float cameraTilt = zoomTop * 10.0f + 2.0f;
-	float cameraHeight = heightBase;
+	float cameraHeight = 1.0f;
 	float nearDist = nearDistBase;
-	if(zoomBottom < 0)
-	{
-		cameraHeight -= Math::Max(-1.0f, zoomBottom) * (heightMin - heightBase);
-	}
-	else
-	{
-		cameraHeight += Math::Min(1.0f, zoomBottom) * (heightMax - heightBase);
-	}
 
-	nearDist = nearDistBase + zoomBottom * nearDistZoom;
+	// Trying to calculate tilt and camera yz position based on top/bottom zoom values
+	float cameraTilt = -zoomTop * 15.0f + 4.0f;
+	float zoomBottomMult = 1.0f;
+	if(zoomBottom < 0)
+		zoomBottomMult = 0.5;
+	cameraHeight += -zoomBottom * zoomBottomMult * 0.3f;
+	nearDist += -zoomBottom * zoomBottomMult* nearDistZoom;
+	if(zoomBottom < 0)
+		cameraTilt += 8.0f * -zoomBottom * zoomBottomMult;
 
 
 	Transform cameraTransform;

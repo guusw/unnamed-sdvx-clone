@@ -137,6 +137,9 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 		uint32 blockFromStartOfTimingPoint = (time.block - timingPointBlockOffset);
 		MapTime mapTime = lastTimingPoint->time + MapTime((blockFromStartOfTimingPoint + (double)time.tick / (double)block.ticks.size()) * blockDuration);
 
+		bool lastTick = &block == &kshootMap.blocks.back() &&
+			&tick == &block.ticks.back();
+
 		// Process settings
 		for(auto& p : tick.settings)
 		{
@@ -218,6 +221,22 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 				evt->key = EventKey::LaserEffectMix;
 				evt->data.floatVal = vol;
 				m_objectStates.Add(*evt);
+			}
+			else if(p.first == "zoom_bottom")
+			{
+				ZoomControlPoint* point = new ZoomControlPoint();
+				point->time = mapTime;
+				point->index = 0;
+				point->zoom = (float)atol(*p.second) / 100.0f;
+				m_zoomControlPoints.Add(point);
+			}
+			else if(p.first == "zoom_top")
+			{
+				ZoomControlPoint* point = new ZoomControlPoint();
+				point->time = mapTime;
+				point->index = 1;
+				point->zoom = (float)atol(*p.second) / 100.0f;
+				m_zoomControlPoints.Add(point);
 			}
 		}
 
@@ -356,6 +375,10 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 					state->numTicks++;
 				}
 			}
+
+			// Terminate last item
+			if(lastTick && state)
+				CreateButton();
 		}
 
 		// Set laser states

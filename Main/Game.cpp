@@ -123,6 +123,9 @@ public:
 		float rollA = m_scoring.GetLaserRollOutput(0);
 		float rollB = m_scoring.GetLaserRollOutput(1);
 		m_camera.SetTargetRoll((rollA + rollB) * 0.05f);
+		// Set track zoom
+		m_camera.zoomBottom = m_playback.GetZoom(0);
+		m_camera.zoomTop = m_playback.GetZoom(1);
 		m_camera.track = m_track;
 		m_camera.Tick(deltaTime);
 		RenderState rs = m_camera.CreateRenderState(true);

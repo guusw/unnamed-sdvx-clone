@@ -9,6 +9,7 @@ bool BeatmapPlayback::Reset()
 {
 	m_timingPoints = m_beatmap->GetLinearTimingPoints();
 	m_objects = m_beatmap->GetLinearObjects();
+	m_zoomPoints = m_beatmap->GetZoomControlPoints();
 	if(m_objects.size() == 0)
 		return false;
 	if(m_timingPoints.size() == 0)
@@ -17,6 +18,7 @@ bool BeatmapPlayback::Reset()
 	m_playbackTime = 0;
 	m_currentObj = &m_objects.front();
 	m_currentTiming = &m_timingPoints.front();
+	m_currentZoomPoint = m_zoomPoints.empty() ? nullptr : &m_zoomPoints.front();
 		
 	m_barTime = 0;
 	return true;
@@ -53,7 +55,6 @@ void BeatmapPlayback::Update(MapTime newTime)
 
 	// Advance timing
 	TimingPoint** timingEnd = m_SelectTimingPoint(m_playbackTime);
-	TimingPoint** timingStart = m_currentTiming ? m_currentTiming : &m_timingPoints.front();
 	if(timingEnd != nullptr && timingEnd != m_currentTiming)
 	{
 		m_currentTiming = timingEnd;
@@ -61,10 +62,9 @@ void BeatmapPlayback::Update(MapTime newTime)
 
 	// Advance objects
 	ObjectState** objEnd = m_SelectHitObject(m_playbackTime+hittableObjectTreshold);
-	ObjectState** objStart = m_currentObj ? m_currentObj : &m_objects.front();
 	if(objEnd != nullptr && objEnd != m_currentObj)
 	{
-		for(auto it = objStart; it < objEnd; it++)
+		for(auto it = m_currentObj; it < objEnd; it++)
 		{
 			MultiObjectState* obj = **it;
 			if(obj->type == ObjectType::Hold || obj->type == ObjectType::Laser || obj->type == ObjectType::Single)
@@ -75,6 +75,32 @@ void BeatmapPlayback::Update(MapTime newTime)
 			OnObjectEntered.Call(*it);
 		}
 		m_currentObj = objEnd;
+	}
+
+	// Advance zoom points
+	if(m_currentZoomPoint)
+	{
+		ZoomControlPoint** objEnd = m_SelectZoomObject(m_playbackTime);
+		for(auto it = m_currentZoomPoint; it < objEnd; it++)
+		{
+			// Set this point as new start point
+			uint32 index = (*it)->index;
+			m_zoomStartPoints[index] = *it;
+
+			// Set next point
+			m_zoomEndPoints[index] = nullptr;
+			ZoomControlPoint** ptr = it+1;
+			while(!IsEndZoomPoint(ptr))
+			{
+				if((*ptr)->index == index)
+				{
+					m_zoomEndPoints[index] = *ptr;
+					break;
+				}
+				ptr++;
+			}
+		}
+		m_currentZoomPoint = objEnd;
 	}
 
 	// Check passed hittable objects
@@ -257,6 +283,23 @@ float BeatmapPlayback::GetBarTime() const
 {
 	return m_barTime;
 }
+
+float BeatmapPlayback::GetZoom(uint8 index)
+{
+	assert(index >= 0 && index <= 1);
+	MapTime startTime = m_zoomStartPoints[index] ? m_zoomStartPoints[index]->time : 0;
+	float start = m_zoomStartPoints[index] ? m_zoomStartPoints[index]->zoom : 0.0f;
+	if(!m_zoomEndPoints[index]) // Last point?
+		return start;
+
+	// Interpolate
+	MapTime duration = m_zoomEndPoints[index]->time - startTime;
+	MapTime currentOffsetInto = m_playbackTime - startTime;
+	float zoomDelta = m_zoomEndPoints[index]->zoom - start;
+	float f = (float)currentOffsetInto / (float)duration;
+	return start + zoomDelta * f;
+}
+
 MapTime BeatmapPlayback::GetLastTime() const
 {
 	return m_playbackTime;
@@ -307,6 +350,25 @@ ObjectState** BeatmapPlayback::m_SelectHitObject(MapTime time, bool allowReset)
 
 	return objStart;
 }
+ZoomControlPoint** BeatmapPlayback::m_SelectZoomObject(MapTime time)
+{
+	ZoomControlPoint** objStart = m_currentZoomPoint;
+	if(IsEndZoomPoint(objStart))
+		return objStart;
+
+	// Keep advancing the start pointer while the next object's starting time lies before the input time
+	while(true)
+	{
+		if(!IsEndZoomPoint(objStart) && objStart[0]->time < time)
+		{
+			objStart = objStart + 1;
+		}
+		else
+			break;
+	}
+
+	return objStart;
+}
 
 bool BeatmapPlayback::IsEndTiming(TimingPoint** obj)
 {
@@ -315,4 +377,8 @@ bool BeatmapPlayback::IsEndTiming(TimingPoint** obj)
 bool BeatmapPlayback::IsEndObject(ObjectState** obj)
 {
 	return obj == (&m_objects.back() + 1);
+}
+bool BeatmapPlayback::IsEndZoomPoint(ZoomControlPoint** obj)
+{
+	return obj == (&m_zoomPoints.back() + 1);
 }

@@ -206,6 +206,8 @@ struct TimingPoint
 {
 	static bool StaticSerialize(BinaryStream& stream, TimingPoint*& out);
 
+	// Position in ms when this timing point appears
+	MapTime time;
 	// Beat duration in milliseconds
 	//	this is a double so the least precision is lost
 	//	can be cast back to integer format once is has been multiplied by the amount of beats you want the length of.
@@ -216,6 +218,18 @@ struct TimingPoint
 	// 3/4 -> 3
 	// 8/8 -> 8
 	uint8 measure;
-	// Position in ms when this timing point appears
+};
+
+// Control point for track zoom levels
+struct ZoomControlPoint
+{
 	MapTime time;
+	// What zoom to control
+	// 0 = bottom
+	// 1 = top
+	uint8 index = 0;
+	// The zoom value
+	// in the range -1 to 1
+	// 1 being fully zoomed in
+	float zoom = 0.0f;
 };

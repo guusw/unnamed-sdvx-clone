@@ -63,6 +63,13 @@ void Audio_Impl::AudioThread()
 			}
 			lock.unlock();
 
+			// Apply volume levels
+			for(uint32 i = 0; i < numSamples; i++)
+			{
+				data[i * 2 + 0] *= globalVolume;
+				data[i * 2 + 1] *= globalVolume;
+			}	
+
 			// Process global DSPs
 			for(auto dsp : globalDSPs)
 			{
@@ -157,6 +164,7 @@ bool Audio::Init(class Window& window)
 }
 void Audio::SetGlobalVolume(float vol)
 {
+	impl.globalVolume = vol;
 }
 uint32 Audio::GetSampleRate() const
 {

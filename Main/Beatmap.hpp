@@ -33,6 +33,7 @@ struct BeatmapSettings
 class Beatmap
 {
 public:
+	virtual ~Beatmap();
 	bool Load(BinaryStream& input);
 	// Saves the map as it's own format
 	bool Save(BinaryStream& output);
@@ -48,6 +49,10 @@ public:
 	// Must keep the beatmap class instance alive for these to stay valid
 	// Can contain multiple objects at the same time
 	Vector<ObjectState*>& GetLinearObjects();
+	// Vector of zoom control points in the map, sorted by when they appear in the map
+	// Must keep the beatmap class instance alive for these to stay valid
+	// Can contain multiple objects at the same time
+	Vector<ZoomControlPoint*>& GetZoomControlPoints();
 
 private:
 	bool m_ProcessKShootMap(BinaryStream& input);
@@ -55,5 +60,6 @@ private:
 
 	Vector<TimingPoint*> m_timingPoints;
 	Vector<ObjectState*> m_objectStates;
+	Vector<ZoomControlPoint*> m_zoomControlPoints;
 	BeatmapSettings m_settings;
 };
