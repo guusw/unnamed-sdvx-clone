@@ -1,6 +1,10 @@
 # Unnamed SDVX clone
 Trying to create a game based on [KShoot](http://kshoot.client.jp/)/[SDVX](https://www.youtube.com/watch?v=JBHKNl87juA).
 
+Only tested to compile with Visual Studio 2015 / Windows Only.
+
+Uses OpenGL 4
+
 ### Currently implemented features:
 - Fonts
 - jpeg and png image loading
@@ -22,10 +26,10 @@ Additional command line parameters
 
 ### Game Controls:
 White buttons = [S] [D] [K] [L]
+
 Yellow notes = [C] [M] 
-Left Laser = [W] [E] (Move left / move right respectively)
-Right Laser = [O] [P] (Move left / move right respectively)
 
+Left Laser = [W] [E] 
+ Move left / move right respectively
 
-Only tested to compile with Visual Studio 2015 / Windows Only.
-Uses OpenGL 4
+Right Laser = [O] [P]
