@@ -31,6 +31,8 @@ public:
 
 	// Sets either button effect 0 or 1
 	void SetEffect(uint32 index, HoldObjectState* object, class BeatmapPlayback& playback);
+	// Sets the hearability of the currently active button effect on 'index'
+	void SetEffectEnabled(uint32 index, bool enabled);
 	void ClearEffect(uint32 index);
 
 	// Sets the effect to be used for lasers

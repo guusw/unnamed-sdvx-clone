@@ -26,28 +26,31 @@ Color Color::FromHSV(float hue, float saturation, float value)
 	float chroma = value * saturation;
 	float hue2 = fmodf(hue, 360.0f) / 60.0f;
 	float hueMod = fmodf(hue2, 2) - 1;
+	float m = value - chroma;
 	float x = chroma * (1 - fabsf(hueMod));
+	Color c;
 	switch((int)floorf(hue2)) {
 	case 0:
-		return Color(chroma, x, 0.0f);
+		c = Color(chroma, x, 0.0f);
 		break;
 	case 1:
-		return Color(x, chroma, 0.0f);
+		c = Color(x, chroma, 0.0f);
 		break;
 	case 2:
-		return Color(0.0f, chroma, x);
+		c = Color(0.0f, chroma, x);
 		break;
 	case 3:
-		return Color(0.0f, x, chroma);
+		c = Color(0.0f, x, chroma);
 		break;
 	case 4:
-		return Color(x, 0.0f, chroma);
+		c = Color(x, 0.0f, chroma);
 		break;
 	case 5:
-		return Color(chroma, 0.0f, x);
+		c = Color(chroma, 0.0f, x);
 		break;
 	}
-	return Color::Black;
+	c += Color(m, m, m, 0);
+	return c;
 }
 
 // Color constants

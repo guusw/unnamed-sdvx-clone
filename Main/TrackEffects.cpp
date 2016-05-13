@@ -57,13 +57,13 @@ void ButtonHitRatingEffect::Draw(class RenderQueue& rq)
 	{
 		w = track->buttonWidth;
 		x = (-track->buttonWidth * 1.5f) + w * buttonCode;
-		y = 0.40f;
+		y = 0.80f;
 	}
 	else
 	{
 		w = track->buttonWidth * 2.0f;
 		x = -track->buttonWidth + w * (buttonCode - 4);
-		y = 0.6f;
+		y = 1.0f;
 	}
 
 	float iScale = 1.0f;

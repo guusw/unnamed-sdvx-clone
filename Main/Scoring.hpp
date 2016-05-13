@@ -62,7 +62,8 @@ public:
 	Delegate<uint32, MapTime> OnButtonScore;
 	Delegate<uint32, ObjectState*> OnButtonHit;
 	Delegate<uint32> OnButtonMiss;
-	Delegate<uint32> OnLaserSlamHit;
+	// Idx, dir, newPos
+	Delegate<uint32, float, float> OnLaserSlamHit;
 	Delegate<uint32> OnComboChanged;
 
 	// The maximum timing window in which you are able to hit an object early

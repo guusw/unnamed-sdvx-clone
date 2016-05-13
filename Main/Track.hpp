@@ -3,6 +3,7 @@
 #include "Mesh.hpp"
 #include "Material.hpp"
 #include "Texture.hpp"
+#include "ParticleSystem.hpp"
 
 /*
 	The object responsible for drawing the track.
@@ -51,7 +52,6 @@ public:
 	void DrawObjectState(RenderQueue& rq, class BeatmapPlayback& playback, ObjectState* obj, bool active = false);
 	// Things like the laser pointers, hit bar and effect
 	void DrawOverlays(RenderQueue& rq);
-
 	// Draws a plane over the track
 	void DrawTrackOverlay(RenderQueue& rq, Texture texture, float heightOffset = 0.05f, float widthScale = 1.0f);
 	// Draw a centered sprite at pos, relative from the track

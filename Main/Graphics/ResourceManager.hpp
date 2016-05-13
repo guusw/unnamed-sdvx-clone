@@ -10,6 +10,11 @@ public:
 	ResourceManagers();
 	~ResourceManagers();
 	static void DestroyResourceManager(ResourceType type);
+	template<ResourceType E>
+	static void DestroyResourceManager()
+	{
+		DestroyResourceManager(E);
+	}
 
 	template<ResourceType E>
 	static void CreateResourceManager()

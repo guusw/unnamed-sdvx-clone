@@ -17,6 +17,7 @@ enum class ResourceType
 	Mesh,
 	Shader,
 	Material,
+	ParticleSystem,
 	_Length
 };
 

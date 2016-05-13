@@ -10,6 +10,7 @@ enum BuiltInShaderVariable
 	SV_World = 0,
 	SV_Proj,
 	SV_Camera,
+	SV_BillboardMatrix,
 	SV_Viewport,
 	SV_AspectRatio,
 	SV_Time,
@@ -21,6 +22,7 @@ const char* builtInShaderVariableNames[] =
 	"world",
 	"proj",
 	"camera",
+	"billboard",
 	"viewport",
 	"aspectRatio",
 	"time",
@@ -146,7 +148,7 @@ public:
 		glUseProgramStages(m_pipeline, shaderStageMap[(size_t)t], shader->Handle());
 	}
 
-	virtual void Bind(RenderState& rs, const MaterialParameterSet& params) override
+	virtual void Bind(const RenderState& rs, const MaterialParameterSet& params) override
 	{
 #if _DEBUG
 		bool reloadedShaders = false;
@@ -181,6 +183,8 @@ public:
 		BindAll(SV_Camera, rs.cameraTransform);
 		BindAll(SV_Viewport, rs.viewportSize);
 		BindAll(SV_AspectRatio, rs.aspectRatio);
+		Transform billboard = CameraMatrix::BillboardMatrix(rs.cameraTransform);
+		BindAll(SV_BillboardMatrix, billboard);
 		BindAll(SV_Time, rs.time);
 		for(auto p : params)
 		{

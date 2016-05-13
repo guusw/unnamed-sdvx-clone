@@ -25,7 +25,7 @@ bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 	}
 	
 	m_music = g_audio->CreateStream(audioPath);
-	m_music->SetVolume(0.75f);
+	m_music->SetVolume(1.0f);
 
 	if(!m_music)
 	{
@@ -148,12 +148,23 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 	default:
 		break;
 	}
+	dsp->mix = 0;
 
 	if(dsp)
 	{
 		m_music->AddDSP(dsp);
 	}
 }
+
+void AudioPlayback::SetEffectEnabled(uint32 index, bool enabled)
+{
+	assert(index >= 0 && index <= 1);
+	if(m_buttonDSPs[index])
+	{
+		m_buttonDSPs[index]->mix = enabled ? 1.0f : 0.0f;
+	}
+}
+
 void AudioPlayback::ClearEffect(uint32 index)
 {
 	assert(index >= 0 && index <= 1);

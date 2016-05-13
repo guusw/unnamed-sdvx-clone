@@ -69,7 +69,7 @@ public:
 
 public:
 	virtual void AssignShader(ShaderType t, Shader shader) = 0;
-	virtual void Bind(RenderState& rs, const MaterialParameterSet& params = MaterialParameterSet()) = 0;
+	virtual void Bind(const RenderState& rs, const MaterialParameterSet& params = MaterialParameterSet()) = 0;
 };
 
 typedef Ref<MaterialRes> Material;

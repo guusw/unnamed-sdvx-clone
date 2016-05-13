@@ -9,7 +9,7 @@ class Vector : public std::vector<I>
 public:
 	using std::vector<I>::vector;
 	// Adds a new element and returns it
-	I& Add(const I& obj = T()) { push_back(obj); return back(); };
+	I& Add(const I& obj = I()) { push_back(obj); return back(); };
 	I& AddZeroed() { push_back(I()); memset(&back(), 0, sizeof(I)); return back(); };
 	void AddUnique(const I& obj)
 	{

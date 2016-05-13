@@ -41,6 +41,7 @@
     <ClCompile Include="Graphics\Mesh.cpp" />
     <ClCompile Include="Graphics\MeshGenerators.cpp" />
     <ClCompile Include="Graphics\OpenGL.cpp" />
+    <ClCompile Include="Graphics\ParticleSystem.cpp" />
     <ClCompile Include="Graphics\RenderQueue.cpp" />
     <ClCompile Include="Graphics\ResourceManager.cpp" />
     <ClCompile Include="Graphics\Shader.cpp" />
@@ -63,6 +64,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Test.cpp" />
     <ClCompile Include="Track.cpp" />
     <ClCompile Include="TrackEffects.cpp" />
   </ItemGroup>
@@ -91,6 +93,10 @@
     <ClInclude Include="Graphics\Mesh.hpp" />
     <ClInclude Include="Graphics\MeshGenerators.hpp" />
     <ClInclude Include="Graphics\OpenGL.hpp" />
+    <ClInclude Include="Graphics\ParticleParameter.hpp" />
+    <ClInclude Include="Graphics\ParticleParameters.hpp" />
+    <ClInclude Include="Graphics\ParticleSystem.hpp" />
+    <ClInclude Include="Graphics\ParticleEmitter.hpp" />
     <ClInclude Include="Graphics\RenderQueue.hpp" />
     <ClInclude Include="Graphics\RenderState.hpp" />
     <ClInclude Include="Graphics\ResourceManager.hpp" />
@@ -99,6 +105,7 @@
     <ClInclude Include="Graphics\Texture.hpp" />
     <ClInclude Include="Graphics\VertexFormat.hpp" />
     <ClInclude Include="Graphics\Window.hpp" />
+    <ClInclude Include="Test.hpp" />
     <ClInclude Include="Track.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="glew\GL\glew.h" />

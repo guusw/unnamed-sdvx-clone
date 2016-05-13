@@ -55,7 +55,6 @@ class BitCrusherDSP : public DSP
 public:
 	// Duration of samples, 1 = disable
 	uint32 period = 1;
-	float mix = 0.8f;
 
 	virtual void Process(float*& out, uint32 numSamples);
 private:

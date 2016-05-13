@@ -44,7 +44,7 @@ public:
 		AdjustWindowRect(&wndRect, m_style, false);
 
 		// Create the window and make sure it was successfull
-		m_handle = CreateWindow(*m_className, *m_caption, m_style, -1, -1, 
+		m_handle = CreateWindow(*m_className, *m_caption, m_style, 5, 5,
 			wndRect.right - wndRect.left, wndRect.bottom - wndRect.top,
 			0, 0, hinst, 0);
 		assert(m_handle);

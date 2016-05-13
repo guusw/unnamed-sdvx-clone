@@ -5,6 +5,7 @@
 #include "Window.hpp"
 #include "Beatmap.hpp"
 #include "Game.hpp"
+#include "Test.hpp"
 #include "Audio.hpp"
 #include "ResourceManager.hpp"
 #include "Profiling.hpp"
@@ -12,7 +13,11 @@
 OpenGL* g_gl = nullptr;
 Window* g_gameWindow = nullptr;
 Application* g_application = nullptr;
+
 Game* g_game = nullptr;
+
+Vector<IApplicationTickable*> g_tickables;
+
 // Use rotated 16:9 as aspect ratio
 float g_aspectRatio = 1.0f /(16.0f / 9.0f);
 static float g_screenHeight = 1000.0f;
@@ -110,11 +115,19 @@ int32 Application::Run()
 		}
 	}
 
-	// Play the map
-	if(!LaunchMap(m_commandLine[1]))
+	if(m_commandLine.Contains("-test")) 
 	{
-		Logf("LaunchMap(%s) failed", Logger::Error, m_commandLine[1]);
-		return 1;
+		// Create test scene
+		g_tickables.Add(Test::Create());
+	}
+	else
+	{
+		// Play the map
+		if(!LaunchMap(m_commandLine[1]))
+		{
+			Logf("LaunchMap(%s) failed", Logger::Error, m_commandLine[1]);
+			return 1;
+		}
 	}
 
 	Timer appTimer;
@@ -124,6 +137,8 @@ int32 Application::Run()
 	{
 		static const float maxDeltaTime = (1.0f / 30.0f);
 
+		IApplicationTickable* tickable = g_tickables.back();
+
 		// Gameplay loop
 		/// TODO: Add timing management
 		for(uint32 i = 0; i < 32; i++)
@@ -131,14 +146,11 @@ int32 Application::Run()
 			// Input update
 			if(!g_gameWindow->Update())
 				return 0;
-			// Terminate after game
-			if(!g_game || !g_game->IsPlaying())
-				return 0;
 			float currentTime = appTimer.SecondsAsFloat();
 			float deltaTime = Math::Min(currentTime - m_lastUpdateTime, maxDeltaTime);
 			m_lastUpdateTime = currentTime;
 
-			g_game->Tick(deltaTime);
+			tickable->Tick(deltaTime);
 		}
 
 		// Set time in render state
@@ -147,10 +159,6 @@ int32 Application::Run()
 		// Render loop
 		for(uint32 i = 0; i < 1; i++)
 		{
-			// Terminate after game
-			if(!g_game || !g_game->IsPlaying())
-				return 0;
-
 			float currentTime = appTimer.SecondsAsFloat();
 			float deltaTime = Math::Min(currentTime - m_lastRenderTime, maxDeltaTime);
 			m_lastRenderTime = currentTime;
@@ -158,7 +166,7 @@ int32 Application::Run()
 			// Not minimized and such
 			if(g_resolution.x > 0 && g_resolution.y > 0)
 			{
-				g_game->Render(deltaTime);
+				tickable->Render(deltaTime);
 				// Swap Front/Back buffer
 				g_gl->SwapBuffers();
 			}
@@ -173,11 +181,12 @@ int32 Application::Run()
 void Application::m_Cleanup()
 {
 	ProfilerScope $("Application Cleanup");
-	if(g_game)
+
+	for(auto it : g_tickables)
 	{
-		delete g_game;
-		g_game = nullptr;
+		delete it;
 	}
+	g_game = nullptr;
 
 	if(g_audio)
 	{
@@ -216,6 +225,7 @@ Beatmap* TryLoadMap(const String& path)
 	}
 	return newMap;
 }
+
 bool Application::LaunchMap(const String& mapPath)
 {
 	String actualMapPath = mapPath;
@@ -273,23 +283,22 @@ bool Application::LaunchMap(const String& mapPath)
 	if(!g_game)
 		return false;
 
+	g_tickables.Add(g_game);
+
 	return true;
 }
-bool Application::IsPlaying() const
+void Application::Shutdown()
 {
-	return g_game != nullptr;
+	g_gameWindow->Close();
 }
-
 const Vector<String>& Application::GetAppCommandLine() const
 {
 	return m_commandLine;
 }
-
 RenderState Application::GetRenderStateBase() const
 {
 	return m_renderStateBase;
 }
-
 Texture Application::LoadTexture(const String& name)
 {
 	String path = String("textures/") + name;
@@ -302,7 +311,15 @@ Material Application::LoadMaterial(const String& name)
 {
 	String pathV = String("shaders/") + name + ".vs";
 	String pathF = String("shaders/") + name + ".fs";
+	String pathG = String("shaders/") + name + ".gs";
 	Material ret = MaterialRes::Create(g_gl, pathV, pathF);
+	// Additionally load geometry shader
+	if(Path::FileExists(pathG))
+	{
+		Shader gshader = ShaderRes::Create(g_gl, ShaderType::Geometry, pathG);
+		assert(gshader);
+		ret->AssignShader(ShaderType::Geometry, gshader);
+	}
 	assert(ret);
 	return ret;
 }
@@ -313,12 +330,10 @@ Sample Application::LoadSample(const String& name)
 	assert(ret);
 	return ret;
 }
-
 Transform Application::GetGUIProjection() const
 {
 	return ProjectionMatrix::CreateOrthographic(0.0f, (float)g_resolution.x, (float)g_resolution.y, 0.0f, 0.0f, 100.0f);
 }
-
 void Application::m_OnKeyPressed(uint8 key)
 {
 	if(g_game)
@@ -327,9 +342,7 @@ void Application::m_OnKeyPressed(uint8 key)
 	}
 	if(key == VK_ESCAPE)
 	{
-		// Leave game
-		delete g_game;
-		g_game = nullptr;
+		Shutdown();
 	}
 }
 void Application::m_OnKeyReleased(uint8 key)

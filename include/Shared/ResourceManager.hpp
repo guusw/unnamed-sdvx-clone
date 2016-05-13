@@ -45,7 +45,7 @@ public:
 		size_t numCleanedUp = 0;
 		for(auto it = m_objects.begin(); it != m_objects.end();)
 		{
-			if(it->GetRefCount() == 1)
+			if(it->GetRefCount() <= 1)
 			{
 				numCleanedUp++;
 				it = m_objects.erase(it);
@@ -63,7 +63,8 @@ public:
 		size_t numCleanedUp = m_objects.size();
 		for(auto it = m_objects.begin(); it != m_objects.end(); it++)
 		{
-			it->Destroy();
+			if(*it)
+				it->Destroy();
 		}
 		m_objects.clear();
 		if(numCleanedUp > 0)

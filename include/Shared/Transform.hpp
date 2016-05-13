@@ -49,6 +49,7 @@ public:
 	static Transform Rotation(const Vector3& euler);
 	static Transform Scale(const Vector3& scale);
 	static Transform LookAt(const Vector3& position, const Vector3& target, const Vector3& up = Vector3(0, 1, 0));
+	static Transform FromAxes(Vector3 bitangent, Vector3 tangent, Vector3 normal);
 
 	Vector3 GetPosition() const;
 	Vector3 GetScale() const;
@@ -73,4 +74,10 @@ namespace ProjectionMatrix
 {
 	Transform CreatePerspective(float field_of_view, float aspect_ratio, float z_near, float z_far);
 	Transform CreateOrthographic(float left, float right, float bottom, float top, float z_near, float z_far);
+}
+
+namespace CameraMatrix
+{
+	// Inverts a matrix to create a camera matrix or the inverse camera matrix
+	Transform BillboardMatrix(const Transform& matrix);
 }

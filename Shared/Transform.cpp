@@ -252,6 +252,25 @@ Vector3 Transform::TransformDirection(const Vector3& direction) const
 		);
 }
 
+Transform Transform::FromAxes(Vector3 bitangent, Vector3 tangent, Vector3 normal)
+{
+	Transform ret;
+
+	ret[0] = bitangent.x;
+	ret[4] = bitangent.y;
+	ret[8] = bitangent.z;
+
+	ret[1] = tangent.x;
+	ret[5] = tangent.y;
+	ret[9] = tangent.z;
+
+	ret[2] = normal.x;
+	ret[6] = normal.y;
+	ret[10] = normal.z;
+
+	return ret;
+}
+
 Transform Transform::LookAt(const Vector3& position, const Vector3& target, const Vector3& up /*= Vector3(0, 1, 0)*/)
 {
 	Transform ret;
@@ -272,5 +291,15 @@ Transform Transform::LookAt(const Vector3& position, const Vector3& target, cons
 	ret.mat[12] = position.x;
 	ret.mat[13] = position.y;
 	ret.mat[14] = position.z;
+	return ret;
+}
+
+Transform CameraMatrix::BillboardMatrix(const Transform& matrix)
+{
+	Vector3 pos = matrix.GetPosition();
+	Vector3 rot = matrix.GetEuler();
+	Transform ret;
+	ret *= Transform::Translation(-pos);
+	ret *= Transform::Rotation(rot);
 	return ret;
 }

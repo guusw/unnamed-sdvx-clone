@@ -8,9 +8,9 @@ void PanDSP::Process(float*& out, uint32 numSamples)
 	for(uint32 i = 0; i < numSamples; i++)
 	{
 		if(panning > 0)
-			out[i * 2 + 0] = out[i * 2 + 0] * (1.0f - panning);
+			out[i * 2 + 0] = (out[i * 2 + 0] * (1.0f - panning)) * mix + out[i * 2 + 0] * (1 - mix);
 		if(panning < 0)
-			out[i * 2 + 1] = out[i * 2 + 1] * (1.0f + panning);
+			out[i * 2 + 1] = (out[i * 2 + 1] * (1.0f + panning)) * mix + out[i * 2 + 1] * (1 - mix);
 	}
 }
 
@@ -38,7 +38,7 @@ void BQFDSP::Process(float*& out, uint32 numSamples)
 			za[c][1] = za[c][0];
 			za[c][0] = filtered;
 
-			sample = filtered;
+			sample = filtered * mix + sample * (1 - mix);
 		}
 	}
 }
@@ -157,7 +157,6 @@ void BitCrusherDSP::Process(float*& out, uint32 numSamples)
 
 		out[i * 2] = m_sampleBuffer[0] * mix + out[i * 2] * (1.0f - mix);
 		out[i * 2 + 1] = m_sampleBuffer[1] * mix + out[i * 2+1] * (1.0f - mix);
-
 	}
 }
 
@@ -172,8 +171,8 @@ void GateDSP::Process(float*& out, uint32 numSamples)
 		if(m_currentSample > halfwayDelay)
 		{
 			// Dim volume
-			out[i * 2] *= low;
-			out[i * 2+1] *= low;
+			out[i * 2] *= low * mix + (1 - mix) * 1;
+			out[i * 2 + 1] *= low * mix + (1 - mix) * 1;
 		}
 
 		m_currentSample++;
@@ -199,8 +198,8 @@ void TapeStopDSP::Process(float*& out, uint32 numSamples)
 
 		// The sample index into the buffer
 		uint32 i2 = (uint32)floor(m_sampleIdx);
-		out[i * 2] = m_sampleBuffer[i2 * 2];
-		out[i * 2+1] = m_sampleBuffer[i2 * 2+1];
+		out[i * 2] = m_sampleBuffer[i2 * 2] * mix + out[i * 2] * (1 - mix);
+		out[i * 2 + 1] = m_sampleBuffer[i2 * 2 + 1] * mix + out[i * 2+1] * (1 - mix);
 
 		// Increase index
 		m_sampleIdx += sampleRate;
@@ -220,8 +219,8 @@ void RetriggerDSP::Process(float*& out, uint32 numSamples)
 		}
 
 		// Sample from buffer
-		out[i * 2] = m_sampleBuffer[m_currentSample*2];
-		out[i * 2 + 1] = m_sampleBuffer[m_currentSample*2+1];
+		out[i * 2] = m_sampleBuffer[m_currentSample*2] * mix + out[i * 2] * (1 - mix);
+		out[i * 2 + 1] = m_sampleBuffer[m_currentSample*2+1] * mix + out[i * 2+1] * (1 - mix);
 		
 		// Increase index
 		m_currentSample++;
@@ -275,7 +274,7 @@ void PhaserDSP::Process(float*& out, uint32 numSamples)
 			za[c] = filtered;
 
 			// Final sample
-			out[i * 2 + c] = out[i * 2 + c] + filtered * depth;
+			out[i * 2 + c] = out[i * 2 + c] + filtered * mix * depth;
 		}
 
 		time++;
@@ -319,8 +318,8 @@ void FlangerDSP::Process(float*& out, uint32 numSamples)
 		data[1] = out[i*2+1];
 
 		// Apply delay
-		out[i * 2] += data[d * 2];
-		out[i * 2 + 1] += data[d * 2+1];
+		out[i * 2] += data[d * 2] * mix + out[i * 2] * (1 - mix);
+		out[i * 2 + 1] += data[d * 2+1] * mix + out[i * 2+1] * (1 - mix);
 
 		time++;
 	}

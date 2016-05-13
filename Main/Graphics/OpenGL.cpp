@@ -9,6 +9,7 @@
 #include "Font.hpp"
 #include "Material.hpp"
 #include "Framebuffer.hpp"
+#include "ParticleSystem.hpp"
 
 OpenGL::OpenGL()
 {
@@ -19,12 +20,13 @@ OpenGL::~OpenGL()
 	if(m_renderContext)
 	{
 		// Cleanup resource managers
-		ResourceManagers::DestroyResourceManager(ResourceType::Mesh);
-		ResourceManagers::DestroyResourceManager(ResourceType::Texture);
-		ResourceManagers::DestroyResourceManager(ResourceType::Shader);
-		ResourceManagers::DestroyResourceManager(ResourceType::Font);
-		ResourceManagers::DestroyResourceManager(ResourceType::Material);
-		ResourceManagers::DestroyResourceManager(ResourceType::Framebuffer);
+		ResourceManagers::DestroyResourceManager<ResourceType::Mesh>();
+		ResourceManagers::DestroyResourceManager<ResourceType::Texture>();
+		ResourceManagers::DestroyResourceManager<ResourceType::Shader>();
+		ResourceManagers::DestroyResourceManager<ResourceType::Font>();
+		ResourceManagers::DestroyResourceManager<ResourceType::Material>();
+		ResourceManagers::DestroyResourceManager<ResourceType::Framebuffer>();
+		ResourceManagers::DestroyResourceManager<ResourceType::ParticleSystem>();
 
 		if(glBindProgramPipeline)
 		{
@@ -45,6 +47,7 @@ void OpenGL::InitResourceManagers()
 	ResourceManagers::CreateResourceManager<ResourceType::Font>();
 	ResourceManagers::CreateResourceManager<ResourceType::Material>();
 	ResourceManagers::CreateResourceManager<ResourceType::Framebuffer>();
+	ResourceManagers::CreateResourceManager<ResourceType::ParticleSystem>();
 }
 bool OpenGL::Init(Window& window)
 {

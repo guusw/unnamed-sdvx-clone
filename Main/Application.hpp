@@ -21,7 +21,7 @@ public:
 	int32 Run();
 
 	bool LaunchMap(const String& mapPath);
-	bool IsPlaying() const;
+	void Shutdown();
 
 	// Retrieves application command line parameters
 	const Vector<String>& GetAppCommandLine() const;

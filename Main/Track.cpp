@@ -393,3 +393,4 @@ TimedEffect* Track::AddEffect(TimedEffect* effect)
 	effect->track = this;
 	return effect;
 }
+

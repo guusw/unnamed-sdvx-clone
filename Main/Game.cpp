@@ -54,6 +54,12 @@ class Game_Impl : public Game
 	Sample m_slamSample;
 	Sample m_clickSamples[2];
 
+	// Particle effects
+	Material particleMaterial;
+	Texture basicParticleTexture;
+	ParticleSystem m_particleSystem;
+	Ref<ParticleEmitter> m_laserFollowEmitters[2];
+	Ref<ParticleEmitter> m_holdEmitters[6];
 public:
 
 	~Game_Impl()
@@ -64,6 +70,15 @@ public:
 			delete m_background;
 	}
 
+	// Normal/FX button x placement
+	float GetButtonPlacement(uint32 buttonIdx)
+	{
+		if(buttonIdx < 4)
+			return buttonIdx * m_track->buttonWidth - (m_track->buttonWidth * 1.5f);
+		else
+			return (buttonIdx - 4) * m_track->fxbuttonWidth - (m_track->fxbuttonWidth * 0.5f);
+	}
+
 	// Main update routine for the game logic
 	virtual bool Init(Beatmap* map, String mapPath) override
 	{
@@ -72,40 +87,43 @@ public:
 		assert(map);
 		m_mapPath = mapPath;
 		m_beatmap = map;
-		const BeatmapSettings& mapSettings = m_beatmap->GetMapSettings();
+const BeatmapSettings& mapSettings = m_beatmap->GetMapSettings();
 
-		// Try to load beatmap jacket image
-		String jacketPath = mapPath + "/" + mapSettings.jacketPath;
-		Image jacketImage = ImageRes::Create(jacketPath);
-		if(jacketImage)
-		{
-			m_jacketTexture = TextureRes::Create(g_gl, jacketImage);
-		}
+// Try to load beatmap jacket image
+String jacketPath = mapPath + "/" + mapSettings.jacketPath;
+Image jacketImage = ImageRes::Create(jacketPath);
+if(jacketImage)
+{
+	m_jacketTexture = TextureRes::Create(g_gl, jacketImage);
+}
 
-		// Load beatmap audio
-		if(!m_audioPlayback.Init(*m_beatmap, mapPath))
-			return false;
+// Load beatmap audio
+if(!m_audioPlayback.Init(*m_beatmap, mapPath))
+return false;
 
-		if(!InitGameplay())
-			return false;
+if(!InitGameplay())
+return false;
 
-		if(!InitSFX())
-			return false;
+if(!InitSFX())
+return false;
 
-		// Intialize track graphics
-		m_track = new Track();
-		if(!m_track->Init())
-		{
-			return false;
-		}
+// Intialize track graphics
+m_track = new Track();
+if(!m_track->Init())
+{
+	return false;
+}
 
-		// Background graphics
-		CheckedLoad(m_background = CreateBackground(this));
+if(!InitParticles())
+return false;
 
-		if(!InitHUD())
-			return false;
+// Background graphics
+CheckedLoad(m_background = CreateBackground(this));
 
-		return true;
+if(!InitHUD())
+return false;
+
+return true;
 	}
 	virtual void Tick(float deltaTime) override
 	{
@@ -159,11 +177,158 @@ public:
 		m_track->DrawCombo(scoringRq, m_scoring.currentComboCounter, Color::White, 1.0f + comboZoom);
 
 		// Render queues
-		
 		renderQueue.Process();
 		scoringRq.Process();
 
+		// Set laser follow particle visiblity
+		for(uint32 i = 0; i < 2; i++)
+		{
+			if(m_scoring.laserActive[i])
+			{
+				if(!m_laserFollowEmitters[i])
+					m_laserFollowEmitters[i] = CreateTrailEmitter(m_track->laserColors[i]);
+
+				// Set particle position to follow laser
+				m_laserFollowEmitters[i]->position.x = m_track->trackWidth * m_scoring.laserTargetPositions[i] - m_track->trackWidth * 0.5f;
+			}
+			else
+			{
+				if(m_laserFollowEmitters[i])
+				{
+					m_laserFollowEmitters[i].Release();
+				}
+			}
+		}
+
+		// Set hold button particle visibility
+		for(uint32 i = 0; i < 6; i++)
+		{
+			if(m_scoring.activeHoldObjects[i])
+			{
+				if(!m_holdEmitters[i])
+				{
+					Color hitColor = (i < 4) ? Color::White : Color::FromHSV(20, 0.7f, 1.0f);
+					float hitWidth = (i < 4) ? m_track->buttonWidth : m_track->fxbuttonWidth;
+					m_holdEmitters[i] = CreateHoldEmitter(hitColor, hitWidth);
+					m_holdEmitters[i]->position.x = GetButtonPlacement(i);
+					m_holdEmitters[i]->position.y = 0.1f;
+				}
+			}
+			else
+			{
+				if(m_holdEmitters[i])
+				{
+					m_holdEmitters[i].Release();
+				}
+			}
+
+		}
+
+		// Render particle effects last
+		RenderParticles(rs, deltaTime);
+
 		RenderHUD(deltaTime);
+	}
+
+	bool InitParticles()
+	{
+		// Load particle effects
+		m_particleSystem = ParticleSystemRes::Create(g_gl);
+		CheckedLoad(particleMaterial = g_application->LoadMaterial("particle"));
+		particleMaterial->blendMode = MaterialBlendMode::Additive;
+		particleMaterial->opaque = false;
+		CheckedLoad(basicParticleTexture = g_application->LoadTexture("ParticleFlare.png"));
+
+		m_laserFollowEmitters[0] = CreateTrailEmitter(m_track->laserColors[0]);
+
+		return true;
+	}
+	void RenderParticles(const RenderState& rs, float deltaTime)
+	{
+		// Render particle effects
+		m_particleSystem->Render(rs, deltaTime);
+	}
+	Ref<ParticleEmitter> CreateTrailEmitter(const Color& color)
+	{
+		Ref<ParticleEmitter> emitter = m_particleSystem->AddEmitter();
+		emitter->material = particleMaterial;
+		emitter->texture = basicParticleTexture;
+		emitter->loops = 0;
+		emitter->duration = 5.0f;
+		emitter->SetSpawnRate(PPRandomRange<float>(250, 300));
+		emitter->SetStartPosition(PPBox({ 0.5f, 0.1f, 0.0f }));
+		emitter->SetStartSize(PPRandomRange<float>(0.2f, 0.3f));
+		emitter->SetFadeOverTime(PPRangeFadeIn<float>(1.0f, 0.0f, 0.4f));
+		emitter->SetLifetime(PPRandomRange<float>(0.17f, 0.2f));
+		emitter->SetStartDrag(PPConstant<float>(0.0f));
+		emitter->SetStartVelocity(PPConstant<Vector3>({ 0,0,0.5f }));
+		emitter->SetSpawnVelocityScale(PPRandomRange<float>(0.9f, 2));
+		emitter->SetStartColor(PPConstant<Color>(color));
+		emitter->SetGravity(PPConstant<Vector3>(Vector3(0.0f, 0.0f, -9.81f)));
+		emitter->position.y = 0.2f;
+		emitter->scale = 0.3f;
+		return emitter;
+	}
+	Ref<ParticleEmitter> CreateHoldEmitter(const Color& color, float width)
+	{
+		Ref<ParticleEmitter> emitter = m_particleSystem->AddEmitter();
+		emitter->material = particleMaterial;
+		emitter->texture = basicParticleTexture;
+		emitter->loops = 0;
+		emitter->duration = 5.0f;
+		emitter->SetSpawnRate(PPRandomRange<float>(50, 100));
+		emitter->SetStartPosition(PPBox({ width * 1.0f, 0.1f, 0.0f }));
+		emitter->SetStartSize(PPRandomRange<float>(0.6f, 0.7f));
+		emitter->SetFadeOverTime(PPRangeFadeIn<float>(1.0f, 0.0f, 0.4f));
+		emitter->SetLifetime(PPRandomRange<float>(0.17f, 0.2f));
+		emitter->SetStartDrag(PPConstant<float>(0.0f));
+		emitter->SetStartVelocity(PPConstant<Vector3>({ 0,0,0.5f }));
+		emitter->SetSpawnVelocityScale(PPRandomRange<float>(0.9f, 2));
+		emitter->SetStartColor(PPConstant<Color>(color));
+		emitter->SetGravity(PPConstant<Vector3>(Vector3(0.0f, 0.0f, -9.81f)));
+		emitter->position.y = 0.2f;
+		emitter->scale = 0.4f;
+		return emitter;
+	}
+	Ref<ParticleEmitter> CreateExplosionEmitter(const Color& color, const Vector3 dir)
+	{
+		Ref<ParticleEmitter> emitter = m_particleSystem->AddEmitter();
+		emitter->material = particleMaterial;
+		emitter->texture = basicParticleTexture;
+		emitter->loops = 1;
+		emitter->duration = 0.2f;
+		emitter->SetSpawnRate(PPRange<float>(200, 0));
+		emitter->SetStartPosition(PPSphere(0.1f));
+		emitter->SetStartSize(PPRandomRange<float>(0.7f, 1.1f));
+		emitter->SetFadeOverTime(PPRangeFadeIn<float>(0.9f, 0.0f, 0.0f));
+		emitter->SetLifetime(PPRandomRange<float>(0.22f, 0.3f));
+		emitter->SetStartDrag(PPConstant<float>(0.2f));
+		emitter->SetSpawnVelocityScale(PPRandomRange<float>(1.0f, 4.0f));
+		emitter->SetScaleOverTime(PPRange<float>(1.0f, 0.4f));
+		emitter->SetStartVelocity(PPConstant<Vector3>(dir * 5.0f));
+		emitter->SetStartColor(PPConstant<Color>(color));
+		emitter->SetGravity(PPConstant<Vector3>(Vector3(0.0f, 0.0f, -9.81f)));
+		emitter->scale = 0.3f;
+		return emitter;
+	}
+	Ref<ParticleEmitter> CreateHitEmitter(const Color& color, float width)
+	{
+		Ref<ParticleEmitter> emitter = m_particleSystem->AddEmitter();
+		emitter->material = particleMaterial;
+		emitter->texture = basicParticleTexture;
+		emitter->loops = 1;
+		emitter->duration = 0.15f;
+		emitter->SetSpawnRate(PPRange<float>(50, 0));
+		emitter->SetStartPosition(PPBox(Vector3(width * 0.5f, 0.1f, 0)));
+		emitter->SetStartSize(PPRandomRange<float>(0.3f, 0.1f));
+		emitter->SetFadeOverTime(PPRangeFadeIn<float>(0.7f, 0.0f, 0.0f));
+		emitter->SetLifetime(PPRandomRange<float>(0.35f, 0.4f));
+		emitter->SetStartDrag(PPConstant<float>(6.0f));
+		emitter->SetSpawnVelocityScale(PPConstant<float>(0.0f));
+		emitter->SetScaleOverTime(PPRange<float>(1.0f, 0.4f));
+		emitter->SetStartVelocity(PPCone(Vector3(0,0,-1), 90.0f, 1.0f, 4.0f));
+		emitter->SetStartColor(PPConstant<Color>(color));
+		return emitter;
 	}
 
 	// Draws HUD and debug overlay text
@@ -443,12 +608,16 @@ public:
 	{
 		m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, ScoreHitRating::Miss));
 	}
-	void OnLaserSlamHit(uint32 laserIndex)
+	void OnLaserSlamHit(uint32 laserIndex, float dir, float target)
 	{
 		CameraShake shake(0.2f, 0.5f, 170.0f);
 		shake.amplitude = Vector3(0.02f, 0.01f, 0.0f); // Mainly x-axis
 		m_camera.AddCameraShake(shake);
 		m_slamSample->Play();
+
+		float laserPos = m_track->trackWidth * target - m_track->trackWidth * 0.5f;
+		Ref<ParticleEmitter> ex = CreateExplosionEmitter(m_track->laserColors[laserIndex], Vector3(dir, 0, 0));
+		ex->position = Vector3(laserPos, 0.5f, -0.1f);
 	}
 	void OnButtonHit(uint32 buttonIdx, ObjectState* hitObject)
 	{
@@ -459,6 +628,15 @@ public:
 			Color c = m_track->hitColors[(size_t)rating + 1];
 			m_track->AddEffect(new ButtonHitEffect(buttonIdx, c));
 			m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, rating));
+
+			Color hitColor = (buttonIdx < 4) ? Color::White : Color::FromHSV(20, 0.7f, 1.0f);
+			float hitWidth = (buttonIdx < 4) ? m_track->buttonWidth : m_track->fxbuttonWidth;
+
+			// Create hit effect particle
+			Ref<ParticleEmitter> emitter = CreateHitEmitter(hitColor, hitWidth);
+			emitter->position.x = GetButtonPlacement(buttonIdx);
+			emitter->position.z = -0.1f;
+			emitter->position.y = 0.2f;
 		}
 	}
 	void OnComboChanged(uint32 newCombo)
@@ -490,6 +668,7 @@ public:
 	{
 		assert(object->index >= 4 && object->index <= 5);
 		m_audioPlayback.SetEffect(object->index - 4, object, m_playback);
+		m_audioPlayback.SetEffectEnabled(object->index - 4, true);
 	}
 	void OnFXEnd(HoldObjectState* object)
 	{
@@ -580,6 +759,10 @@ public:
 		// Update music filter states
 		m_audioPlayback.SetLaserFilterInput(m_scoring.GetLaserOutput(), m_scoring.IsLaserActive());
 		m_audioPlayback.Tick(m_playback, deltaTime);
+
+		// Set audability of effect buttons
+		m_audioPlayback.SetEffectEnabled(0, m_scoring.activeHoldObjects[4] != nullptr);
+		m_audioPlayback.SetEffectEnabled(1, m_scoring.activeHoldObjects[5] != nullptr);
 
 		// Update scoring
 		m_scoring.Tick(deltaTime);

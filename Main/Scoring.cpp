@@ -57,6 +57,7 @@ void Scoring::Tick(float deltaTime)
 
 			if(!activeHoldObjects[hold->index])
 			{
+				// Autoplay hold button control
 				if(autoplay && hitDelta >= 0 && endDelta < 0)
 					OnButtonPressed(hold->index);
 
@@ -66,11 +67,11 @@ void Scoring::Tick(float deltaTime)
 					MapTime endTime = hold->duration + hold->time;
 					MapTime endDelta = time - endTime;
 
-					if(abs(endDelta) > maxEarlyHitTime)
+					/// TODO: if object is shorted than maxEarlyHitTime * 2 then it is never missed, fix this.
+					if(-endDelta > maxEarlyHitTime)
 					{
 						// Combo break, released too early
 						m_ResetCombo();
-						//OnButtonMiss.Call(hold->index);
 						continue;
 					}
 				}
@@ -211,7 +212,7 @@ void Scoring::Tick(float deltaTime)
 				currentHitScore++; // 1 Point for laser slams
 				currentMaxScore++;
 				m_AddCombo();
-				OnLaserSlamHit.Call(i);
+				OnLaserSlamHit.Call(i, (float)Math::Sign(laserDelta), laser->points[1]);
 				laserPositions[i] = laser->points[1];
 				AdvanceLaser();
 				interpolateOutput = false; // Instant filter changes
