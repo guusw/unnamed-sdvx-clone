@@ -11,7 +11,7 @@ Uses OpenGL 4
 - Ogg audio streaming with timing management.
 - Loading KShoot format maps (*.ksh)
 - Basic Gameplay
-- Real-time laser sound Filters and button Effects (Except for sidechain).
+- Real-time laser sound Filters and button Effects.
 - Track zoom
 - Track roll animations
 
