@@ -199,6 +199,7 @@ void Track::Tick(class BeatmapPlayback& playback, float deltaTime)
 		m_laserTrackBuilder[i]->Update(m_lastMapTime);
 	}
 }
+
 void Track::DrawBase(class RenderQueue& rq)
 {
 	// Base

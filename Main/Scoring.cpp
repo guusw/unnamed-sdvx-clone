@@ -82,10 +82,10 @@ void Scoring::Tick(float deltaTime)
 				assert(tp);
 
 				// Give combo points for hold note ticks
-				uint32 comboTickLast = (uint32)floor(((double)lastHoldDuration[hold->index] * (double)tp->measure) / tp->beatDuration);
+				uint32 comboTickLast = (uint32)floor(((double)lastHoldDuration[hold->index] * (double)tp->numerator) / tp->beatDuration);
 				// Clamp duration to make sure no one can get extra points on hold notes
 				lastHoldDuration[hold->index] = Math::Min<MapTime>(lastHoldDuration[hold->index] + delta, hold->duration-1);
-				uint32 comboTickCurrent = (uint32)floor(((double)lastHoldDuration[hold->index] * (double)tp->measure) / tp->beatDuration);
+				uint32 comboTickCurrent = (uint32)floor(((double)lastHoldDuration[hold->index] * (double)tp->numerator) / tp->beatDuration);
 				if(comboTickCurrent > comboTickLast)
 				{
 					m_AddCombo();
@@ -238,7 +238,7 @@ void Scoring::Tick(float deltaTime)
 			const TimingPoint* tp = m_playback->GetTimingPointAt(laser->time);
 			assert(tp);
 			// The last combo tick on this laser
-			uint32 comboTickLast = (uint32)floor(((double)laserHoldDuration[laser->index] * (double)tp->measure) / tp->beatDuration);
+			uint32 comboTickLast = (uint32)floor(((double)laserHoldDuration[laser->index] * (double)tp->numerator) / tp->beatDuration);
 
 			// Handle miss time
 			if(!isBeingControlled)
@@ -267,7 +267,7 @@ void Scoring::Tick(float deltaTime)
 				laserActive[i] = true;
 
 				// Give combo points
-				uint32 comboTickCurrent = (uint32)floor(((double)laserHoldDuration[laser->index] * (double)tp->measure) / tp->beatDuration);
+				uint32 comboTickCurrent = (uint32)floor(((double)laserHoldDuration[laser->index] * (double)tp->numerator) / tp->beatDuration);
 				if(comboTickCurrent > comboTickLast)
 				{
 					m_AddCombo();

@@ -112,7 +112,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 	lastTimingPoint->time = atol(*kshootMap.settings["o"]);
 	double bpm = atof(*kshootMap.settings["t"]);
 	lastTimingPoint->beatDuration = 60000.0 / bpm;
-	lastTimingPoint->measure = 4;
+	lastTimingPoint->numerator = 4;
 
 	// Block offset for current timing point
 	uint32 timingPointBlockOffset = 0;
@@ -140,7 +140,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 		const KShootTick& tick = *it;
 
 		// Calculate MapTime from current tick
-		double blockDuration = (lastTimingPoint->beatDuration * lastTimingPoint->measure);
+		double blockDuration = lastTimingPoint->GetBarDuration();
 		uint32 blockFromStartOfTimingPoint = (time.block - timingPointBlockOffset);
 		uint32 tickFromStartOfTimingPoint;
 
@@ -173,7 +173,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 		for(auto& p : tick.settings)
 		{
 			// Functions that adds a new timing point at current location if it's not yet there
-			auto AddTimingPoint = [&](double newDuration, uint32 newMeasure)
+			auto AddTimingPoint = [&](double newDuration, uint32 newNum, uint32 newDenom)
 			{
 				// Does not yet exist at current time?
 				if(!timingPointMap.Contains(mapTime))
@@ -186,11 +186,12 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 					timingTickOffset = time.tick;
 				}
 
-				lastTimingPoint->measure = newMeasure;
+				lastTimingPoint->numerator = newNum;
+				lastTimingPoint->denominator = newDenom;
 				lastTimingPoint->beatDuration = newDuration;
 
 				// Calculate new block duration
-				blockDuration = (lastTimingPoint->beatDuration * lastTimingPoint->measure);
+				blockDuration = lastTimingPoint->GetBarDuration();
 
 				// Set new first block duration based on remaining ticks
 				timingFirstBlockDuration = (double)(block.ticks.size() - time.tick) / (double)block.ticks.size() * blockDuration;
@@ -203,13 +204,14 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 					assert(false);
 				uint32 num = atol(*n);
 				uint32 denom = atol(*d);
+				assert(denom % 4 == 0);
 
-				AddTimingPoint(lastTimingPoint->beatDuration, num);
+				AddTimingPoint(lastTimingPoint->beatDuration, num, denom);
 			}
 			else if(p.first == "t")
 			{
 				double bpm = atof(*p.second);
-				AddTimingPoint(60000.0 / bpm, lastTimingPoint->measure);
+				AddTimingPoint(60000.0 / bpm, lastTimingPoint->numerator, lastTimingPoint->denominator);
 			}
 			else if(p.first == "laserrange_l")
 			{

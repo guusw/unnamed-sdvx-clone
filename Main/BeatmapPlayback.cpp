@@ -48,7 +48,7 @@ void BeatmapPlayback::Update(MapTime newTime)
 	uint32 nBeats = CountBeats(m_playbackTime - delta, delta, beatID);
 	const TimingPoint& tp = GetCurrentTimingPoint();
 	double effectiveTime = ((double)newTime - tp.time); // Time with offset applied
-	m_barTime = (float)fmod(effectiveTime / (tp.beatDuration * tp.measure), 1.0);
+	m_barTime = (float)fmod(effectiveTime / (tp.beatDuration * tp.numerator), 1.0);
 
 	// Set new time
 	m_playbackTime = newTime;
@@ -258,25 +258,25 @@ uint32 BeatmapPlayback::CountBeats(MapTime start, MapTime range, uint32& startIn
 MapTime BeatmapPlayback::BarDistanceToDuration(float distance)
 {
 	const TimingPoint& tp = GetCurrentTimingPoint();
-	return (MapTime)(distance * tp.beatDuration * tp.measure);
+	return (MapTime)(distance * tp.beatDuration * tp.numerator);
 }
 float BeatmapPlayback::DurationToBarDistance(MapTime duration)
 {
 	const TimingPoint& tp = GetCurrentTimingPoint();
-	return (float)((double)duration / (tp.beatDuration * (double)tp.measure));
+	return (float)((double)duration / (tp.beatDuration * (double)tp.numerator));
 }
 
 float BeatmapPlayback::DurationToBarDistanceAtTime(MapTime time, MapTime duration)
 {
 	const TimingPoint* tp = GetTimingPointAt(time);
-	return (float)((double)duration / (tp->beatDuration * (double)tp->measure));
+	return (float)((double)duration / (tp->beatDuration * (double)tp->numerator));
 }
 
 float BeatmapPlayback::TimeToBarDistance(MapTime time)
 {
 	const TimingPoint& tp = GetCurrentTimingPoint();
 	int64 delta = time - m_playbackTime;
-	return (float)((double)delta / (tp.beatDuration * (double)tp.measure));
+	return (float)((double)delta / (tp.beatDuration * (double)tp.numerator));
 }
 
 float BeatmapPlayback::GetBarTime() const

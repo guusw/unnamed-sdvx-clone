@@ -206,6 +206,8 @@ struct TimingPoint
 {
 	static bool StaticSerialize(BinaryStream& stream, TimingPoint*& out);
 
+	double GetBarDuration() const { return numerator * beatDuration / (denominator / 4); }
+
 	// Position in ms when this timing point appears
 	MapTime time;
 	// Beat duration in milliseconds
@@ -213,11 +215,10 @@ struct TimingPoint
 	//	can be cast back to integer format once is has been multiplied by the amount of beats you want the length of.
 	// Calculated by taking (60000.0 / BPM)
 	double beatDuration;
-	// This is just set to the numerator of the time signature
-	// 4/4 -> 4
-	// 3/4 -> 3
-	// 8/8 -> 8
-	uint8 measure;
+	// Upper part of the time signature
+	uint8 numerator;
+	// Lower part of the time signature
+	uint8 denominator = 4;
 };
 
 // Control point for track zoom levels

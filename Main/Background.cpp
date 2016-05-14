@@ -58,7 +58,7 @@ class TestBackground : public FullscreenBackground
 		timing.x = game->GetPlayback().GetBarTime();
 
 		// every 1/4 tick
-		float tickTime = fmodf(timing.x * (float)tp.measure, 1.0f);
+		float tickTime = fmodf(timing.x * (float)tp.numerator, 1.0f);
 		//timing.y = powf(tickTime, 2);
 		timing.y = powf(1.0f-tickTime, 1);
 		//if(tickTime > 0.7f)

@@ -76,7 +76,7 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 	// For Time based effects
 	const TimingPoint* timingPoint = playback.GetTimingPointAt(object->time);
 	// Duration of a single bar
-	double barDelay = timingPoint->measure * timingPoint->beatDuration;
+	double barDelay = timingPoint->numerator * timingPoint->beatDuration;
 
 	DSP*& dsp = m_buttonDSPs[index];
 	switch(object->effectType)

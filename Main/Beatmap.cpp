@@ -117,7 +117,7 @@ bool TimingPoint::StaticSerialize(BinaryStream& stream, TimingPoint*& out)
 		out = new TimingPoint();
 	stream << out->time;
 	stream << out->beatDuration;
-	stream << out->measure;
+	stream << out->numerator;
 	return true;
 }
 
