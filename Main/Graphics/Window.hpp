@@ -1,5 +1,10 @@
 #pragma once
 
+enum class WindowStyle
+{
+	Windowed, Borderless
+};
+
 /*
 	Simple window class that manages window messages, window style and input
 */
@@ -22,10 +27,14 @@ public:
 	// Closes the window
 	void Close();
 
+	// Switches between borderless and windowed
+	void SetWindowStyle(WindowStyle style);
+
 	// Window Client area size
 	Vector2i GetWindowSize();
 	// Set window client area size
 	void SetWindowSize(const Vector2i& size);
+	void SwitchFullscreen(uint32 monitorID = -1);
 
 	// WINDOWS ONLY
 	// Sets certain bits of the window style

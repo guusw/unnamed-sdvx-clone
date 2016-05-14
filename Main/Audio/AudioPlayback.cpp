@@ -148,10 +148,10 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 	default:
 		break;
 	}
-	dsp->mix = 0;
 
 	if(dsp)
 	{
+		dsp->mix = 0;
 		m_music->AddDSP(dsp);
 	}
 }

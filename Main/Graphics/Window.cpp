@@ -207,6 +207,8 @@ public:
 
 	// Various window state
 	bool m_closed = false;
+	bool m_fullscreen = false;
+	RECT m_preFullscreenRect;
 	uint32 m_style;
 	Vector2i m_clntSize;
 	WString m_caption;
@@ -271,7 +273,17 @@ void Window::Close()
 {
 	m_impl->m_closed = true;
 }
-
+void Window::SetWindowStyle(WindowStyle style)
+{
+	if(style == WindowStyle::Windowed)
+	{
+		SetStyles(WS_OVERLAPPEDWINDOW);
+	}
+	else
+	{
+		UnsetStyles(WS_OVERLAPPEDWINDOW);
+	}
+}
 Vector2i Window::GetWindowSize()
 {
 	return m_impl->GetWindowSize();
@@ -279,6 +291,63 @@ Vector2i Window::GetWindowSize()
 void Window::SetWindowSize(const Vector2i& size)
 {
 	m_impl->SetWindowSize(size);
+}
+
+BOOL CALLBACK MonitorEnumCallback(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
+{
+	Vector<RECT>& out = *(Vector<RECT>*)dwData;
+	out.Add(*lprcMonitor);
+	return true;
+}
+void Window::SwitchFullscreen(uint32 monitorID)
+{
+	if(!m_impl->m_fullscreen)
+	{
+		RECT rect;
+		GetWindowRect(m_impl->m_handle, &rect);
+		RECT monitorRect;
+
+		if(monitorID == -1)
+		{
+			// Get monitor from active window position
+			HMONITOR monitor = MonitorFromRect(&rect, MONITOR_DEFAULTTONEAREST);
+			m_impl->m_preFullscreenRect = rect;
+
+			MONITORINFO info;
+			GetMonitorInfo(monitor, &info);
+
+			monitorRect = info.rcMonitor;
+		}
+		else
+		{
+			//Get monitor by index
+			Vector<RECT> monitors;
+			bool ok = EnumDisplayMonitors(0, 0, &MonitorEnumCallback, (LPARAM)&monitors) == TRUE;
+			assert(ok && monitors.size() > 0);
+
+			// Clamp index
+			monitorID = Math::Clamp<uint32>(monitorID, 0, (uint32)monitors.size() - 1);
+			monitorRect = monitors[monitorID];
+		}
+
+		SetWindowStyle(WindowStyle::Borderless);
+		int32 sizex = monitorRect.right - monitorRect.left;
+		int32 sizey = monitorRect.bottom - monitorRect.top;
+		SetWindowPos(m_impl->m_handle, 0, monitorRect.left, monitorRect.top,
+			sizex, sizey, SWP_SHOWWINDOW);
+		m_impl->m_fullscreen = true;
+	}
+	else
+	{
+		// Restore original window style and position
+		const RECT& rect = m_impl->m_preFullscreenRect;
+		SetWindowStyle(WindowStyle::Windowed);
+		int32 sizex = rect.right - rect.left;
+		int32 sizey = rect.bottom - rect.top;
+		SetWindowPos(m_impl->m_handle, 0, rect.left, rect.top,
+			sizex, sizey, 0);
+		m_impl->m_fullscreen = false;
+	}
 }
 
 void Window::SetStyles(uint32 mask)

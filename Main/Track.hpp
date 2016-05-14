@@ -109,6 +109,8 @@ private:
 	// Laser track generators
 	class LaserTrackBuilder* m_laserTrackBuilder[2] = { 0 };
 
+	const TimingPoint* m_lastTimingPoint;
+
 	// Active effects
 	Vector<struct TimedEffect*> m_hitEffects;
 

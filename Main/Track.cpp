@@ -156,6 +156,14 @@ bool Track::Init()
 }
 void Track::Tick(class BeatmapPlayback& playback, float deltaTime)
 {
+	const TimingPoint& currentTimingPoint = playback.GetCurrentTimingPoint();
+	if(&currentTimingPoint != m_lastTimingPoint)
+	{
+		m_laserTrackBuilder[0]->Reset();
+		m_laserTrackBuilder[1]->Reset();
+		m_lastTimingPoint = &currentTimingPoint;
+	}
+
 	// Button Hit FX
 	for(auto it = m_hitEffects.begin(); it != m_hitEffects.end();)
 	{

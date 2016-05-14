@@ -461,7 +461,7 @@ float Scoring::GetLaserRollOutput(uint32 index)
 	return 0.0f;
 }
 
-static const float laserOutputInterpolationDuration = 0.2f;
+static const float laserOutputInterpolationDuration = 0.1f;
 float Scoring::GetLaserOutput()
 {
 	float f = Math::Min(1.0f, m_timeSinceOutputSet / laserOutputInterpolationDuration);
@@ -471,11 +471,10 @@ void Scoring::m_UpdateLaserOutput(float deltaTime, bool interpolate)
 {
 	m_timeSinceOutputSet += deltaTime;
 	float v = m_GetLaserOutputRaw();
-	float c = GetLaserOutput();
-	if(v != c)
+	if(v != m_laserOutputTarget)
 	{
 		m_laserOutputTarget = v;
-		m_laserOutputSource = c;
+		m_laserOutputSource = GetLaserOutput();
 		m_timeSinceOutputSet = interpolate ? 0.0f : laserOutputInterpolationDuration;
 	}
 }

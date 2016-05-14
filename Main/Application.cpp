@@ -47,15 +47,32 @@ int32 Application::Run()
 
 		m_allowMapConversion = false;
 		bool debugMute = false;
+		bool startFullscreen = false;
+		uint32 fullscreenMonitor = -1;
 		for(auto& cl : m_commandLine)
 		{
-			if(cl == "-convertmaps")
+			String k, v;
+			if(cl.Split("=", &k, &v))
 			{
-				m_allowMapConversion = true;
+				if(k == "-monitor")
+				{
+					fullscreenMonitor = atol(*v);
+				}
 			}
-			else if(cl == "-mute")
+			else
 			{
-				debugMute = true;
+				if(cl == "-convertmaps")
+				{
+					m_allowMapConversion = true;
+				}
+				else if(cl == "-mute")
+				{
+					debugMute = true;
+				}
+				else if(cl == "-fullscreen")
+				{
+					startFullscreen = true;
+				}
 			}
 		}
 
@@ -67,8 +84,12 @@ int32 Application::Run()
 		g_gameWindow->OnKeyReleased.Add(this, &Application::m_OnKeyReleased);
 		g_gameWindow->OnResized.Add(this, &Application::m_OnWindowResized);
 
+
 		// Fixed window style
 		g_gameWindow->UnsetStyles(WS_SIZEBOX | WS_MAXIMIZE | WS_MAXIMIZEBOX);
+
+		if(startFullscreen)
+			g_gameWindow->SwitchFullscreen(fullscreenMonitor);
 
 		// Set render state variables
 		m_renderStateBase.aspectRatio = g_aspectRatio;

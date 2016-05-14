@@ -113,7 +113,14 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 	double bpm = atof(*kshootMap.settings["t"]);
 	lastTimingPoint->beatDuration = 60000.0 / bpm;
 	lastTimingPoint->measure = 4;
+
+	// Block offset for current timing point
 	uint32 timingPointBlockOffset = 0;
+	// Tick offset into block for current timing point
+	uint32 timingTickOffset = 0;
+	// Duration of first timing block
+	double timingFirstBlockDuration = 0.0f;
+
 	// Ending time of last timing point
 	m_timingPoints.Add(lastTimingPoint);
 	timingPointMap.Add(lastTimingPoint->time, lastTimingPoint);
@@ -135,7 +142,29 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 		// Calculate MapTime from current tick
 		double blockDuration = (lastTimingPoint->beatDuration * lastTimingPoint->measure);
 		uint32 blockFromStartOfTimingPoint = (time.block - timingPointBlockOffset);
-		MapTime mapTime = lastTimingPoint->time + MapTime((blockFromStartOfTimingPoint + (double)time.tick / (double)block.ticks.size()) * blockDuration);
+		uint32 tickFromStartOfTimingPoint;
+
+		if(blockFromStartOfTimingPoint == 0) // Use tick offset when in first block
+			tickFromStartOfTimingPoint = (time.tick - timingTickOffset);
+		else
+			tickFromStartOfTimingPoint = time.tick;
+
+		// Get the offset calculated by adding block durations together
+		double blockDurationOffset = 0;
+		if(timingTickOffset > 0) // First block might have a shorter length because of the timing point being mid tick
+		{
+			if(blockFromStartOfTimingPoint > 0)
+				blockDurationOffset = timingFirstBlockDuration + blockDuration * (blockFromStartOfTimingPoint - 1);
+		}
+		else
+		{
+			blockDurationOffset = blockDuration * blockFromStartOfTimingPoint;
+		}
+
+		// Sub-Block offset by adding ticks together
+		double blockPercent = (double)tickFromStartOfTimingPoint / (double)block.ticks.size();
+		double tickOffset = blockPercent * blockDuration;
+		MapTime mapTime = lastTimingPoint->time + MapTime(blockDurationOffset + tickOffset);
 
 		bool lastTick = &block == &kshootMap.blocks.back() &&
 			&tick == &block.ticks.back();
@@ -143,9 +172,10 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 		// Process settings
 		for(auto& p : tick.settings)
 		{
-			if(p.first == "beat")
+			// Functions that adds a new timing point at current location if it's not yet there
+			auto AddTimingPoint = [&](double newDuration, uint32 newMeasure)
 			{
-				// Create new deriving point?
+				// Does not yet exist at current time?
 				if(!timingPointMap.Contains(mapTime))
 				{
 					lastTimingPoint = new TimingPoint(*lastTimingPoint);
@@ -153,30 +183,33 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 					m_timingPoints.Add(lastTimingPoint);
 					timingPointMap.Add(mapTime, lastTimingPoint);
 					timingPointBlockOffset = time.block;
+					timingTickOffset = time.tick;
 				}
 
+				lastTimingPoint->measure = newMeasure;
+				lastTimingPoint->beatDuration = newDuration;
+
+				// Calculate new block duration
+				blockDuration = (lastTimingPoint->beatDuration * lastTimingPoint->measure);
+
+				// Set new first block duration based on remaining ticks
+				timingFirstBlockDuration = (double)(block.ticks.size() - time.tick) / (double)block.ticks.size() * blockDuration;
+			};
+
+			if(p.first == "beat")
+			{
 				String n, d;
 				if(!p.second.Split("/", &n, &d))
 					assert(false);
 				uint32 num = atol(*n);
 				uint32 denom = atol(*d);
 
-				lastTimingPoint->measure = num;
+				AddTimingPoint(lastTimingPoint->beatDuration, num);
 			}
 			else if(p.first == "t")
 			{
-				// Create new point?
-				if(!timingPointMap.Contains(mapTime))
-				{
-					lastTimingPoint = new TimingPoint(*lastTimingPoint);
-					lastTimingPoint->time = mapTime;
-					m_timingPoints.Add(lastTimingPoint);
-					timingPointMap.Add(mapTime, lastTimingPoint);
-					timingPointBlockOffset = time.block;
-				}
-
 				double bpm = atof(*p.second);
-				lastTimingPoint->beatDuration = 60000.0 / bpm;
+				AddTimingPoint(60000.0 / bpm, lastTimingPoint->measure);
 			}
 			else if(p.first == "laserrange_l")
 			{
