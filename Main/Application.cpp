@@ -80,13 +80,10 @@ int32 Application::Run()
 		g_resolution = Vector2i{ (int32)(g_screenHeight * g_aspectRatio), (int32)g_screenHeight };
 		g_gameWindow = new Window(g_resolution);
 		g_gameWindow->Show();
+		m_OnWindowResized(g_resolution);
 		g_gameWindow->OnKeyPressed.Add(this, &Application::m_OnKeyPressed);
 		g_gameWindow->OnKeyReleased.Add(this, &Application::m_OnKeyReleased);
 		g_gameWindow->OnResized.Add(this, &Application::m_OnWindowResized);
-
-
-		// Fixed window style
-		g_gameWindow->UnsetStyles(WS_SIZEBOX | WS_MAXIMIZE | WS_MAXIMIZEBOX);
 
 		if(startFullscreen)
 			g_gameWindow->SwitchFullscreen(fullscreenMonitor);
@@ -158,7 +155,6 @@ int32 Application::Run()
 	{
 		static const float maxDeltaTime = (1.0f / 30.0f);
 
-		IApplicationTickable* tickable = g_tickables.back();
 
 		// Gameplay loop
 		/// TODO: Add timing management
@@ -171,7 +167,11 @@ int32 Application::Run()
 			float deltaTime = Math::Min(currentTime - m_lastUpdateTime, maxDeltaTime);
 			m_lastUpdateTime = currentTime;
 
-			tickable->Tick(deltaTime);
+			if(!g_tickables.empty())
+			{
+				IApplicationTickable* tickable = g_tickables.back();
+				tickable->Tick(deltaTime);
+			}
 		}
 
 		// Set time in render state
@@ -184,12 +184,17 @@ int32 Application::Run()
 			float deltaTime = Math::Min(currentTime - m_lastRenderTime, maxDeltaTime);
 			m_lastRenderTime = currentTime;
 
-			// Not minimized and such
+			// Not minimized / Valid resolution
 			if(g_resolution.x > 0 && g_resolution.y > 0)
 			{
-				tickable->Render(deltaTime);
-				// Swap Front/Back buffer
-				g_gl->SwapBuffers();
+				if(!g_tickables.empty())
+				{
+					IApplicationTickable* tickable = g_tickables.back();
+					tickable->Tick(deltaTime);
+
+					tickable->Render(deltaTime);
+					g_gl->SwapBuffers();
+				}
 			}
 
 			// Garbage collect resources
@@ -208,6 +213,8 @@ void Application::m_Cleanup()
 		delete it;
 	}
 	g_game = nullptr;
+
+	CleanupMap();
 
 	if(g_audio)
 	{
@@ -257,6 +264,8 @@ bool Application::LaunchMap(const String& mapPath)
 		return false;
 	}
 
+	CleanupMap();
+
 	if(!Path::FileExists(actualMapPath))
 	{
 		Logf("Couldn't find map at %s", Logger::Error, actualMapPath);
@@ -276,6 +285,7 @@ bool Application::LaunchMap(const String& mapPath)
 			loadedConvertedMap = true;
 		}
 	}
+
 	// Load original map
 	if(!loadedConvertedMap)
 	{
@@ -285,7 +295,9 @@ bool Application::LaunchMap(const String& mapPath)
 	// Check failure of above loading attempts
 	if(!m_currentMap)
 		return false;
+
 	// Loaded successfully
+	m_lastMapPath = actualMapPath;
 
 	// Save converted map
 	if(m_allowMapConversion && !loadedConvertedMap)
@@ -312,6 +324,26 @@ void Application::Shutdown()
 {
 	g_gameWindow->Close();
 }
+
+void Application::CleanupMap()
+{
+	if(m_currentMap)
+	{
+		delete m_currentMap;
+		m_currentMap = nullptr;
+	}
+}
+void Application::CleanupGame()
+{
+	if(g_game)
+	{
+		g_tickables.Remove(g_game);
+		delete g_game;
+		g_game = nullptr;
+	}
+	CleanupMap();
+}
+
 const Vector<String>& Application::GetAppCommandLine() const
 {
 	return m_commandLine;
@@ -365,6 +397,11 @@ void Application::m_OnKeyPressed(uint8 key)
 	{
 		Shutdown();
 	}
+	if(key == VK_F5) // Restart map
+	{
+		CleanupGame();
+		LaunchMap(m_lastMapPath);
+	}
 }
 void Application::m_OnKeyReleased(uint8 key)
 {
@@ -380,4 +417,6 @@ void Application::m_OnWindowResized(const Vector2i& newSize)
 
 	m_renderStateBase.aspectRatio = g_aspectRatio;
 	m_renderStateBase.viewportSize = g_resolution;
+	glViewport(0, 0, newSize.x, newSize.y);
+	glScissor(0, 0, newSize.x, newSize.y);
 }

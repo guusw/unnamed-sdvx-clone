@@ -53,6 +53,6 @@ void Log(const String& msg, Logger::Severity severity = Logger::Normal);
 #ifdef _WIN32
 namespace Utility
 {
-	String WindowsFormatMessage(DWORD code);
+	String WindowsFormatMessage(uint32 code);
 }
 #endif

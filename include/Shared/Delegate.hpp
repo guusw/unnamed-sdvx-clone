@@ -58,6 +58,20 @@ struct StaticDelegateHandler : public IDelegateHandler<A...>
 	};
 };
 
+/* Handler for lambda functions */
+template<typename T, typename... A>
+struct LambdaDelegatehandler : public IDelegateHandler<A...>
+{
+	// Copies the given lambda
+	LambdaDelegatehandler(T&& lambda) : lambda(lambda) {};
+	virtual void Call(A... args) override
+	{
+		lambda(args...);
+	}
+
+	T lambda;
+};
+
 /*
 	Template delegate class, can have multiple registered classes that handle a call to this function
 */
@@ -66,21 +80,11 @@ class Delegate
 {
 	Map<void*, IDelegateHandler<A...>*> staticMap;
 	Map<void*, Map<void*, IDelegateHandler<A...>*>> objectMap;
+	Map<void*, IDelegateHandler<A...>*> lambdaMap;
 public:
 	~Delegate()
 	{
-		// Cleanup the pointers
-		for(auto& h : staticMap)
-		{
-			delete h.second;
-		}
-		for(auto& h : objectMap)
-		{
-			for(auto& f : h.second)
-			{
-				delete f.second;
-			}
-		}
+		Clear();
 	}
 
 	// Adds an object function handler
@@ -98,6 +102,13 @@ public:
 		void* id = Utility::UnionCast<void*>(func);
 		assert(!staticMap.Contains(id));
 		staticMap.Add(id, new StaticDelegateHandler<A...>(func));
+	}
+	// Adds a lambda function as a handler for this delegate
+	template<typename T> void AddLambda(T&& lambda)
+	{
+		void* id = &lambda;
+		assert(!lambdaMap.Contains(id));
+		lambdaMap.Add(id, new LambdaDelegatehandler<T, A...>(std::forward<T>(lambda)));
 	}
 
 	// Removes an object handler
@@ -120,6 +131,13 @@ public:
 		delete staticMap[id];
 		staticMap.erase(id);
 	}
+	template<typename T> void RemoveLambda(T& lambda)
+	{
+		void* id = &lambda;
+		assert(!lambdaMap.Contains(id));
+		delete lambdaMap[id];
+		lambdaMap.erase(id);
+	}
 	// Removes all handlers belonging to a specific object
 	void RemoveAll(void* object)
 	{
@@ -132,6 +150,30 @@ public:
 			}
 		}
 		objectMap.erase(it);
+	}
+
+	// Removes all handlers
+	void Clear()
+	{
+		// Cleanup the pointers
+		for(auto& h : staticMap)
+		{
+			delete h.second;
+		}
+		for(auto& h : objectMap)
+		{
+			for(auto& f : h.second)
+			{
+				delete f.second;
+			}
+		}
+		for(auto& h : lambdaMap)
+		{
+			delete h.second;
+		}
+		staticMap.clear();
+		objectMap.clear();
+		lambdaMap.clear();
 	}
 
 	// Calls the delegate
@@ -147,6 +189,10 @@ public:
 			{
 				f.second->Call(args...);
 			}
+		}
+		for(auto& h : lambdaMap)
+		{
+			h.second->Call(args...);
 		}
 	}
 };

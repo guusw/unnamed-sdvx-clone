@@ -4,9 +4,9 @@
 #include <math.h>
 
 const float Scoring::idleLaserMoveSpeed = 1.0f;
-const MapTime Scoring::maxEarlyHitTime = 100;
+const MapTime Scoring::maxEarlyHitTime = 80;
 const MapTime Scoring::perfectHitTime = 50;
-const MapTime Scoring::maxLaserHitTime = 100;
+const MapTime Scoring::maxLaserHitTime = 70;
 
 Scoring::Scoring()
 {
@@ -27,6 +27,32 @@ void Scoring::SetPlayback(BeatmapPlayback& playback)
 	m_playback->OnObjectEntered.Add(this, &Scoring::m_OnObjectEntered);
 	m_playback->OnObjectLeaved.Add(this, &Scoring::m_OnObjectLeaved);
 }
+
+void Scoring::Reset()
+{
+	currentMaxScore = 0;
+	currentHitScore = 0;
+	currentComboCounter = 0;
+	hitStats.clear();
+	for(uint32 i = 0; i < 6; i++)
+	{
+		lastHoldDuration[i] = 0;
+		laserHoldObjects[i] = 0;
+	}
+	for(uint32 i = 0; i < 2; i++)
+	{
+		laserActive[i] = false;
+		laserHoldObjects[i] = nullptr;
+		activeLaserObjects[i] = nullptr;
+	}
+	totalMaxScore = CalculateMaxScore();
+	m_lastTime = 0;
+	m_holdTickCounter = 0;
+	m_laserOutputSource = 0;
+	m_laserOutputTarget = 0;
+	m_timeSinceOutputSet = 0;
+}
+
 void Scoring::Tick(float deltaTime)
 {
 	assert(m_playback);
@@ -84,7 +110,7 @@ void Scoring::Tick(float deltaTime)
 				// Give combo points for hold note ticks
 				uint32 comboTickLast = (uint32)floor(((double)lastHoldDuration[hold->index] * (double)tp->numerator) / tp->beatDuration);
 				// Clamp duration to make sure no one can get extra points on hold notes
-				lastHoldDuration[hold->index] = Math::Min<MapTime>(lastHoldDuration[hold->index] + delta, hold->duration-1);
+				lastHoldDuration[hold->index] = Math::Min<double>(lastHoldDuration[hold->index] + delta, hold->duration-1);
 				uint32 comboTickCurrent = (uint32)floor(((double)lastHoldDuration[hold->index] * (double)tp->numerator) / tp->beatDuration);
 				if(comboTickCurrent > comboTickLast)
 				{
@@ -203,7 +229,6 @@ void Scoring::Tick(float deltaTime)
 		// Whenether the user is holding the right direction
 		bool isBeingControlled = Math::Sign(laserDelta) == Math::Sign(laserInput[i]);
 
-
 		if((laser->flags & LaserObjectState::flag_Instant) != 0)
 		{
 			if(isBeingControlled && (!laser->prev || hitDelta > 0))
@@ -216,6 +241,9 @@ void Scoring::Tick(float deltaTime)
 				laserPositions[i] = laser->points[1];
 				AdvanceLaser();
 				interpolateOutput = false; // Instant filter changes
+
+				// Reset miss duration
+				laserMissDuration[i] = 0;
 
 				// Register statistic
 				hitStats.Add(HitStat(time, hitDelta));
@@ -240,11 +268,19 @@ void Scoring::Tick(float deltaTime)
 			// The last combo tick on this laser
 			uint32 comboTickLast = (uint32)floor(((double)laserHoldDuration[laser->index] * (double)tp->numerator) / tp->beatDuration);
 
+			// Maximum miss duration
+			uint32 currentMaxHitTime = maxLaserHitTime;
+			// Multiply by two for normal segments following laser slams
+			if(laser->prev && (laser->prev->flags & LaserObjectState::flag_Instant))
+				currentMaxHitTime += maxLaserHitTime;
+
 			// Handle miss time
 			if(!isBeingControlled)
 			{
+				// Multiply delta by slope to allow lazier slow curves
+				float slope = Math::Clamp(abs(laserDelta) * 10.0f, 0.0f, 1.0f);
 				if(laserDelta != 0.0f)
-					laserMissDuration[i] += delta;
+					laserMissDuration[i] += delta * slope;
 			}
 			else
 			{
@@ -257,10 +293,10 @@ void Scoring::Tick(float deltaTime)
 				AdvanceLaser();
 				laserHoldDuration[i] = 0;
 			} 
-			else if(isBeingControlled || (laserMissDuration[i] < maxLaserHitTime))
+			else if(isBeingControlled || (laserMissDuration[i] < currentMaxHitTime))
 			{
 				// Clamp duration to make sure no one can get extra points on hold notes
-				laserHoldDuration[laser->index] = Math::Min<MapTime>(laserHoldDuration[laser->index] + delta, laser->duration - 1);
+				laserHoldDuration[laser->index] = Math::Min<double>(laserHoldDuration[laser->index] + delta, laser->duration - 1);
 				// Make cursor follow laser
 				laserPositions[i] = laserTargetNew;
 				laserHoldObjects[i] = laser;
@@ -467,6 +503,44 @@ float Scoring::GetLaserOutput()
 	float f = Math::Min(1.0f, m_timeSinceOutputSet / laserOutputInterpolationDuration);
 	return m_laserOutputSource + (m_laserOutputTarget - m_laserOutputSource) * f;
 }
+
+uint32 Scoring::CalculateMaxScore() const
+{
+	const Beatmap& map = m_playback->GetBeatmap();
+
+	assert(m_playback);
+	auto& objects = map.GetLinearObjects();
+	uint32 maxScore = 0;
+	for(auto& _obj : objects)
+	{
+		MultiObjectState* obj = *_obj;
+		if(obj->type == ObjectType::Single)
+		{
+			maxScore += (uint32)ScoreHitRating::Perfect;
+		}
+		else if(obj->type == ObjectType::Hold)
+		{
+			uint32 duration = obj->hold.duration;
+			maxScore += 1; // Start
+			/// Ticks
+			maxScore += 1; // End
+		}
+		else if(obj->type == ObjectType::Laser)
+		{
+			if((obj->laser.flags & LaserObjectState::flag_Instant) != 0)
+			{
+				maxScore += 1; // Hit
+			}
+			else
+			{
+				uint32 duration = obj->laser.duration;
+				/// Ticks
+			}
+		}
+	}
+	return maxScore;
+}
+
 void Scoring::m_UpdateLaserOutput(float deltaTime, bool interpolate)
 {
 	m_timeSinceOutputSet += deltaTime;
@@ -506,4 +580,3 @@ float Scoring::m_SampleLaserPosition(MapTime time, LaserObjectState* laser)
 	float r = Math::Clamp((float)time / Math::Max(1.0f, (float)laser->duration), 0.0f, 1.0f);
 	return laser->points[0] + (laser->points[1] - laser->points[0]) * r;
 }
-

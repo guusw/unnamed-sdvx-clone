@@ -35,6 +35,9 @@ public:
 	// Get the timing point at a given time
 	const TimingPoint* GetTimingPointAt(MapTime time) const;
 	
+	// The beatmap this player is using
+	const Beatmap& GetBeatmap() { return *m_beatmap; }
+
 	// Counts the total amount of beats that have passed within <start, start+range>
 	// Returns the number of passed beats
 	// Returns the starting index of the passed beats in 'startIndex'

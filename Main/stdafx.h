@@ -1,9 +1,8 @@
 /* Main and precompiled header file for Main project*/
 #pragma once
 
-// OpenGL Extension wrangler
-#include "GL/glew.h"
-#include "GL/wglew.h"
+// OpenGL headers
+#include <Graphics/GL.hpp>
 
 // Windows Header Files:
 #include <windows.h>

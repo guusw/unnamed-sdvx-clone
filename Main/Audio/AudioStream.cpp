@@ -207,7 +207,7 @@ public:
 	}
 	void ResyncTiming(double delta)
 	{
-		if(abs(delta) > 0.5)
+		if(abs(delta) > 1.5)
 			RestartTiming();
 		else
 			m_offsetCorrection += delta * 0.5;
@@ -228,11 +228,11 @@ private:
 	static int m_Seek(AudioStreamOGG_Impl* self, int64 offset, int whence)
 	{
 		if(whence == SEEK_SET)
-			self->m_reader.Seek(offset);
+			self->m_reader.Seek((size_t)offset);
 		else if(whence == SEEK_CUR)
-			self->m_reader.Skip(offset);
+			self->m_reader.Skip((size_t)offset);
 		else if(whence == SEEK_END)
-			self->m_reader.SeekReverse(offset);
+			self->m_reader.SeekReverse((size_t)offset);
 		else
 			assert(false);
 		return 0;

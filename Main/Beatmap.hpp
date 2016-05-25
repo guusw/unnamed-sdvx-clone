@@ -44,15 +44,15 @@ public:
 	// Vector of timing points in the map, sorted by when they appear in the map
 	// Must keep the beatmap class instance alive for these to stay valid
 	// Can contain multiple objects at the same time
-	Vector<TimingPoint*>& GetLinearTimingPoints();
+	const Vector<TimingPoint*>& GetLinearTimingPoints() const;
 	// Vector of objects in the map, sorted by when they appear in the map
 	// Must keep the beatmap class instance alive for these to stay valid
 	// Can contain multiple objects at the same time
-	Vector<ObjectState*>& GetLinearObjects();
+	const Vector<ObjectState*>& GetLinearObjects() const;
 	// Vector of zoom control points in the map, sorted by when they appear in the map
 	// Must keep the beatmap class instance alive for these to stay valid
 	// Can contain multiple objects at the same time
-	Vector<ZoomControlPoint*>& GetZoomControlPoints();
+	const Vector<ZoomControlPoint*>& GetZoomControlPoints() const;
 
 private:
 	bool m_ProcessKShootMap(BinaryStream& input);

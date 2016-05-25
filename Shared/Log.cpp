@@ -104,7 +104,7 @@ void Log(const String& msg, Logger::Severity severity)
 	Logger::Get().Log(msg, severity);
 }
 
-String Utility::WindowsFormatMessage(DWORD code)
+String Utility::WindowsFormatMessage(uint32 code)
 {
 	if(code == 0)
 	{

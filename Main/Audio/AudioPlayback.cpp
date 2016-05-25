@@ -23,14 +23,33 @@ bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 		Logf("Audio file for beatmap does not exists at: \"%s\"", Logger::Error, audioPath);
 		return false;
 	}
-	
 	m_music = g_audio->CreateStream(audioPath);
 	m_music->SetVolume(1.0f);
-
 	if(!m_music)
 	{
 		Logf("Failed to load any audio for beatmap \"%s\"", Logger::Error, audioPath);
 		return false;
+	}
+
+	// Load FX track
+	audioPath = mapPath + "\\" + mapSettings.audioFX;
+	audioPathUnicode = Utility::ConvertToUnicode(audioPath);
+	if(!audioPath.empty())
+	{
+		if(!Path::FileExists(audioPath))
+		{
+			Logf("FX audio for for beatmap does not exists at: \"%s\"", Logger::Error, audioPath);
+			return false;
+		}
+		else
+		{
+			m_fxtrack = g_audio->CreateStream(audioPath);
+			if(m_fxtrack)
+			{
+				// Initially mute normal track if fx is enabled
+				m_music->SetVolume(0.0f);
+			}
+		}
 	}
 
 	return true;
@@ -42,10 +61,12 @@ void AudioPlayback::Tick(class BeatmapPlayback& playback, float deltaTime)
 void AudioPlayback::Play()
 {
 	m_music->Play();
+	if(m_fxtrack)
+		m_fxtrack->Play();
 }
 void AudioPlayback::Advance(MapTime ms)
 {
-	m_music->SetPosition(m_music->GetPosition() + ms);
+	SetPosition(GetPosition() + ms);
 }
 MapTime AudioPlayback::GetPosition() const
 {
@@ -54,16 +75,22 @@ MapTime AudioPlayback::GetPosition() const
 void AudioPlayback::SetPosition(MapTime time)
 {
 	m_music->SetPosition(time);
+	if(m_fxtrack)
+		m_fxtrack->SetPosition(time);
 }
 void AudioPlayback::TogglePause()
 {
 	if(m_paused)
 	{
 		m_music->Play();
+		if(m_fxtrack)
+			m_fxtrack->Play();
 	}
 	else
 	{
 		m_music->Pause();
+		if(m_fxtrack)
+			m_fxtrack->Pause();
 	}
 	m_paused = !m_paused;
 }
@@ -152,7 +179,7 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 	if(dsp)
 	{
 		dsp->mix = 0;
-		m_music->AddDSP(dsp);
+		m_GetDSPTrack()->AddDSP(dsp);
 	}
 }
 
@@ -206,6 +233,33 @@ void AudioPlayback::SetLaserEffectMix(float mix)
 	m_laserEffectMix = mix;
 }
 
+AudioStream AudioPlayback::m_GetDSPTrack()
+{
+	if(m_fxtrack)
+		return m_fxtrack;
+	return m_music;
+}
+
+void AudioPlayback::SetFXTrackEnabled(bool enabled)
+{
+	if(!m_fxtrack)
+		return;
+	if(m_fxtrackEnabled != enabled)
+	{
+		if(enabled)
+		{
+			m_fxtrack->SetVolume(1.0f);
+			m_music->SetVolume(0.0f);
+		}
+		else
+		{
+			m_fxtrack->SetVolume(0.0f);
+			m_music->SetVolume(1.0f);
+		}
+	}
+	m_fxtrackEnabled = enabled;
+}
+
 DSP* AudioPlayback::m_InitDSP(LaserEffectType type)
 {
 	DSP* ret = nullptr;
@@ -230,6 +284,7 @@ DSP* AudioPlayback::m_InitDSP(LaserEffectType type)
 
 	return ret;
 }
+
 void AudioPlayback::m_CleanupDSP(DSP*& ptr)
 {
 	if(ptr)

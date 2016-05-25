@@ -13,7 +13,7 @@ namespace VectorMath
 	public:
 		T x, y, z, w;
 		VectorBase() : x(0), y(0), z(0), w(0) {};
-		explicit VectorBase(float c) : x(c), y(c), z(c), w(c) {};
+		explicit VectorBase(T c) : x(c), y(c), z(c), w(c) {};
 		VectorBase(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {};
 		template<typename T1>
 		VectorBase(const VectorBase<T1, 4>& other)
@@ -24,20 +24,17 @@ namespace VectorMath
 			w = (T)other.w;
 		}
 		template<typename T1>
-		VectorBase(const VectorBase<T1, 3>& other)
+		VectorBase(const VectorBase<T1, 3>& other, T w = 0) : w(w)
 		{
 			x = (T)other.x;
 			y = (T)other.y;
 			z = (T)other.z;
-			w = 0;
 		}
 		template<typename T1>
-		VectorBase(const VectorBase<T1, 2>& other)
+		VectorBase(const VectorBase<T1, 2>& other, T z = 0, T w = 0) : z(z), w(w)
 		{
 			x = (T)other.x;
 			y = (T)other.y;
-			z = 0;
-			w = 0;
 		}
 		template<typename T1 = T>
 		VectorBase<T1, 3> xyz() const
@@ -131,11 +128,10 @@ namespace VectorMath
 			z = (T)other.z;
 		}
 		template<typename T1>
-		VectorBase(const VectorBase<T1, 2>& other)
+		VectorBase(const VectorBase<T1, 2>& other, T z = 0) : z(z)
 		{
 			x = (T)other.x;
 			y = (T)other.y;
-			z = 0;
 		}
 		template<typename T1 = T>
 		VectorBase<T1, 2> xy() const

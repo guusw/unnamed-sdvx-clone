@@ -413,13 +413,14 @@ return true;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Laser Filter Input: %f (x%f)", m_scoring.GetLaserOutput(), 1.0f), textPos).y;
 		for(uint32 i = 0; i < 2; i++)
 		{
+			textPos.y += RenderText(guiRq, Utility::Sprintf("Laser Input %d: %f", i, m_scoring.laserInput[i]), textPos).y;
 			if(m_scoring.activeLaserObjects[i])
 			{
 				textPos.y += RenderText(guiRq,
-					Utility::Sprintf("Laser %s: %d (f:%02x) (m:%d)",
+					Utility::Sprintf("Laser %s: %d (h:%f) (m:%f)",
 						i == 0 ? "L" : "R",
 						m_scoring.activeLaserObjects[i]->time,
-						m_scoring.activeLaserObjects[i]->flags,
+						m_scoring.laserHoldDuration[i],
 						m_scoring.laserMissDuration[i]), textPos).y;
 			}
 		}
@@ -495,6 +496,20 @@ return true;
 		r -= 1.0f * buttonStates[base];
 		r += 1.0f * buttonStates[base + 1];
 		return r;
+	}
+	float GetInputLaserDir(uint32 laserIndex, Button b, bool pressed)
+	{
+		// Pressed always overrides the previous state
+		uint32 bid = (b > Button::LS_0Pos) ? 1 : 0;
+		if(pressed && bid == laserIndex)
+		{
+			if(b == Button::LS_0Pos || b == Button::LS_1Pos)
+				return 1.0f;
+			else
+				return -1.0f;
+		}
+		else
+			return GetInputLaserDir(laserIndex); // Get last state
 	}
 	void InitButtonMapping()
 	{
@@ -585,8 +600,8 @@ return true;
 		}
 		else // Update lasers
 		{
-			m_scoring.laserInput[0] = GetInputLaserDir(0);
-			m_scoring.laserInput[1] = GetInputLaserDir(1);
+			m_scoring.laserInput[0] = GetInputLaserDir(0, b, pressed);
+			m_scoring.laserInput[1] = GetInputLaserDir(1, b, pressed);
 		}
 	}
 	void OnButtonInput(uint32 buttonIdx, bool pressed)
@@ -694,14 +709,17 @@ return true;
 		m_playback.OnEventChanged.Add(this, &Game_Impl::OnEventChanged);
 		m_playback.OnFXBegin.Add(this, &Game_Impl::OnFXBegin);
 		m_playback.OnFXEnd.Add(this, &Game_Impl::OnFXEnd);
-		if(!m_playback.Reset())
+		if(!m_playback.Reset()) // Initialize
 			return false;
+
+		m_playback.hittableObjectTreshold = Scoring::maxEarlyHitTime;
 
 		m_scoring.SetPlayback(m_playback);
 		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
 		m_scoring.OnLaserSlamHit.Add(this, &Game_Impl::OnLaserSlamHit);
 		m_scoring.OnButtonHit.Add(this, &Game_Impl::OnButtonHit);
 		m_scoring.OnComboChanged.Add(this, &Game_Impl::OnComboChanged);
+		m_scoring.Reset(); // Initialize
 
 		// Autoplay enabled?
 		if(g_application->GetAppCommandLine().Contains("-autoplay"))
@@ -764,6 +782,9 @@ return true;
 		m_audioPlayback.SetEffectEnabled(0, m_scoring.activeHoldObjects[4] != nullptr);
 		m_audioPlayback.SetEffectEnabled(1, m_scoring.activeHoldObjects[5] != nullptr);
 
+		// Link FX track to combo counter for now
+		m_audioPlayback.SetFXTrackEnabled(m_scoring.currentComboCounter > 0);
+
 		// Update scoring
 		m_scoring.Tick(deltaTime);
 
@@ -779,7 +800,7 @@ return true;
 	// SKips ahead to the right before the first object in the map
 	void SkipIntro()
 	{
-		ObjectState** firstObj = &m_beatmap->GetLinearObjects().front();
+		ObjectState *const* firstObj = &m_beatmap->GetLinearObjects().front();
 		while((*firstObj)->type == ObjectType::Event && firstObj != &m_beatmap->GetLinearObjects().back())
 		{
 			firstObj++;

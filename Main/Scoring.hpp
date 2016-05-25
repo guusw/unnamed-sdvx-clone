@@ -35,6 +35,10 @@ public:
 	// Needs to be set to find out which objects are active/hittable
 	void SetPlayback(BeatmapPlayback& playback);
 
+	// Resets/Initializes the scoring system
+	// Called after SetPlayback
+	void Reset();
+
 	// Updates the list of objects that are possible to hit
 	void Tick(float deltaTime);
 
@@ -59,6 +63,9 @@ public:
 	// This is the value that goes towards the filter on the music controlled by the lasers
 	float GetLaserOutput();
 
+	// Calculates the maximum score of the current map
+	uint32 CalculateMaxScore() const;
+
 	Delegate<uint32, MapTime> OnButtonScore;
 	Delegate<uint32, ObjectState*> OnButtonHit;
 	Delegate<uint32> OnButtonMiss;
@@ -77,6 +84,8 @@ public:
 
 	// Maximum accumulated score of object that have been hit or missed
 	uint32 currentMaxScore;
+	// The total maximun score of a map were all objects to be hit perfectly
+	uint32 totalMaxScore;
 	// The actual amount of gotten score
 	uint32 currentHitScore;
 
@@ -99,13 +108,13 @@ public:
 
 	// Used for hold logic on laser segments (non-instant segments)
 	LaserObjectState* laserHoldObjects[2] = { 0 };
-	MapTime laserHoldDuration[2] = { 0 };
-	MapTime laserMissDuration[2] = { 0 };
+	double laserHoldDuration[2] = { 0 };
+	double laserMissDuration[2] = { 0 };
 	bool laserActive[2] = { false };
 
 	// Hold Objects
 	HoldObjectState* activeHoldObjects[6] = { 0 };
-	MapTime lastHoldDuration[6] = { 0 };
+	double lastHoldDuration[6] = { 0 };
 
 private:
 	// Sets the new interpolation values for laser output

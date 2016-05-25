@@ -69,7 +69,7 @@ class TestBackground : public FullscreenBackground
 		fullscreenMaterialParams.SetParameter("screenCenter", screenCenter);
 		fullscreenMaterialParams.SetParameter("timing", timing);
 
-		FullscreenBackground::Render(deltaTime);
+		//FullscreenBackground::Render(deltaTime);
 	}
 };
 

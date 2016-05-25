@@ -23,6 +23,9 @@ public:
 	bool LaunchMap(const String& mapPath);
 	void Shutdown();
 
+	void CleanupGame();
+	void CleanupMap();
+
 	// Retrieves application command line parameters
 	const Vector<String>& GetAppCommandLine() const;
 
@@ -45,7 +48,10 @@ private:
 
 	RenderState m_renderStateBase;
 	Vector<String> m_commandLine;
+
+	String m_lastMapPath;
 	class Beatmap* m_currentMap = nullptr;
+
 	float m_lastUpdateTime;
 	float m_lastRenderTime;
 	float m_deltaTime;

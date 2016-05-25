@@ -46,7 +46,11 @@ namespace Math
 	}
 
 	// Gets the sign of a value
-	template <typename T> int Sign(T val) {
-		return (T(0) < val) - (val < T(0));
+	template <typename T> T Sign(T val) {
+		return (T)((T(0) < val) - (val < T(0)));
 	}
+
+	// Returns angular difference between 2 angles (radians)
+	// closest path
+	float AngularDifference(float a, float b);
 }

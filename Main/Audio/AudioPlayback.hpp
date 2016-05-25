@@ -44,12 +44,20 @@ public:
 	// Set the mix value of the effect on lasers
 	void SetLaserEffectMix(float mix);
 
+	// Toggle FX track or normal track
+	// this is just to support maps that do actually have an FX track
+	void SetFXTrackEnabled(bool enabled);
+
 private:
+	// Returns the track that should have effects applied to them
+	AudioStream m_GetDSPTrack();
 	class DSP* m_InitDSP(LaserEffectType type);
 	void m_CleanupDSP(class DSP*& ptr);
 	void m_SetLaserEffectParameter(float input);
 	AudioStream m_music;
+	AudioStream m_fxtrack;
 	bool m_paused = false;
+	bool m_fxtrackEnabled = true;
 
 	float m_laserEffectMix = 1.0f;
 	LaserEffectType m_laserEffectType = LaserEffectType::PeakingFilter;

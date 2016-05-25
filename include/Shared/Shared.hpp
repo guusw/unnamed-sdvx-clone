@@ -1,7 +1,7 @@
 /* Shared library main include file */
 
-// Include precompiled header
-#include "stdafx.h"
+// Types
+#include "Types.hpp"
 
 // Random Utility classes
 #include "Unique.hpp"
@@ -33,6 +33,7 @@
 #include "Vector.hpp"
 #include "Map.hpp"
 #include "Set.hpp"
+#include "List.hpp"
 
 // Debugging and logging
 #include "Log.hpp"
@@ -43,6 +44,7 @@
 #include "Transform.hpp"
 #include "Color.hpp"
 #include "Rect.hpp"
+#include "Margin.hpp"
 #include "Random.hpp"
 
 // Resource manager

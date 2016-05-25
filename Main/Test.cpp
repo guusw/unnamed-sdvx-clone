@@ -94,7 +94,7 @@ public:
 		rs.projectionTransform = ProjectionMatrix::CreatePerspective(40.0f, g_aspectRatio, 0.1f, 100.0f);
 		RenderQueue rq(g_gl, rs);
 
-		glClearColor(0.1f, 0.1f, 0.1f, 1);
+		glClearColor(0.0f, 0.0f, 0.0f, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		ps->Render(rs, deltaTime);
 	}

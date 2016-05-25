@@ -33,28 +33,7 @@
     <ClCompile Include="BeatmapPlayback.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="Graphics\Font.cpp" />
-    <ClCompile Include="Graphics\Framebuffer.cpp" />
-    <ClCompile Include="Graphics\Image.cpp" />
-    <ClCompile Include="Graphics\ImageLoader.cpp" />
-    <ClCompile Include="Graphics\Material.cpp" />
-    <ClCompile Include="Graphics\Mesh.cpp" />
-    <ClCompile Include="Graphics\MeshGenerators.cpp" />
-    <ClCompile Include="Graphics\OpenGL.cpp" />
-    <ClCompile Include="Graphics\ParticleSystem.cpp" />
-    <ClCompile Include="Graphics\RenderQueue.cpp" />
-    <ClCompile Include="Graphics\ResourceManager.cpp" />
-    <ClCompile Include="Graphics\Shader.cpp" />
-    <ClCompile Include="Graphics\SpriteMap.cpp" />
-    <ClCompile Include="Graphics\Texture.cpp" />
-    <ClCompile Include="Graphics\Window.cpp" />
     <ClCompile Include="LaserTrackBuilder.cpp" />
-    <ClCompile Include="glew\glew.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="KShootMap.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Scoring.cpp" />
@@ -84,33 +63,9 @@
     <ClInclude Include="BeatmapObjects.hpp" />
     <ClInclude Include="BeatmapPlayback.hpp" />
     <ClInclude Include="Camera.hpp" />
-    <ClInclude Include="Graphics\Font.hpp" />
-    <ClInclude Include="Graphics\Framebuffer.hpp" />
-    <ClInclude Include="Graphics\GL.hpp" />
-    <ClInclude Include="Graphics\Image.hpp" />
-    <ClInclude Include="Graphics\ImageLoader.hpp" />
-    <ClInclude Include="Graphics\Material.hpp" />
-    <ClInclude Include="Graphics\Mesh.hpp" />
-    <ClInclude Include="Graphics\MeshGenerators.hpp" />
-    <ClInclude Include="Graphics\OpenGL.hpp" />
-    <ClInclude Include="Graphics\ParticleParameter.hpp" />
-    <ClInclude Include="Graphics\ParticleParameters.hpp" />
-    <ClInclude Include="Graphics\ParticleSystem.hpp" />
-    <ClInclude Include="Graphics\ParticleEmitter.hpp" />
-    <ClInclude Include="Graphics\RenderQueue.hpp" />
-    <ClInclude Include="Graphics\RenderState.hpp" />
-    <ClInclude Include="Graphics\ResourceManager.hpp" />
-    <ClInclude Include="Graphics\ResourceTypes.hpp" />
-    <ClInclude Include="Graphics\Shader.hpp" />
-    <ClInclude Include="Graphics\Texture.hpp" />
-    <ClInclude Include="Graphics\VertexFormat.hpp" />
-    <ClInclude Include="Graphics\Window.hpp" />
     <ClInclude Include="Test.hpp" />
     <ClInclude Include="Track.hpp" />
     <ClInclude Include="Game.hpp" />
-    <ClInclude Include="glew\GL\glew.h" />
-    <ClInclude Include="glew\GL\glxew.h" />
-    <ClInclude Include="glew\GL\wglew.h" />
     <ClInclude Include="Application.hpp" />
     <ClInclude Include="KShootMap.hpp" />
     <ClInclude Include="LaserTrackBuilder.hpp" />
@@ -120,6 +75,9 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Graphics\Graphics.vcxproj">
+      <Project>{6f1511f9-d92f-4183-a4fe-f178b449801f}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Shared\Shared.vcxproj">
       <Project>{d7388e0f-7b3b-4154-a521-95571e89d0ca}</Project>
     </ProjectReference>
@@ -186,8 +144,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="Shared">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -232,8 +189,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)include;$(SolutionDir)include\Graphics;Audio;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -253,8 +210,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)include;$(SolutionDir)include\Graphics;Audio;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -276,8 +233,8 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)include;$(SolutionDir)include\Graphics;Audio;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -301,8 +258,8 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\zlib-1.2.8;$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;glew;Graphics;Audio;.</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)include;$(SolutionDir)include\Graphics;Audio;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -320,6 +277,5 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

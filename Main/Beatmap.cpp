@@ -40,15 +40,15 @@ const BeatmapSettings& Beatmap::GetMapSettings()
 	return m_settings;
 }
 
-Vector<TimingPoint*>& Beatmap::GetLinearTimingPoints()
+const Vector<TimingPoint*>& Beatmap::GetLinearTimingPoints() const
 {
 	return m_timingPoints;
 }
-Vector<ObjectState*>& Beatmap::GetLinearObjects()
+const Vector<ObjectState*>& Beatmap::GetLinearObjects() const
 {
-	return reinterpret_cast<Vector<ObjectState*>&>(m_objectStates);
+	return reinterpret_cast<const Vector<ObjectState*>&>(m_objectStates);
 }
-Vector<ZoomControlPoint*>& Beatmap::GetZoomControlPoints()
+const Vector<ZoomControlPoint*>& Beatmap::GetZoomControlPoints() const
 {
 	return m_zoomControlPoints;
 }

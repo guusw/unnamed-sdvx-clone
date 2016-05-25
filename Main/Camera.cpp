@@ -142,7 +142,7 @@ float Camera::m_ClampRoll(float in) const
 	if(ain < 1.0f)
 		return in;
 	bool odd = ((uint32)abs(in) % 2) == 1;
-	int32 sign = Math::Sign(in);
+	float sign = Math::Sign(in);
 	if(odd)
 	{
 		// Swap sign and modulo
