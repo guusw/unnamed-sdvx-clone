@@ -1,6 +1,8 @@
 # Unnamed SDVX clone
 Trying to create a game based on [KShoot](http://kshoot.client.jp/)/[SDVX](https://www.youtube.com/watch?v=JBHKNl87juA).
 
+[![Demo Video](http://img.youtube.com/vi/finlBLaO9Fw/0.jpg)](http://www.youtube.com/watch?v=finlBLaO9Fw)
+
 Only tested to compile with Visual Studio 2015 / Windows Only.
 
 Uses OpenGL 4
