@@ -87,43 +87,43 @@ public:
 		assert(map);
 		m_mapPath = mapPath;
 		m_beatmap = map;
-const BeatmapSettings& mapSettings = m_beatmap->GetMapSettings();
+		const BeatmapSettings& mapSettings = m_beatmap->GetMapSettings();
 
-// Try to load beatmap jacket image
-String jacketPath = mapPath + "/" + mapSettings.jacketPath;
-Image jacketImage = ImageRes::Create(jacketPath);
-if(jacketImage)
-{
-	m_jacketTexture = TextureRes::Create(g_gl, jacketImage);
-}
+		// Try to load beatmap jacket image
+		String jacketPath = mapPath + "/" + mapSettings.jacketPath;
+		Image jacketImage = ImageRes::Create(jacketPath);
+		if(jacketImage)
+		{
+			m_jacketTexture = TextureRes::Create(g_gl, jacketImage);
+		}
 
-// Load beatmap audio
-if(!m_audioPlayback.Init(*m_beatmap, mapPath))
-return false;
+		// Load beatmap audio
+		if(!m_audioPlayback.Init(*m_beatmap, mapPath))
+		return false;
 
-if(!InitGameplay())
-return false;
+		if(!InitGameplay())
+		return false;
 
-if(!InitSFX())
-return false;
+		if(!InitSFX())
+		return false;
 
-// Intialize track graphics
-m_track = new Track();
-if(!m_track->Init())
-{
-	return false;
-}
+		// Intialize track graphics
+		m_track = new Track();
+		if(!m_track->Init())
+		{
+			return false;
+		}
 
-if(!InitParticles())
-return false;
+		if(!InitParticles())
+		return false;
 
-// Background graphics
-CheckedLoad(m_background = CreateBackground(this));
+		// Background graphics
+		CheckedLoad(m_background = CreateBackground(this));
 
-if(!InitHUD())
-return false;
+		if(!InitHUD())
+		return false;
 
-return true;
+		return true;
 	}
 	virtual void Tick(float deltaTime) override
 	{
