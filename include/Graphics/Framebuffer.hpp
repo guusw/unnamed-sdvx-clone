@@ -1,6 +1,10 @@
 #pragma once
 #include <Graphics/ResourceTypes.hpp>
 
+/*
+	Framebuffer/Rendertarget object
+	Can have textures attached to it and then render to them
+*/
 class FramebufferRes
 {
 public:

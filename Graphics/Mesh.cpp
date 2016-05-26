@@ -83,18 +83,10 @@ public:
 		m_type = pt;
 		m_glType = primitiveTypeMap[(size_t)pt];
 	}
-	virtual void BeginBatch()
-	{
-		glBindVertexArray(m_vao);
-	}
 	virtual void Draw()
 	{
 		glBindVertexArray(m_vao);
 		glDrawArrays(m_glType, 0, (int)m_vertexCount);
-	}
-	virtual void BatchDraw(uint32 offset, uint32 count)
-	{
-		glDrawArrays(m_glType, (int)offset, (int)count);
 	}
 };
 

@@ -1,5 +1,8 @@
 #pragma once
 
+/* 
+	Game background base class
+*/
 class Background
 {
 public:
@@ -10,4 +13,5 @@ public:
 	class Game* game;
 };
 
+// Creates the default game background
 Background* CreateBackground(class Game* game);

@@ -16,6 +16,9 @@ enum class TextureFormat
 };
 
 class ImageRes;
+/*
+	OpenGL texture wrapper, can be created from an Image object or raw data
+*/
 class TextureRes
 {
 public:
@@ -34,6 +37,7 @@ public:
 	// Gives the aspect ratio correct width for a given height
 	float CalculateWidth(float height);
 
+	// Binds the texture to a given texture unit (default = 0)
 	virtual void Bind(uint32 index = 0) = 0;
 	virtual uint32 Handle() = 0;
 	virtual void SetWrap(TextureWrap u, TextureWrap v) = 0;

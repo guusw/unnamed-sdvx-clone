@@ -1,4 +1,9 @@
+/*
+	This file contains various particle parameter types and template types that can be used to specify Contants, Ranges, Curves or Distributions
+	these can then be set in Particle Systems for various properties
+*/
 #pragma once
+// Prevent macro conflicts with class members
 #undef min
 #undef max
 

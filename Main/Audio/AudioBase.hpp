@@ -1,5 +1,8 @@
 #pragma once
 
+/*
+	Base class for Digital Signal Processors
+*/
 class DSP
 {
 protected:
@@ -15,6 +18,9 @@ public:
 	class Audio_Impl* audio = nullptr;
 };
 
+/*
+	Base class for things that generate sound
+*/
 class AudioBase
 {
 public:

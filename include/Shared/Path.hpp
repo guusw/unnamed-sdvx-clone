@@ -10,6 +10,7 @@
 class Path
 {
 public:
+	// Working dir
 	static String GetCurrentPath();
 	static String GetExecutablePath();
 
@@ -18,9 +19,12 @@ public:
 
 	static bool IsDirectory(const String& path);
 	static bool FileExists(const String& path);
+	// Converts a path to a standard format with all duplicate slashes removed and set to the platform default '\' on windows
 	static String Canonical(const String& path);
 	static String Absolute(const String& path);
 	static bool IsAbsolute(const String& path);
+	// Removes the last directory or filename ('/' seperated)
+	// returns the removed element in lastOut if set
 	static String RemoveLast(const String& path, String* lastOut = nullptr);
 
 	static String GetExtension(const String& path);

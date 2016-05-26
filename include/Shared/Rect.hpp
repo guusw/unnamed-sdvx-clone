@@ -1,7 +1,9 @@
 #pragma once
 #include "VectorMath.hpp"
 
-// GUI space rectangle with bottom as y+height
+/*
+	GUI space rectangle with bottom as y+height
+*/
 template<typename T>
 class RectangleBase
 {
@@ -78,7 +80,9 @@ public:
 	}
 };
 
-// Same as a normal rectangle but this one has the top as y+height aka world space
+/* 
+	Same as a normal rectangle but this one has the top as y+height aka world space
+*/
 template<typename T>
 class RectangleBase3D : public RectangleBase<T>
 {

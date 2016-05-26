@@ -2,6 +2,9 @@
 #include <string>
 #include "Shared/Utility.hpp"
 
+/*
+	String class, extends std::string
+*/
 template<typename T>
 class StringBase : public std::basic_string<T>
 {

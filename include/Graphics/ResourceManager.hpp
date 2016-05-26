@@ -1,6 +1,9 @@
 #pragma once
 #include <Graphics/ResourceTypes.hpp>
 
+/*
+	Holds all graphics resource managers used
+*/
 class ResourceManagers
 {
 private:

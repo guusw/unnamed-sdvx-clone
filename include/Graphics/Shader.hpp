@@ -1,6 +1,7 @@
 #pragma once
 #include <Graphics/ResourceTypes.hpp>
 
+/* Enum of supported shader types */
 enum class ShaderType
 {
 	Vertex,
@@ -8,6 +9,9 @@ enum class ShaderType
 	Geometry
 };
 
+/*
+	A single unlinked OpenGL shader
+*/
 class ShaderRes
 {
 public:

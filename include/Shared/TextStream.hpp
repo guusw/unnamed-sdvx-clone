@@ -1,6 +1,9 @@
 #pragma once
 #include "Shared/BinaryStream.hpp"
 
+/*
+	Static helper functions for reading/writing text from BinaryStream objects instead of binary data
+*/
 class TextStream
 {
 public:

@@ -30,6 +30,7 @@ namespace Utility
 		return reinterpret_cast<T&>(src);
 	}
 
+	// Reinterpret input using an union
 	template<typename T, typename S>
 	T UnionCast(S src)
 	{

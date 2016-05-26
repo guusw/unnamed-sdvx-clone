@@ -13,6 +13,7 @@ public:
 	virtual ~RenderQueueItem() = default;
 };
 
+// Most basic draw command that only contains a material, it's parameters and a world transform
 class SimpleDrawCall : public RenderQueueItem
 {
 public:
@@ -29,7 +30,7 @@ public:
 	This class is a queue that collects draw commands
 	each of these is stored together with their wanted render state.
 
-	When Process is called, the commands are sorted and group, then sent to the graphics pipeline.
+	When Process is called, the commands are sorted and grouped, then sent to the graphics pipeline.
 */
 class RenderQueue
 {

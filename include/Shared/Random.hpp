@@ -1,5 +1,8 @@
 #pragma once
 
+/*
+	Simple random number generation
+*/
 namespace Random
 {
 	float Float();

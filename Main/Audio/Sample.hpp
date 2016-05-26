@@ -1,6 +1,9 @@
 #pragma once
 #include "AudioBase.hpp"
 
+/*
+	Audio sample, only supports wav files in native output frequency for now.
+*/
 class SampleRes : public AudioBase
 {
 public:

@@ -4,6 +4,8 @@
 
 /* 
 	Logging utility class
+	formats loggin messages with time stamps and module names
+	allows message coloring on platforms that support it
 */
 class Logger : Unique
 {

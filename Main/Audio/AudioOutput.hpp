@@ -1,6 +1,10 @@
 #pragma once
 
 struct tWAVEFORMATEX;
+
+/*
+	Low level audio output
+*/
 class AudioOutput
 {
 public:
@@ -10,7 +14,8 @@ public:
 	bool Init();
 
 	// Starts filling of the output buffer
-	// Always call End after calling Being
+	// Always call End after calling begin
+	// The number of available samples is returned in 'numSamples'
 	bool Begin(float*& buffer, uint32_t& numSamples);
 	// Call this after you're done filling the output buffer
 	void End(uint32_t numSamples);
@@ -26,6 +31,7 @@ private:
 	AudioOutput(const AudioOutput&) = delete;
 
 	//HWAVEOUT m_handle = nullptr;
+	/// TODO: Remove windows specific parts from header, add pimpl
 	struct IAudioClient* m_audioClient = nullptr;
 	struct IAudioRenderClient* m_audioRenderClient = nullptr;
 	struct IMMDevice* m_device = nullptr;

@@ -111,6 +111,7 @@ public:
 	inline const T& operator*() const { assert(IsValid()); return *m_data; }
 	inline T* operator->() { assert(IsValid()); return m_data; }
 	inline const T* operator->() const { assert(IsValid()); return m_data; }
+
 	template<typename Target>
 	inline Target* Cast()
 	{
@@ -125,7 +126,7 @@ public:
 			return nullptr;
 		return dynamic_cast<Target*>(m_data);
 	}
-
+	// Casts the reference to a different type while not breaking the reference counting
 	template<typename Target>
 	inline Ref<Target> As()
 	{

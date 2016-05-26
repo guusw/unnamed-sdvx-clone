@@ -1,6 +1,10 @@
 #pragma once
 #include <Graphics/ResourceTypes.hpp>
 
+/*
+	RGBA8 image class
+	The bits have the same layout as the Colori class
+*/
 class ImageRes
 {
 public:
@@ -14,6 +18,13 @@ public:
 	virtual const Colori* GetBits() const = 0;
 };
 
+/*
+	Sprite map
+	Adding images to this will pack the image into a final image that contains all the added images
+	After this the UV coordinates of these images can be asked for given and image index
+
+	!! The packing is not optimal as the images are stacked for bottom to top and placed in columns based on their width
+*/
 class TextureRes;
 class SpriteMapRes : public ImageRes
 {

@@ -36,7 +36,7 @@ public:
 	Colori ToRGBA8() const;
 	// Returns the same color, but with a different alpha value
 	Color WithAlpha(float a) const;
-	// Color from HSV
+	// Color from hue, saturation and value
 	static Color FromHSV(float hue, float saturation, float value);
 
 	static const Color White;

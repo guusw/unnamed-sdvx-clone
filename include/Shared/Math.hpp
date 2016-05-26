@@ -52,5 +52,6 @@ namespace Math
 
 	// Returns angular difference between 2 angles (radians)
 	// closest path
+	// Values must be in the range [0, 2pi]
 	float AngularDifference(float a, float b);
 }

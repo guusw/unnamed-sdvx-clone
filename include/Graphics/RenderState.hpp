@@ -1,5 +1,8 @@
 #pragma once
 
+/*
+	Contains all values that get passed as built-in values to material shaders
+*/
 class RenderState
 {
 public:

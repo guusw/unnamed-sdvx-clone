@@ -5,7 +5,7 @@
 
 /* 
 	Handles playback of map audio
-	keeps track of the state of effects
+	keeps track of the state of sound effects
 */
 class AudioPlayback : Unique
 {

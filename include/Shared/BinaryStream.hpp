@@ -7,6 +7,28 @@
 /*
 	Abstract binary stream base class
 	a stream can either be operating as a reading stream or as a writing stream
+	allows custom structures and String,Vector and Map types
+
+	Example:
+	{
+		string a = "test";
+		float b = 3.14f;
+		int c = 20;
+		Vector<string> d = {"a", "b", "c"};
+
+		// Writes to a stream
+		outStream << a;
+		outStream << b;
+		outStream << c;
+		outStream << d;
+
+		// Reads back the same data from a stream (note the << operator is still used for reading)
+		inStream << a;
+		inStream << b;
+		inStream << c;
+		inStream << d;
+	}
+
 */
 class BinaryStream
 {

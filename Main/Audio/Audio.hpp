@@ -4,6 +4,11 @@
 
 extern class Audio* g_audio;
 
+/*
+	Main audio manager
+	keeps track of active samples and audio streams
+	also handles mixing and DSP's on playing items
+*/
 class Audio : Unique
 { 
 public:
@@ -17,11 +22,13 @@ public:
 	// Open a wav file at path
 	Sample CreateSample(const String& path);
 
+	// Target/Output sample rate
 	uint32 GetSampleRate() const;
 
 	// Private
 	class Audio_Impl* GetImpl();
 
+	// Calculated audio latency by the audio driver (currently unused)
 	int64 audioLatency;
 
 private:

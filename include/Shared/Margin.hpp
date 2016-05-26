@@ -3,6 +3,10 @@
 #include "Math.hpp"
 #include <limits>
 
+/*
+	Margin template class that is similar to the Rectangle class.
+	Defines offsets for left,right,top,bottom
+*/
 template<typename T>
 class MarginBase
 {
@@ -14,6 +18,7 @@ public:
 	MarginBase(T left, T top, T right, T bottom) 
 		: left(left), top(top), right(right), bottom(bottom) {};
 
+	// Apply this margin to a rectable
 	RectangleBase<T> Apply(const RectangleBase<T>& in) const
 	{
 		RectangleBase<T> ret = in;
@@ -22,6 +27,7 @@ public:
 		return ret;
 	}
 
+	// Adds all individual margins together
 	MarginBase operator+(const MarginBase& other) const
 	{
 		return MarginBase(
@@ -34,6 +40,8 @@ public:
 	{
 		return *this = (*this) + other;
 	}
+
+	// Invert the margin
 	MarginBase operator-() const
 	{
 		return MarginBase(
@@ -43,10 +51,12 @@ public:
 			-bottom);
 	}
 
+	// Total width of the margin (left + right)
 	T Width() const
 	{
 		return left + right;
 	}
+	// Total height of the margin (top + bottom)
 	T Height() const
 	{
 		return top + bottom;

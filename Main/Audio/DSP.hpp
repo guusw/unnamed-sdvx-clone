@@ -1,3 +1,6 @@
+/*
+	This file contains DSP's that can be applied to audio samples of streams to modify the output
+*/
 #pragma once
 #include "AudioBase.hpp"
 

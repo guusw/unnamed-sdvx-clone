@@ -22,7 +22,7 @@ public:
 	// Call every frame to update the window message loop
 	// returns false if the window received a close message
 	bool Update();
-	// On windows return the HWND handle
+	// On windows: returns the HWND
 	void* Handle();
 	// Set the window title (caption)
 	void SetCaption(const WString& cap);
@@ -39,6 +39,7 @@ public:
 	void SwitchFullscreen(uint32 monitorID = -1);
 
 	// WINDOWS ONLY
+	/// TODO: Replace mask with platform-agnostic defines
 	// Sets certain bits of the window style
 	void SetStyles(uint32 mask);
 	// Unsets styles from the window style

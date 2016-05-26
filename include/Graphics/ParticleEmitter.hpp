@@ -3,6 +3,9 @@
 #include <Graphics/Texture.hpp>
 #include <Graphics/ParticleParameter.hpp>
 
+/*
+	Particle Emitter, which is a component of a particle system that handles the emission of particles together with the properties of the emitter particles
+*/
 class ParticleEmitter
 {
 public:

@@ -1,3 +1,6 @@
+/*
+	Contains a list of game specific audio effect types
+*/
 #pragma once
 
 // The types of effects that can be used on the effect buttons

@@ -1,5 +1,8 @@
 #pragma once
 
+/*
+	Inherit from this to disallow copying
+*/
 class Unique
 {
 protected:

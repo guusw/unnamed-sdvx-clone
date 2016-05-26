@@ -4,8 +4,7 @@
 
 /*
 	Particles system
-	contains information about particle types and their emitters.
-	also contains a pool of all the particles that are active
+	contains emitters and handles the cleanup/lifetime of them.
 */
 class ParticleSystemRes
 {

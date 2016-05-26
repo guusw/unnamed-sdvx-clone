@@ -31,7 +31,10 @@ struct MaterialParameter
 	}
 };
 
-/* A list of parameters that is set for a material */
+/* 
+	A list of parameters that is set for a material
+	use SetParameter(name, param) to set any parameter by name
+*/
 class MaterialParameterSet : public Map<String, MaterialParameter>
 {
 public:

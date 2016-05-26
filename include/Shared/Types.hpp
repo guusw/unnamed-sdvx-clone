@@ -18,6 +18,7 @@
 #include <cinttypes>
 #include <assert.h>
 
+// Convenient basic integer types without _t postfix
 typedef int8_t int8;
 typedef uint8_t uint8;
 typedef int16_t int16;
