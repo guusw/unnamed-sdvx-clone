@@ -3,6 +3,9 @@
 #include "Audio_Impl.hpp"
 #include "Audio.hpp"
 
+// Fixed point format for resampling
+static uint64 fp_sampleStep = 1ull << 48;
+
 struct WavHeader
 {
 	char id[4];
@@ -48,6 +51,11 @@ public:
 	WavFormat m_format = { 0 };
 
 	mutex m_lock;
+
+	// Resampling values
+	uint64 m_sampleStep = 0;
+	uint64 m_sampleStepIncrement = 0;
+
 	uint64 m_playbackPointer = 0;
 	uint64 m_length = 0;
 	bool m_playing = false;
@@ -119,6 +127,10 @@ public:
 			}
 		}
 
+		// Calculate the sample step if the rate is not the same as the output rate
+		double sampleStep = (double)m_format.nSampleRate / (double)m_audio->GetSampleRate();
+		m_sampleStepIncrement = (uint64)(sampleStep * (double)fp_sampleStep);
+
 		return true;
 	}
 	virtual void Process(float*& out, uint32 numSamples) override
@@ -143,7 +155,13 @@ public:
 				out[i * 2] = (float)src[0] / (float)0x7FFF * m_volume;
 				out[i * 2 + 1] = (float)src[1] / (float)0x7FFF * m_volume;
 
-				m_playbackPointer += 2;
+				// Increment source sample with resampling
+				m_sampleStep += m_sampleStepIncrement;
+				while(m_sampleStep >= fp_sampleStep)
+				{
+					m_playbackPointer += 2;
+					m_sampleStep -= fp_sampleStep;
+				}
 			}
 		}
 		else 
@@ -162,7 +180,13 @@ public:
 				out[i * 2] = (float)src[0] / (float)0x7FFF * m_volume;
 				out[i * 2 + 1] = (float)src[0] / (float)0x7FFF * m_volume;
 
-				m_playbackPointer += 1;
+				// Increment source sample with resampling
+				m_sampleStep += m_sampleStepIncrement;
+				while(m_sampleStep >= fp_sampleStep)
+				{
+					m_playbackPointer += 1;
+					m_sampleStep -= fp_sampleStep;
+				}
 			}
 		}
 		m_lock.unlock();

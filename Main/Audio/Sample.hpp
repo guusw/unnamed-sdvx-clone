@@ -2,7 +2,7 @@
 #include "AudioBase.hpp"
 
 /*
-	Audio sample, only supports wav files in native output frequency for now.
+	Audio sample, only supports wav files in signed 16 bit stereo or mono
 */
 class SampleRes : public AudioBase
 {

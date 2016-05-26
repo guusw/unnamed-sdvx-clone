@@ -4,6 +4,8 @@
 #include "Audio_Impl.hpp"
 #include <vorbis/vorbisfile.h>
 
+// Fixed point format for resampling
+static uint64 fp_sampleStep = 1ull << 48;
 
 class AudioStreamOGG_Impl : public AudioStreamRes
 {
@@ -30,6 +32,11 @@ class AudioStreamOGG_Impl : public AudioStreamRes
 	uint32 m_remainingBufferData = 0;
 
 	uint64 m_samplePos = 0;
+
+	// Resampling values
+	uint64 m_sampleStep = 0;
+	uint64 m_sampleStepIncrement = 0;
+
 	Timer m_deltaTimer;
 	Timer m_streamTimer;
 	double m_streamTimeOffset = 0.0f;
@@ -62,6 +69,10 @@ public:
 		m_info = ov_info(&m_ovf, 0);
 		if(!m_info)
 			return false;
+
+		// Calculate the sample step if the rate is not the same as the output rate
+		double sampleStep = (double)m_info->rate / (double)audio->GetSampleRate();
+		m_sampleStepIncrement = (uint64)(sampleStep * (double)fp_sampleStep);
 
 		long numStreams = ov_streams(&m_ovf);
 
@@ -152,13 +163,22 @@ public:
 			{
 				uint32 readBufferData = Math::Min(m_remainingBufferData, numSamples-outCount);
 				uint32 idxStart = (m_currentBufferSize - m_remainingBufferData);
-				for(uint32 i = 0; i < readBufferData; i++)
+				uint32 readOffset = 0; // Offset from the start to read from
+				for(uint32 i = 0; outCount < numSamples && readOffset < readBufferData; i++)
 				{
-					out[outCount * 2] = m_readBuffer[0][idxStart + i] * m_volume;
-					out[outCount * 2 + 1] = m_readBuffer[1][idxStart + i] * m_volume;
+					out[outCount * 2] = m_readBuffer[0][idxStart + readOffset] * m_volume;
+					out[outCount * 2 + 1] = m_readBuffer[1][idxStart + readOffset] * m_volume;
 					outCount++;
+
+					// Increment source sample with resampling
+					m_sampleStep += m_sampleStepIncrement;
+					while(m_sampleStep >= fp_sampleStep)
+					{
+						readOffset++;
+						m_sampleStep -= fp_sampleStep;
+					}
 				}
-				m_remainingBufferData -= readBufferData;
+				m_remainingBufferData -= readOffset;
 			}
 
 			if(outCount >= numSamples)

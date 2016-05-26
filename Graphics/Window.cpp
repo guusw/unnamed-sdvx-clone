@@ -538,7 +538,8 @@ void Window::SwitchFullscreen(uint32 monitorID)
 			HMONITOR monitor = MonitorFromRect(&rect, MONITOR_DEFAULTTONEAREST);
 			m_impl->m_preFullscreenRect = rect;
 
-			MONITORINFO info;
+			MONITORINFO info = { 0 };
+			info.cbSize = sizeof(MONITORINFO);
 			GetMonitorInfo(monitor, &info);
 
 			monitorRect = info.rcMonitor;

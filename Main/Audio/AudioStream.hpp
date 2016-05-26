@@ -2,7 +2,7 @@
 #include "AudioBase.hpp"
 
 /*
-	Audio stream object, currently only supports .ogg format in native output sample rate
+	Audio stream object, currently only supports .ogg format
 	The data is pre-loaded into memory and streamed from there
 */
 class AudioStreamRes : public AudioBase

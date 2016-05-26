@@ -106,12 +106,14 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 	double barDelay = timingPoint->numerator * timingPoint->beatDuration;
 
 	DSP*& dsp = m_buttonDSPs[index];
+	bool shouldAdd = false;
 	switch(object->effectType)
 	{
 	case EffectType::Bitcrush:
 	{
 		BitCrusherDSP* bc = new BitCrusherDSP();
-		bc->period = object->effectParam;
+		m_GetDSPTrack()->AddDSP(bc);
+		bc->SetPeriod(object->effectParam);
 		dsp = bc;
 		break;
 	}
@@ -121,14 +123,16 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 		double delay = (barDelay / object->effectParam) / 1000.0;
 		gate->delay = (uint32)(delay * g_audio->GetSampleRate());
 		dsp = gate;
+		m_GetDSPTrack()->AddDSP(dsp);
 		break;
 	}
 	case EffectType::TapeStop:
 	{
 		TapeStopDSP* ts = new TapeStopDSP();
+		m_GetDSPTrack()->AddDSP(ts);
 		double speed = 1.0 - (double)object->effectParam / 100.0;
 		double delay = speed * object->duration / 1000.0;
-		ts->delay = (uint32)(delay * g_audio->GetSampleRate());
+		ts->SetLength((uint32)(delay * g_audio->GetSampleRate()));
 		dsp = ts;
 		break;
 	}
@@ -138,6 +142,7 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 		double delay = (barDelay / object->effectParam) / 1000.0;
 		re->delay = (uint32)(delay * g_audio->GetSampleRate());
 		dsp = re;
+		m_GetDSPTrack()->AddDSP(dsp);
 		break;
 	}
 	case EffectType::Wobble:
@@ -146,6 +151,7 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 		double delay = (barDelay / object->effectParam) / 1000.0;
 		wb->delay = (uint32)(delay * g_audio->GetSampleRate());
 		dsp = wb;
+		m_GetDSPTrack()->AddDSP(dsp);
 		break;
 	}
 	case EffectType::Phaser:
@@ -159,6 +165,7 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 		phs->fb = 0.5f;
 		phs->time = object->time;
 		dsp = phs;
+		m_GetDSPTrack()->AddDSP(dsp);
 		break;
 	}
 	case EffectType::Flanger:
@@ -170,6 +177,7 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 		fl->max = 40;
 		fl->time = object->time;
 		dsp = fl;
+		m_GetDSPTrack()->AddDSP(dsp);
 		break;
 	}
 	default:
@@ -179,7 +187,6 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 	if(dsp)
 	{
 		dsp->mix = 0;
-		m_GetDSPTrack()->AddDSP(dsp);
 	}
 }
 
@@ -279,7 +286,7 @@ DSP* AudioPlayback::m_InitDSP(LaserEffectType type)
 	if(ret)
 	{
 		ret->priority = 0;
-		m_music->AddDSP(ret);
+		m_GetDSPTrack()->AddDSP(ret);
 	}
 
 	return ret;
@@ -289,7 +296,7 @@ void AudioPlayback::m_CleanupDSP(DSP*& ptr)
 {
 	if(ptr)
 	{
-		m_music->RemoveDSP(ptr);
+		m_GetDSPTrack()->RemoveDSP(ptr);
 		delete ptr;
 		ptr = nullptr;
 	}
@@ -304,7 +311,7 @@ void AudioPlayback::m_SetLaserEffectParameter(float input)
 	{
 	case LaserEffectType::Bitcrush:
 	{
-		((BitCrusherDSP*)m_laserDSP)->period = (uint32)(input * (64 * m_laserEffectMix));
+		((BitCrusherDSP*)m_laserDSP)->SetPeriod(input * 64 * m_laserEffectMix);
 		((BitCrusherDSP*)m_laserDSP)->mix = 1.0f;
 		break;
 	}
@@ -321,7 +328,7 @@ void AudioPlayback::m_SetLaserEffectParameter(float input)
 	}
 	case LaserEffectType::LowPassFilter:
 	{
-		float freqMax = (float)g_audio->GetSampleRate() * 0.1f;
+		float freqMax = (float)44100 * 0.1f;
 		float v = (1.0f - input);
 		v *= v; // ^2 for slope
 		float freq = 100.0f + freqMax  * v;
@@ -330,7 +337,7 @@ void AudioPlayback::m_SetLaserEffectParameter(float input)
 	}
 	case LaserEffectType::HighPassFilter:
 	{
-		float freqMax = (float)g_audio->GetSampleRate() * 0.1f;
+		float freqMax = (float)44100 * 0.1f;
 		float v = input;
 		v *= v; // ^2 for slope
 		float freq =  100.0f + freqMax  * v;

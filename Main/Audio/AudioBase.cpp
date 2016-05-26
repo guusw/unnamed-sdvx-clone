@@ -39,9 +39,9 @@ void AudioBase::AddDSP(DSP* dsp)
 }
 void AudioBase::RemoveDSP(DSP* dsp)
 {
+	assert(DSPs.Contains(dsp));
 	audio->lock.lock();
 	DSPs.Remove(dsp);
-	assert(!DSPs.Contains(dsp));
 	dsp->audioBase = nullptr;
 	dsp->audio = nullptr;
 	audio->lock.unlock();

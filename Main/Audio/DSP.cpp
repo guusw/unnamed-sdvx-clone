@@ -63,6 +63,7 @@ void BQFDSP::SetPeaking(float bandWidth, float freq, float gain)
 void BQFDSP::SetLowPass(float q, float freq)
 {
 	assert(freq > 0.0);
+	assert(audio);
 
 	// Sampling frequency
 	double fs = audio->GetSampleRate();
@@ -81,6 +82,8 @@ void BQFDSP::SetLowPass(float q, float freq)
 }
 void BQFDSP::SetHighPass(float q, float freq)
 {
+	assert(audio);
+
 	// Sampling frequency
 	double fs = audio->GetSampleRate();
 	assert(freq < fs);
@@ -99,6 +102,8 @@ void BQFDSP::SetHighPass(float q, float freq)
 }
 void BQFDSP::SetBandPass(float bandWidth, float freq)
 {
+	assert(audio);
+
 	// Sampling frequency
 	double fs = audio->GetSampleRate();
 	double w0 = (2 * Math::pi * freq) / fs;
@@ -143,16 +148,25 @@ void LimiterDSP::Process(float*& out, uint32 numSamples)
 	}
 }
 
+void BitCrusherDSP::SetPeriod(float period /*= 0*/)
+{
+	// Scale period with sample rate
+	assert(audio);
+	double f = audio->GetSampleRate() / 44100.0;
+	m_increment = (uint32)((double)(1 << 16));
+	m_period = (uint32)(f * period * (double)(1 << 16));
+}
+
 void BitCrusherDSP::Process(float*& out, uint32 numSamples)
 {
 	for(uint32 i = 0; i < numSamples; i++)
 	{
-		m_currentDuration++;
-		if(m_currentDuration > period)
+		m_currentDuration += m_increment;
+		if(m_currentDuration > m_period)
 		{
 			m_sampleBuffer[0] = out[i * 2];
 			m_sampleBuffer[1] = out[i*2+1];
-			m_currentDuration = 0;
+			m_currentDuration -= m_period;
 		}
 
 		out[i * 2] = m_sampleBuffer[0] * mix + out[i * 2] * (1.0f - mix);
@@ -179,11 +193,21 @@ void GateDSP::Process(float*& out, uint32 numSamples)
 		m_currentSample %= delay;
 	}
 }
+
+void TapeStopDSP::SetLength(uint32 length)
+{
+	assert(audio);
+
+	m_length = length;
+	m_sampleBuffer.clear();
+	m_sampleBuffer.reserve(length);
+}
+
 void TapeStopDSP::Process(float*& out, uint32 numSamples)
 {
 	for(uint32 i = 0; i < numSamples; i++)
 	{
-		float sampleRate = 1.0f - (float)m_currentSample / (float)delay;
+		float sampleRate = 1.0f - (float)m_currentSample / (float)m_length;
 		if(sampleRate == 0.0f)
 		{
 			// Mute
@@ -235,7 +259,8 @@ void RetriggerDSP::Process(float*& out, uint32 numSamples)
 void WobbleDSP::Process(float*& out, uint32 numSamples)
 {
 	float f = 1- abs(cos(Math::pi * ((float)m_currentSample / (float)delay)));
-	float freq = 50.0f + f * audio->GetSampleRate() * 0.2f;
+	float r = (audio->GetSampleRate() / 44100.0f);
+	float freq = 50.0f * r + f * audio->GetSampleRate() * 0.2f;
 	SetLowPass(1.5f, freq);
 
 	BQFDSP::Process(out, numSamples);

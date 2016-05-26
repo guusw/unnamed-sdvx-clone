@@ -56,11 +56,12 @@ private:
 class BitCrusherDSP : public DSP
 {
 public:
-	// Duration of samples, 1 = disable
-	uint32 period = 1;
-
+	// Duration of samples, <1 = disable
+	void SetPeriod(float period = 0);
 	virtual void Process(float*& out, uint32 numSamples);
 private:
+	uint32 m_period = 1;
+	uint32 m_increment = 0;
 	float m_sampleBuffer[2] = { 0.0f };
 	uint32 m_currentDuration = 0;
 };
@@ -80,11 +81,12 @@ private:
 class TapeStopDSP : public DSP
 {
 public:
-	// Length of the effect
-	uint32 delay = 0;
+	// Length of the effect in samples
+	void SetLength(uint32 length);
 
 	virtual void Process(float*& out, uint32 numSamples);
 private:
+	uint32 m_length = 0;
 	Vector<float> m_sampleBuffer;
 	float m_sampleIdx = 0.0f;
 	uint32 m_lastSample = 0;
