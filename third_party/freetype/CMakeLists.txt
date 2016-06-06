@@ -103,7 +103,7 @@ set(VERSION_PATCH "0")
 set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 # Compiler definitions for building the library
-add_definitions(-DFT2_BUILD_LIBRARY)
+add_definitions(-DFT2_BUILD_LIBRARY -DTRUE=1 -DFALSE=0)
 
 # Specify library include directories
 include_directories("${PROJECT_SOURCE_DIR}/include")
@@ -247,7 +247,5 @@ set(CPACK_SOURCE_IGNORE_FILES
 set(CPACK_GENERATOR TGZ)
 include(CPack)
 
-# add make dist target
-add_custom_target(dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
-
-# eof
+# Include directories
+target_include_directories(freetype PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
