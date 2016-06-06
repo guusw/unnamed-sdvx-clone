@@ -1,18 +1,12 @@
 #include "stdafx.h"
 #include "Test.hpp"
 #include "Application.hpp"
-#include "Image.hpp"
-#include "MeshGenerators.hpp"
 #include "Profiling.hpp"
-#include "Framebuffer.hpp"
-#include "OpenGL.hpp"
-#include "Font.hpp"
 #include "Scoring.hpp"
 #include "Audio.hpp"
 #include "Track.hpp"
 #include "Camera.hpp"
 #include "Background.hpp"
-#include "ParticleSystem.hpp"
 
 class Test_Impl : public Test
 {

@@ -1,13 +1,10 @@
 #include "stdafx.h"
 #include "Background.hpp"
 #include "Application.hpp"
-#include "RenderState.hpp"
-#include "RenderQueue.hpp"
 #include "Background.hpp"
 #include "Game.hpp"
 #include "Track.hpp"
 #include "Camera.hpp"
-#include "MeshGenerators.hpp"
 
 /* Background template for fullscreen effects */
 class FullscreenBackground : public Background

@@ -1,5 +1,4 @@
 #pragma once
-#include "RenderState.hpp"
 
 /*
 	Camera shake effect 

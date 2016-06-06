@@ -322,26 +322,27 @@ void AudioPlayback::m_SetLaserEffectParameter(float input)
 		if(input < volumeFadeIn) // Fade in
 			gain = (input / volumeFadeIn) * gain;
 		input *= input; // ^2 for slope
-		float width = 1.0f + 2.0f * input;
+		float width = 1.0f + 1.0f * input; 
 		((BQFDSP*)m_laserDSP)->SetPeaking(width, 200.0f + input * 8000.0f, gain);
 		break;
 	}
 	case LaserEffectType::LowPassFilter:
 	{
-		float freqMax = (float)44100 * 0.1f;
 		float v = (1.0f - input);
 		v *= v; // ^2 for slope
-		float freq = 100.0f + freqMax  * v;
-		((BQFDSP*)m_laserDSP)->SetLowPass(8.0f * m_laserEffectMix, freq);
+		float freq = 100.0f + 10000 * v;
+		((BQFDSP*)m_laserDSP)->SetLowPass(2.0f + 4.0f * (1-v), freq);
+		((BQFDSP*)m_laserDSP)->mix = m_laserEffectMix;
 		break;
 	}
 	case LaserEffectType::HighPassFilter:
 	{
-		float freqMax = (float)44100 * 0.1f;
+		input *= m_laserEffectMix;
 		float v = input;
 		v *= v; // ^2 for slope
-		float freq =  100.0f + freqMax  * v;
-		((BQFDSP*)m_laserDSP)->SetHighPass(8.0f * m_laserEffectMix, freq);
+		float freq =  100.0f + 4000 * v;
+		((BQFDSP*)m_laserDSP)->SetHighPass(2.0f + 4.0f * v, freq);
+		((BQFDSP*)m_laserDSP)->mix = m_laserEffectMix;
 		break;
 	}
 	}

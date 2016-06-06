@@ -18,6 +18,62 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Bezier.cpp" />
+    <ClCompile Include="src\BinaryStream.cpp" />
+    <ClCompile Include="src\Buffer.cpp" />
+    <ClCompile Include="src\Color.cpp" />
+    <ClCompile Include="src\File.cpp" />
+    <ClCompile Include="src\FileStream.cpp" />
+    <ClCompile Include="src\Log.cpp" />
+    <ClCompile Include="src\Math.cpp" />
+    <ClCompile Include="src\MemoryStream.cpp" />
+    <ClCompile Include="src\Path.cpp" />
+    <ClCompile Include="src\Random.cpp" />
+    <ClCompile Include="src\ResourceManager.cpp" />
+    <ClCompile Include="src\stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\String.cpp" />
+    <ClCompile Include="src\TextStream.cpp" />
+    <ClCompile Include="src\Transform.cpp" />
+    <ClCompile Include="src\VectorMath.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Shared\BinaryStream.hpp" />
+    <ClInclude Include="include\Shared\Buffer.hpp" />
+    <ClInclude Include="include\Shared\Color.hpp" />
+    <ClInclude Include="include\Shared\Delegate.hpp" />
+    <ClInclude Include="include\Shared\File.hpp" />
+    <ClInclude Include="include\Shared\FileStream.hpp" />
+    <ClInclude Include="include\Shared\List.hpp" />
+    <ClInclude Include="include\Shared\Log.hpp" />
+    <ClInclude Include="include\Shared\Map.hpp" />
+    <ClInclude Include="include\Shared\Margin.hpp" />
+    <ClInclude Include="include\Shared\Math.hpp" />
+    <ClInclude Include="include\Shared\MemoryStream.hpp" />
+    <ClInclude Include="include\Shared\Path.hpp" />
+    <ClInclude Include="include\Shared\Random.hpp" />
+    <ClInclude Include="include\Shared\Rect.hpp" />
+    <ClInclude Include="include\Shared\Ref.hpp" />
+    <ClInclude Include="include\Shared\ResourceManager.hpp" />
+    <ClInclude Include="include\Shared\Set.hpp" />
+    <ClInclude Include="include\Shared\Shared.hpp" />
+    <ClInclude Include="include\Shared\String.hpp" />
+    <ClInclude Include="include\Shared\TextStream.hpp" />
+    <ClInclude Include="include\Shared\Timer.hpp" />
+    <ClInclude Include="include\Shared\Transform.hpp" />
+    <ClInclude Include="include\Shared\TypeInfo.hpp" />
+    <ClInclude Include="include\Shared\Types.hpp" />
+    <ClInclude Include="include\Shared\Unique.hpp" />
+    <ClInclude Include="include\Shared\Utility.hpp" />
+    <ClInclude Include="include\Shared\Vector.hpp" />
+    <ClInclude Include="include\Shared\VectorMath.hpp" />
+    <ClInclude Include="src\stdafx.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D7388E0F-7B3B-4154-A521-95571E89D0CA}</ProjectGuid>
     <RootNamespace>SharedLib</RootNamespace>
@@ -96,7 +152,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)include;$(SolutionDir)include\Shared</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include\Shared;include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -110,7 +166,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)include;$(SolutionDir)include\Shared;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include\Shared;include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -127,7 +183,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)include;$(SolutionDir)include\Shared</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include\Shared;include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -145,7 +201,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)include;$(SolutionDir)include\Shared;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include\Shared;include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -156,61 +212,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Buffer.cpp" />
-    <ClCompile Include="Color.cpp" />
-    <ClCompile Include="File.cpp" />
-    <ClCompile Include="FileStream.cpp" />
-    <ClCompile Include="Log.cpp" />
-    <ClCompile Include="Math.cpp" />
-    <ClCompile Include="MemoryStream.cpp" />
-    <ClCompile Include="Path.cpp" />
-    <ClCompile Include="Random.cpp" />
-    <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="BinaryStream.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="String.cpp" />
-    <ClCompile Include="TextStream.cpp" />
-    <ClCompile Include="Transform.cpp" />
-    <ClCompile Include="VectorMath.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\include\Shared\Buffer.hpp" />
-    <ClInclude Include="..\include\Shared\Color.hpp" />
-    <ClInclude Include="..\include\Shared\Delegate.hpp" />
-    <ClInclude Include="..\include\Shared\File.hpp" />
-    <ClInclude Include="..\include\Shared\FileStream.hpp" />
-    <ClInclude Include="..\include\Shared\List.hpp" />
-    <ClInclude Include="..\include\Shared\Log.hpp" />
-    <ClInclude Include="..\include\Shared\Map.hpp" />
-    <ClInclude Include="..\include\Shared\Margin.hpp" />
-    <ClInclude Include="..\include\Shared\Math.hpp" />
-    <ClInclude Include="..\Include\Shared\MemoryStream.hpp" />
-    <ClInclude Include="..\include\Shared\Path.hpp" />
-    <ClInclude Include="..\include\Shared\Random.hpp" />
-    <ClInclude Include="..\include\Shared\Rect.hpp" />
-    <ClInclude Include="..\include\Shared\Ref.hpp" />
-    <ClInclude Include="..\include\Shared\ResourceManager.hpp" />
-    <ClInclude Include="..\include\Shared\Set.hpp" />
-    <ClInclude Include="..\include\Shared\Shared.hpp" />
-    <ClInclude Include="..\Include\Shared\BinaryStream.hpp" />
-    <ClInclude Include="..\include\Shared\String.hpp" />
-    <ClInclude Include="..\include\Shared\TextStream.hpp" />
-    <ClInclude Include="..\include\Shared\Timer.hpp" />
-    <ClInclude Include="..\include\Shared\Transform.hpp" />
-    <ClInclude Include="..\include\Shared\TypeInfo.hpp" />
-    <ClInclude Include="..\include\Shared\Types.hpp" />
-    <ClInclude Include="..\include\Shared\Unique.hpp" />
-    <ClInclude Include="..\include\Shared\Utility.hpp" />
-    <ClInclude Include="..\include\Shared\Vector.hpp" />
-    <ClInclude Include="..\include\Shared\VectorMath.hpp" />
-    <ClInclude Include="stdafx.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

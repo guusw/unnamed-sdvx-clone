@@ -1,9 +1,5 @@
 #pragma once
-#include "Texture.hpp"
-#include "Material.hpp"
 #include "Sample.hpp"
-#include "RenderQueue.hpp"
-#include "RenderState.hpp"
 
 extern class OpenGL* g_gl;
 extern class Window* g_gameWindow;

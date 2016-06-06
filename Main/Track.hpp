@@ -1,9 +1,5 @@
 #pragma once
 #include "Scoring.hpp"
-#include "Mesh.hpp"
-#include "Material.hpp"
-#include "Texture.hpp"
-#include "ParticleSystem.hpp"
 
 /*
 	The object responsible for drawing the track.

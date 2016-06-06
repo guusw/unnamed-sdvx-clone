@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Audio.hpp"
-#include "Window.hpp"
+#include <Graphics/Window.hpp>
 #include "AudioStream.hpp"
 #include "Audio_Impl.hpp"
 #include "DSP.hpp"

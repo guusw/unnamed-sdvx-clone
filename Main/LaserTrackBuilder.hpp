@@ -1,7 +1,5 @@
 #pragma once
 #include "BeatmapObjects.hpp"
-#include "Mesh.hpp"
-#include "Texture.hpp"
 
 class LaserTrackBuilder
 {

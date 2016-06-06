@@ -18,6 +18,63 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\CustomWindowStyle.cpp" />
+    <ClCompile Include="src\Font.cpp" />
+    <ClCompile Include="src\Framebuffer.cpp" />
+    <ClCompile Include="src\glew.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\Image.cpp" />
+    <ClCompile Include="src\ImageLoader.cpp" />
+    <ClCompile Include="src\Material.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\MeshGenerators.cpp" />
+    <ClCompile Include="src\OpenGL.cpp" />
+    <ClCompile Include="src\ParticleSystem.cpp" />
+    <ClCompile Include="src\RenderQueue.cpp" />
+    <ClCompile Include="src\ResourceManager.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\SpriteMap.cpp" />
+    <ClCompile Include="src\stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\Texture.cpp" />
+    <ClCompile Include="src\Window.cpp" />
+    <ClCompile Include="src\Window_Internal.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Graphics\CustomWindowStyle.hpp" />
+    <ClInclude Include="include\Graphics\Font.hpp" />
+    <ClInclude Include="include\Graphics\Framebuffer.hpp" />
+    <ClInclude Include="include\Graphics\GL.hpp" />
+    <ClInclude Include="include\Graphics\Image.hpp" />
+    <ClInclude Include="include\Graphics\ImageLoader.hpp" />
+    <ClInclude Include="include\Graphics\Material.hpp" />
+    <ClInclude Include="include\Graphics\Mesh.hpp" />
+    <ClInclude Include="include\Graphics\MeshGenerators.hpp" />
+    <ClInclude Include="include\Graphics\OpenGL.hpp" />
+    <ClInclude Include="include\Graphics\ParticleEmitter.hpp" />
+    <ClInclude Include="include\Graphics\ParticleParameter.hpp" />
+    <ClInclude Include="include\Graphics\ParticleParameters.hpp" />
+    <ClInclude Include="include\Graphics\ParticleSystem.hpp" />
+    <ClInclude Include="include\Graphics\RenderQueue.hpp" />
+    <ClInclude Include="include\Graphics\RenderState.hpp" />
+    <ClInclude Include="include\Graphics\ResourceManager.hpp" />
+    <ClInclude Include="include\Graphics\ResourceTypes.hpp" />
+    <ClInclude Include="include\Graphics\Shader.hpp" />
+    <ClInclude Include="include\Graphics\Texture.hpp" />
+    <ClInclude Include="include\Graphics\VertexFormat.hpp" />
+    <ClInclude Include="include\Graphics\Window.hpp" />
+    <ClInclude Include="src\stdafx.h" />
+    <ClInclude Include="src\Window_Internal.hpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6F1511F9-D92F-4183-A4FE-F178B449801F}</ProjectGuid>
     <RootNamespace>SharedLib</RootNamespace>
@@ -96,7 +153,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;$(SolutionDir)include\Shared;$(SolutionDir)include\Graphics;$(SolutionDir)include\Graphics\glew;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\third_party\jpeg-9b;..\third_party\lpng1621;..\third_party\freetype\include;include;..\Shared\include;include\Graphics;include\Graphics\glew</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -110,7 +167,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;$(SolutionDir)include\Shared;$(SolutionDir)include\Graphics;$(SolutionDir)include\Graphics\glew;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\third_party\jpeg-9b;..\third_party\lpng1621;..\third_party\freetype\include;include;..\Shared\include;include\Graphics;include\Graphics\glew</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -126,7 +183,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;$(SolutionDir)include\Shared;$(SolutionDir)include\Graphics;$(SolutionDir)include\Graphics\glew;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\third_party\jpeg-9b;..\third_party\lpng1621;..\third_party\freetype\include;include;..\Shared\include;include\Graphics;include\Graphics\glew</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -144,7 +201,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\jpeg-9b;$(SolutionDir)third_party\lpng1621;$(SolutionDir)third_party\freetype\include;$(SolutionDir)include;$(SolutionDir)include\Shared;$(SolutionDir)include\Graphics;$(SolutionDir)include\Graphics\glew;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\third_party\jpeg-9b;..\third_party\lpng1621;..\third_party\freetype\include;include;..\Shared\include;include\Graphics;include\Graphics\glew</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -155,63 +212,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="CustomWindowStyle.cpp" />
-    <ClCompile Include="Font.cpp" />
-    <ClCompile Include="Framebuffer.cpp" />
-    <ClCompile Include="glew.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="Image.cpp" />
-    <ClCompile Include="ImageLoader.cpp" />
-    <ClCompile Include="Material.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="MeshGenerators.cpp" />
-    <ClCompile Include="OpenGL.cpp" />
-    <ClCompile Include="ParticleSystem.cpp" />
-    <ClCompile Include="RenderQueue.cpp" />
-    <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="SpriteMap.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="Window.cpp" />
-    <ClCompile Include="Window_Internal.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\include\Graphics\CustomWindowStyle.hpp" />
-    <ClInclude Include="..\include\Graphics\Font.hpp" />
-    <ClInclude Include="..\include\Graphics\Framebuffer.hpp" />
-    <ClInclude Include="..\include\Graphics\GL.hpp" />
-    <ClInclude Include="..\include\Graphics\Image.hpp" />
-    <ClInclude Include="..\include\Graphics\ImageLoader.hpp" />
-    <ClInclude Include="..\include\Graphics\Material.hpp" />
-    <ClInclude Include="..\include\Graphics\Mesh.hpp" />
-    <ClInclude Include="..\include\Graphics\MeshGenerators.hpp" />
-    <ClInclude Include="..\include\Graphics\OpenGL.hpp" />
-    <ClInclude Include="..\include\Graphics\ParticleEmitter.hpp" />
-    <ClInclude Include="..\include\Graphics\ParticleParameter.hpp" />
-    <ClInclude Include="..\include\Graphics\ParticleParameters.hpp" />
-    <ClInclude Include="..\include\Graphics\ParticleSystem.hpp" />
-    <ClInclude Include="..\include\Graphics\RenderQueue.hpp" />
-    <ClInclude Include="..\include\Graphics\RenderState.hpp" />
-    <ClInclude Include="..\include\Graphics\ResourceManager.hpp" />
-    <ClInclude Include="..\include\Graphics\ResourceTypes.hpp" />
-    <ClInclude Include="..\include\Graphics\Shader.hpp" />
-    <ClInclude Include="..\include\Graphics\Texture.hpp" />
-    <ClInclude Include="..\include\Graphics\VertexFormat.hpp" />
-    <ClInclude Include="..\include\Graphics\Window.hpp" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="Window_Internal.hpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "LaserTrackBuilder.hpp"
-#include "MeshGenerators.hpp"
 #include "BeatmapPlayback.hpp"
 #include <algorithm>
 

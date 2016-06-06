@@ -2,11 +2,7 @@
 #include "Application.hpp"
 #include "Game.hpp"
 #include "Track.hpp"
-#include "OpenGL.hpp"
-#include "Image.hpp"
-#include "MeshGenerators.hpp"
 #include "LaserTrackBuilder.hpp"
-#include "RenderQueue.hpp"
 #include "BeatmapPlayback.hpp"
 #include "BeatmapObjects.hpp"
 

@@ -1,13 +1,11 @@
 #include "stdafx.h"
 #include "Application.hpp"
-#include "OpenGL.hpp"
-#include "Image.hpp"
-#include "Window.hpp"
 #include "Beatmap.hpp"
 #include "Game.hpp"
 #include "Test.hpp"
 #include "Audio.hpp"
-#include "ResourceManager.hpp"
+#include <Graphics/Window.hpp>
+#include <Graphics/ResourceManager.hpp>
 #include "Profiling.hpp"
 
 OpenGL* g_gl = nullptr;

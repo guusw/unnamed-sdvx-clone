@@ -1,4 +1,4 @@
 #pragma once
 
 // Include shared library
-#include "Shared.hpp"
+#include <Shared/Shared.hpp>

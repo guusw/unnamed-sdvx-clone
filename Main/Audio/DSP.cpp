@@ -91,7 +91,7 @@ void BQFDSP::SetHighPass(float q, float freq)
 	double cw0 = cos(w0);
 	double sw0 = sin(w0);
 	float alpha = (float)(sin(w0) / (2 * q));
-
+		
 	b0 = (float)((1 + cos(w0)) / 2);
 	b1 = (float)-(1 + cos(w0));
 	b2 = float((1 + cos(w0)) / 2);

@@ -190,7 +190,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)include;$(SolutionDir)include\Graphics;Audio;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)Shared\include;$(SolutionDir)Graphics\include;Audio;include;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -211,7 +211,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)include;$(SolutionDir)include\Graphics;Audio;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)Shared\include;$(SolutionDir)Graphics\include;Audio;include;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -234,7 +234,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)include;$(SolutionDir)include\Graphics;Audio;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)Shared\include;$(SolutionDir)Graphics\include;Audio;include;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -259,7 +259,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)include;$(SolutionDir)include\Graphics;Audio;.</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\libogg-1.3.2\include;$(SolutionDir)third_party\libvorbis-1.3.5\include;$(SolutionDir)Shared\include;$(SolutionDir)Graphics\include;Audio;include;.</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
