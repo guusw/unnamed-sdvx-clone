@@ -1,5 +1,5 @@
 # JPEG Library
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.4)
 
 add_definitions(-DTRUE=1 -DFALSE=0)
 add_library(jpeg jaricom.c

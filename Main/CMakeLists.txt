@@ -1,5 +1,5 @@
 # Main Project
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.4)
 
 # Find files used for project
 file(GLOB Main_src "*.cpp" "*.hpp" "Audio/*.cpp" "Audio/*.hpp" "Resource.rc")

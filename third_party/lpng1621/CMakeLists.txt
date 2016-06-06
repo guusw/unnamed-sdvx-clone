@@ -1,5 +1,5 @@
 # PNG Library
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.4)
 
 include_directories(../zlib-1.2.8)
 add_library(png png.c

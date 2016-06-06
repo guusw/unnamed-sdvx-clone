@@ -1,5 +1,5 @@
 # Root CMake file
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.4)
 project(FX)
 # Project configurations
 set(CMAKE_CONFIGURATION_TYPES Debug Release)

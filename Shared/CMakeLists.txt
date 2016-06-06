@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.4)
 
 # Find files used for project
 file(GLOB Shared_src "src/*.cpp" "include/Shared/*.hpp")
