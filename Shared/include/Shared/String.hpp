@@ -79,7 +79,7 @@ namespace Utility
 	{
 		static wchar_t buffer[8000];
 #ifdef _WIN32
-		swprintf(buffer, fmt, WSprintfArgFilter(args)...);
+		swprintf(buffer, sizeof(buffer), fmt, WSprintfArgFilter(args)...);
 #else
 		swprintf(buffer, sizeof(buffer), fmt, WSprintfArgFilter(args)...);
 #endif

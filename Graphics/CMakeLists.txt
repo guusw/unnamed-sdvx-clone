@@ -20,5 +20,8 @@ target_link_libraries(Graphics png)
 target_link_libraries(Graphics jpeg)
 target_include_directories(Graphics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-find_library(Graphics OpenGL)
-target_link_libraries(Graphics OpenGL)
+# Find libraries on linux
+if(!WIN32)
+	find_library(Graphics OpenGL)
+	target_link_libraries(Graphics OpenGL)
+endif(!WIN32)

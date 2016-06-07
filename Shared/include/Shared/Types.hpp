@@ -6,10 +6,20 @@
 
 // Include windows header on windows
 #ifdef _WIN32
+
+// Minimal windows headers
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <tchar.h>
+
+// Windows max macro nonsense
+#ifdef max
+#undef max
+#undef min
 #endif
+
+#endif
+
 
 // C RunTime Header Files
 #include <stdlib.h>

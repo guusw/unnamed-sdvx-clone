@@ -49,7 +49,7 @@ void OpenGL::InitResourceManagers()
 	ResourceManagers::CreateResourceManager<ResourceType::Framebuffer>();
 	ResourceManagers::CreateResourceManager<ResourceType::ParticleSystem>();
 }
-bool OpenGL::Init(Window& window)
+bool OpenGL::Init(DesktopWindow& window)
 {
 	m_window = &window;
 	m_deviceContext = GetDC((HWND)m_window->Handle());

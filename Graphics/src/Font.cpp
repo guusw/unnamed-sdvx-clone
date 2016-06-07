@@ -307,7 +307,7 @@ public:
 			{
 				pen.x += info.advance;
 			}
-			ret->size.x = max(ret->size.x, pen.x);
+			ret->size.x = std::max(ret->size.x, pen.x);
 		}
 
 		ret->size.y += size->lineHeight;

@@ -32,8 +32,8 @@ public:
 
 		// Format a timestamp string
 		char timeStr[64];
-		time_t currenTime = time(0);
-		tm* currentLocalTime = localtime(&currenTime);
+		time_t currentTime = time(0);
+		tm* currentLocalTime = localtime(&currentTime);
 		strftime(timeStr, sizeof(timeStr), "%T", currentLocalTime);
 
 		// Write the formated header

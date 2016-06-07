@@ -145,7 +145,7 @@ Audio::~Audio()
 	assert(g_audio == this);
 	g_audio = nullptr;
 }
-bool Audio::Init(class Window& window)
+bool Audio::Init(class DesktopWindow& window)
 {
 	m_window = &window;
 	audioLatency = 0;

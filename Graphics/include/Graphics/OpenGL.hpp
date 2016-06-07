@@ -12,7 +12,7 @@ class OpenGL
 	uint32 m_mainProgramPipeline;
 	HDC m_deviceContext = 0;
 	HGLRC m_renderContext = 0;
-	Window* m_window;
+	DesktopWindow* m_window;
 	class FramebufferRes* m_boundFramebuffer;
 
 	friend class ShaderRes;
@@ -25,7 +25,7 @@ public:
 	OpenGL();
 	~OpenGL();
 	void InitResourceManagers();
-	bool Init(Window& window);
+	bool Init(DesktopWindow& window);
 	void UnbindFramebuffer();
 
 	Recti GetViewport() const;

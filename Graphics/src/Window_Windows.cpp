@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Window.hpp"
+#ifdef _WIN32
 #include "Window_Internal.hpp"
 #include <Windowsx.h>
 #include <Uxtheme.h>
@@ -19,9 +20,9 @@ class Window_Impl
 {
 public:
 	// Handle to outer class to send delegates
-	Window& outer;
+	DesktopWindow& outer;
 public:
-	Window_Impl(Window& outer, Vector2i size, const CustomWindowStyle& customStyle) : outer(outer)
+	Window_Impl(DesktopWindow& outer, Vector2i size, const CustomWindowStyle& customStyle) : outer(outer)
 	{
 		m_customWindowStyle = customStyle;
 
@@ -467,39 +468,39 @@ LRESULT CALLBACK WndProc(HWND wnd, UINT msg, WPARAM wp, LPARAM lp)
 	return DefWindowProc(wnd, msg, wp, lp);
 }
 
-Window::Window(Vector2i size, const CustomWindowStyle& customStyle)
+DesktopWindow::DesktopWindow(Vector2i size, const CustomWindowStyle& customStyle)
 {
 	m_impl = new Window_Impl(*this, size, customStyle);
 }
-Window::~Window()
+DesktopWindow::~DesktopWindow()
 {
 	delete m_impl;
 }
-void Window::Show()
+void DesktopWindow::Show()
 {
 	m_impl->Show();
 }
-void Window::Hide()
+void DesktopWindow::Hide()
 {
 	m_impl->Hide();
 }
-bool Window::Update()
+bool DesktopWindow::Update()
 {
 	return m_impl->Update();
 }
-void* Window::Handle()
+void* DesktopWindow::Handle()
 {
 	return (void*)m_impl->m_handle;
 }
-void Window::SetCaption(const WString& cap)
+void DesktopWindow::SetCaption(const WString& cap)
 {
 	m_impl->SetCaption(cap);
 }
-void Window::Close()
+void DesktopWindow::Close()
 {
 	m_impl->m_closed = true;
 }
-void Window::SetWindowStyle(WindowStyle style)
+void DesktopWindow::SetWindowStyle(WindowStyle style)
 {
 	if(style == WindowStyle::Windowed)
 	{
@@ -510,11 +511,11 @@ void Window::SetWindowStyle(WindowStyle style)
 		UnsetStyles(WS_OVERLAPPEDWINDOW);
 	}
 }
-Vector2i Window::GetWindowSize()
+Vector2i DesktopWindow::GetWindowSize()
 {
 	return m_impl->GetWindowSize();
 }
-void Window::SetWindowSize(const Vector2i& size)
+void DesktopWindow::SetWindowSize(const Vector2i& size)
 {
 	m_impl->SetWindowSize(size);
 }
@@ -524,7 +525,7 @@ BOOL CALLBACK MonitorEnumCallback(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprc
 	out.Add(*lprcMonitor);
 	return true;
 }
-void Window::SwitchFullscreen(uint32 monitorID)
+void DesktopWindow::SwitchFullscreen(uint32 monitorID)
 {
 	if(!m_impl->m_fullscreen)
 	{
@@ -575,22 +576,22 @@ void Window::SwitchFullscreen(uint32 monitorID)
 		m_impl->m_fullscreen = false;
 	}
 }
-void Window::SetStyles(uint32 mask)
+void DesktopWindow::SetStyles(uint32 mask)
 {
 	LONG style = GetWindowLong(m_impl->m_handle, GWL_STYLE);
 	style |= mask;
 	SetWindowLong(m_impl->m_handle, GWL_STYLE, style);
 }
-void Window::UnsetStyles(uint32 mask)
+void DesktopWindow::UnsetStyles(uint32 mask)
 {
 	LONG style = GetWindowLong(m_impl->m_handle, GWL_STYLE);
 	mask = ~mask;
 	style &= mask; // Apply mask to disable only given styles
 	SetWindowLong(m_impl->m_handle, GWL_STYLE, style);
 }
-uint32 Window::HasStyle(uint32 mask)
+uint32 DesktopWindow::HasStyle(uint32 mask)
 {
 	LONG style = GetWindowLong(m_impl->m_handle, GWL_STYLE);
 	return style & mask;
 }
-
+#endif

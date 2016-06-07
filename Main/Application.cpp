@@ -9,7 +9,7 @@
 #include "Profiling.hpp"
 
 OpenGL* g_gl = nullptr;
-Window* g_gameWindow = nullptr;
+DesktopWindow* g_gameWindow = nullptr;
 Application* g_application = nullptr;
 
 Game* g_game = nullptr;
@@ -76,7 +76,7 @@ int32 Application::Run()
 
 		// Create the game window
 		g_resolution = Vector2i{ (int32)(g_screenHeight * g_aspectRatio), (int32)g_screenHeight };
-		g_gameWindow = new Window(g_resolution);
+		g_gameWindow = new DesktopWindow(g_resolution);
 		g_gameWindow->Show();
 		m_OnWindowResized(g_resolution);
 		g_gameWindow->OnKeyPressed.Add(this, &Application::m_OnKeyPressed);
