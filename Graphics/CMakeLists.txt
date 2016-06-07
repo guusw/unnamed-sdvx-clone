@@ -21,7 +21,11 @@ target_include_directories(Graphics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Find libraries on linux
 if(NOT WIN32)
+	# Find Freetype as a linux package
 	find_package(Freetype REQUIRED)
 	message(STATUS "Freetype detected at: ${FREETYPE_INCLUDE_DIRS}")
 	include_directories(${FREETYPE_INCLUDE_DIRS})
+else(NOT WIN32)
+	# Link against bundeled freetype
+	target_link_libraries(Graphics freetype)
 endif(NOT WIN32)
