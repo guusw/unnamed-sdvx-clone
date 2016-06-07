@@ -22,7 +22,11 @@ add_subdirectory(third_party)
 add_subdirectory(Shared)
 add_subdirectory(Graphics)
 add_subdirectory(Main)
-add_subdirectory(Test)
+
+if(!WIN32)
+	# Linux Test Project
+	add_subdirectory(Test)
+endif(!WIN32)
 
 if(WIN32)
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
