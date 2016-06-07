@@ -23,10 +23,10 @@ add_subdirectory(Shared)
 add_subdirectory(Graphics)
 add_subdirectory(Main)
 
-if(!WIN32)
+if(NOT WIN32)
 	# Linux Test Project
 	add_subdirectory(Test)
-endif(!WIN32)
+endif(NOT WIN32)
 
 if(WIN32)
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)

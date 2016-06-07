@@ -6,8 +6,8 @@
 #include "Mesh.hpp"
 #include "OpenGL.hpp"
 
-#include "ft2build.h"
-#include "freetype.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 struct CachedText
 {
