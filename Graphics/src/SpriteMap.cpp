@@ -142,7 +142,7 @@ public:
 		for (auto w : m_widths)
 		{
 			nTotalWidth = w.xOffset + w.width;
-			nTotalHeight = max(nTotalHeight, w.yOffset);
+			nTotalHeight = std::max(nTotalHeight, w.yOffset);
 		}
 
 		// Round to powers of 

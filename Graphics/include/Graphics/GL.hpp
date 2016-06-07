@@ -9,12 +9,15 @@
 #define GLEW_STATIC
 #endif
 
-#include <graphics/glew/GL/glew.h>
+// Don't include GLU in glew.h
+#define GLEW_NO_GLU
+
+#include <Graphics/glew/GL/glew.h>
 
 // Include platform specific OpenGL headers
 #ifdef _WIN32
-#include <graphics/glew/GL/wglew.h>
+#include <Graphics/glew/GL/wglew.h>
 #else
-#include <graphics/glew/GL/glxew.h>
+#include <Graphics/glew/GL/glxew.h>
 #endif
 

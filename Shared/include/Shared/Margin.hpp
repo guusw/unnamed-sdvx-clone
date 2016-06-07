@@ -22,8 +22,8 @@ public:
 	RectangleBase<T> Apply(const RectangleBase<T>& in) const
 	{
 		RectangleBase<T> ret = in;
-		ret.pos += VectorBase<T, 2>(left, top);
-		ret.size -= VectorBase<T, 2>(left + right, top + bottom);
+		ret.pos += VectorMath::VectorBase<T, 2>(left, top);
+		ret.size -= VectorMath::VectorBase<T, 2>(left + right, top + bottom);
 		return ret;
 	}
 

@@ -15,6 +15,20 @@ IMPLEMENT_STREAMABLE_TYPE(int8);
 IMPLEMENT_STREAMABLE_TYPE(int16);
 IMPLEMENT_STREAMABLE_TYPE(int32);
 IMPLEMENT_STREAMABLE_TYPE(int64);
+
+template<>
+bool BinaryStream::SerializeObject(String& obj)
+{
+	*this << obj;
+	return true;
+}
+template<>
+bool BinaryStream::SerializeObject(WString& obj)
+{
+	*this << obj;
+	return true;
+}
+
 BinaryStream& BinaryStream::operator<<(String& obj)
 {
 	uint32 len;

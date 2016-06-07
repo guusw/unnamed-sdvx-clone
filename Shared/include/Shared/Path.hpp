@@ -34,4 +34,7 @@ public:
 	static String ExtractPathFromCmdLine(String& input);
 	// Same as ExtractPathFromCmdLine but returns the result in an array and keeps the input intact
 	static Vector<String> SplitCommandLine(const String& input);
+	
+	// The character seperating directories/files 
+	static char sep;
 };

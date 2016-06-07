@@ -289,7 +289,7 @@ namespace VectorMath
 	template<typename T, size_t Num>
 	static T Dot(const VectorBase<T, Num>& lhs, const VectorBase<T, Num>& rhs) 
 	{
-		static_assert(false, "Invalid vector types for dot product");
+		static_assert(sizeof(T) == 0, "Invalid vector types for dot product");
 	};
 	template<typename T>
 	static T Dot(const VectorBase<T, 2>& lhs, const VectorBase<T, 2>& rhs)
@@ -325,7 +325,7 @@ namespace VectorMath
 	template<typename T>
 	T VectorMath::VectorBase<T, 4>::Length() const
 	{
-		static_assert(std::_Is_floating_point<T>::value == true, "Length can only be called on floating point vectors");
+		static_assert(std::is_floating_point<T>::value == true, "Length can only be called on floating point vectors");
 		return (T)std::sqrt(LengthSquared());
 	}
 	template<typename T>
@@ -336,7 +336,7 @@ namespace VectorMath
 	template<typename T>
 	T VectorMath::VectorBase<T, 3>::Length() const
 	{
-		static_assert(std::_Is_floating_point<T>::value == true, "Length can only be called on floating point vectors");
+		static_assert(std::is_floating_point<T>::value == true, "Length can only be called on floating point vectors");
 		return (T)std::sqrt(LengthSquared());
 	}
 	template<typename T>
@@ -347,7 +347,7 @@ namespace VectorMath
 	template<typename T>
 	T VectorMath::VectorBase<T, 2>::Length() const
 	{
-		static_assert(std::_Is_floating_point<T>::value == true, "Length can only be called on floating point vectors");
+		static_assert(std::is_floating_point<T>::value == true, "Length can only be called on floating point vectors");
 		return (T)std::sqrt(LengthSquared());
 	}
 	template<typename T>
@@ -360,7 +360,7 @@ namespace VectorMath
 	template<typename T, size_t Num>
 	static VectorBase<T, Num> Normalize(const VectorBase<T, Num>& lhs)
 	{
-		static_assert(false, "Invalid vector type for normalize");
+		static_assert(sizeof(T) == 0, "Invalid vector type for normalize");
 	};
 	template<typename T>
 	static VectorBase<T, 4> Normalize(const VectorBase<T, 4>& lhs)

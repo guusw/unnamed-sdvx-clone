@@ -1,3 +1,4 @@
+# Shared Library
 cmake_minimum_required(VERSION 3.4)
 
 # Find files used for project
@@ -13,7 +14,8 @@ if(WIN32)
    set_source_files_properties(${Shared_src} PROPERTIES COMPILE_FLAGS "/Yu")
    # Set precompiled header
    set_source_files_properties(${PrecompiledHeaderSource} PROPERTIES COMPILE_FLAGS "/Yc")
-   
+else(WIN32)
+	# C++11 support enabled for linux compilers
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif(WIN32)
-
 target_include_directories(Shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

@@ -1,7 +1,7 @@
 # vorbis Library
 cmake_minimum_required(VERSION 3.4)
 
-include_directories(../libogg-1.3.2/include)
+include_directories(../libogg-1.3.2/include lib)
 add_library(vorbis lib/analysis.c
     lib/barkmel.c
     lib/bitrate.c

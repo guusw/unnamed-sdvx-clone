@@ -17,6 +17,7 @@ public:
 		Blue,
 		Yellow,
 		Cyan,
+		Magenta,
 		White,
 		Gray
 	};

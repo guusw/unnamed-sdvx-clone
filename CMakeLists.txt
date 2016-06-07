@@ -1,6 +1,7 @@
 # Root CMake file
 cmake_minimum_required(VERSION 3.4)
 project(FX)
+
 # Project configurations
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 set(CMAKE_DEBUG_POSTFIX _Debug)
@@ -21,6 +22,7 @@ add_subdirectory(third_party)
 add_subdirectory(Shared)
 add_subdirectory(Graphics)
 add_subdirectory(Main)
+add_subdirectory(Test)
 
 if(WIN32)
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)

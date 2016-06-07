@@ -8,6 +8,15 @@ class Vector : public std::vector<I>
 {
 public:
 	using std::vector<I>::vector;
+	
+	// These are for allowing function to be called on the base class when compiling on GCC
+	using std::vector<I>::back;
+	using std::vector<I>::front;
+	using std::vector<I>::begin;
+	using std::vector<I>::end;
+	using std::vector<I>::erase;
+	using std::vector<I>::push_back;
+	
 	// Adds a new element and returns it
 	I& Add(const I& obj = I()) { push_back(obj); return back(); };
 	I& AddZeroed() { push_back(I()); memset(&back(), 0, sizeof(I)); return back(); };

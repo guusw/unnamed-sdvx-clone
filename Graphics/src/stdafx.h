@@ -4,15 +4,10 @@
 // OpenGL headers
 #include "GL.hpp"
 
-// Windows Header Files:
+#ifdef _WIN32
+// Windows Header File
 #include <windows.h>
-
-// C RunTime Header Files
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
-#include <tchar.h>
-#include <cinttypes>
+#endif
 
 // TODO: reference additional headers your program requires here
 #include <Shared/Shared.hpp>

@@ -10,6 +10,10 @@ class List : public std::list<I>
 {
 public:
 	using std::list<I>::list;
+	using std::list<I>::list::insert;
+	using std::list<I>::list::begin;
+	using std::list<I>::list::end;
+	using std::list<I>::list::sort;
 
 	I& AddBack(const I& item = I())
 	{

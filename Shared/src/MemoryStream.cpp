@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "MemoryStream.hpp"
+#include <algorithm>
 
 MemoryStreamBase::MemoryStreamBase(Buffer& buffer, bool isReading) : BinaryStream(isReading), m_buffer(&buffer)
 {
@@ -48,7 +49,7 @@ MemoryWriter::MemoryWriter(Buffer& buffer) : MemoryStreamBase(buffer, false)
 size_t MemoryWriter::Serialize(void* data, size_t len)
 {
 	assert(m_buffer);
-	size_t newSize = max(m_buffer->size(), m_cursor + len);
+	size_t newSize = std::max(m_buffer->size(), m_cursor + len);
 	// Reserve space for new data
 	if(newSize > m_buffer->size())
 	{

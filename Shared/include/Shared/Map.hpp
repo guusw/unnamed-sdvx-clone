@@ -7,6 +7,14 @@ class Map : public std::map<K, V>
 {
 public:
 	using std::map<K, V>::map;
+	
+	// These are for allowing function to be called on the base class when compiling on GCC
+	using std::map<K, V>::begin;
+	using std::map<K, V>::end;
+	using std::map<K, V>::erase;
+	using std::map<K, V>::insert;
+	using std::map<K, V>::find;
+	
 	bool Contains(const K& key) const
 	{
 		return find(key) != end();

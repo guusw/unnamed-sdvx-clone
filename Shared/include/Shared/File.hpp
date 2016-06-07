@@ -17,7 +17,7 @@ public:
 	// Seek from file start
 	void Seek(size_t pos);
 	// Seek from current position
-	void Skip(int64 amount);
+	void Skip(int64 pos);
 	// Seek from the end of the file
 	void SeekReverse(size_t pos);
 	size_t Tell() const;

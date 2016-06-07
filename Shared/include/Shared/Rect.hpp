@@ -87,7 +87,10 @@ template<typename T>
 class RectangleBase3D : public RectangleBase<T>
 {
 public:
-	using RectangleBase::RectangleBase;
+	using RectangleBase<T>::RectangleBase;
+	using RectangleBase<T>::RectangleBase::pos;
+	using RectangleBase<T>::RectangleBase::size;
+	
 	RectangleBase3D() = default;
 	RectangleBase3D(const RectangleBase<T>& other)
 	{

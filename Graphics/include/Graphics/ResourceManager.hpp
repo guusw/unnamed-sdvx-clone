@@ -22,7 +22,7 @@ public:
 	template<ResourceType E>
 	static void CreateResourceManager()
 	{
-		AssignResourceManager(E, new ResourceManager<ResourceManagerTypes<E>::Type>());
+		AssignResourceManager(E, new ResourceManager<typename ResourceManagerTypes<E>::Type>());
 	}
 	static void AssignResourceManager(ResourceType type, IResourceManager* mgr);
 

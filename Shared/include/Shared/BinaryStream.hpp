@@ -55,19 +55,8 @@ public:
 	template <typename T>
 	typename std::enable_if<std::is_pointer<T>::value, bool>::type SerializeObject(T& obj)
 	{
-		static_assert(false, "Can't serialize pointer, no static SerializeObject(BinaryStream&, T*&) found");
-	}
-	template<>
-	bool SerializeObject(String& obj)
-	{
-		*this << obj;
-		return true;
-	}
-	template<>
-	bool SerializeObject(WString& obj)
-	{
-		*this << obj;
-		return true;
+		// Note: size check inside static_assert to disallow gcc from needlesly asserting on this
+		static_assert(sizeof(T) == 0, "Can't serialize pointer, no static SerializeObject(BinaryStream&, T*&) found");
 	}
 
 	// Reads or writes data based on the stream's mode of operation

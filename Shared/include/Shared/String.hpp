@@ -10,6 +10,18 @@ class StringBase : public std::basic_string<T>
 {
 public:
 	using std::basic_string<T>::basic_string;
+	
+	// These are for allowing function to be called on the base class when compiling on GCC
+	using std::basic_string<T>::c_str;
+	using std::basic_string<T>::substr;
+	using std::basic_string<T>::begin;
+	using std::basic_string<T>::end;
+	using std::basic_string<T>::length;
+	using std::basic_string<T>::back;
+	using std::basic_string<T>::empty;
+	using std::basic_string<T>::front;
+	using std::basic_string<T>::find_last_of;
+	
 	StringBase() = default;
 	StringBase(const T* cs);
 	StringBase(const std::basic_string<T>& ss);
@@ -52,7 +64,11 @@ namespace Utility
 	String Sprintf(const char* fmt, Args... args)
 	{
 		static char buffer[8000];
+#ifdef _WIN32
 		sprintf_s(buffer, fmt, SprintfArgFilter(args)...);
+#else
+		snprintf(buffer, sizeof(buffer), fmt, SprintfArgFilter(args)...);
+#endif
 		return String(buffer);
 	}
 
@@ -62,7 +78,11 @@ namespace Utility
 	WString WSprintf(const wchar_t* fmt, Args... args)
 	{
 		static wchar_t buffer[8000];
-		wsprintf(buffer, fmt, WSprintfArgFilter(args)...);
+#ifdef _WIN32
+		swprintf(buffer, fmt, WSprintfArgFilter(args)...);
+#else
+		swprintf(buffer, sizeof(buffer), fmt, WSprintfArgFilter(args)...);
+#endif
 		return WString(buffer);
 	}
 

@@ -25,4 +25,6 @@ enum class ResourceType
 template<ResourceType E>
 struct ResourceManagerTypes
 {
+	// Dummy for gcc compiler
+	typedef void Type;
 };

@@ -29,7 +29,7 @@ public:
 	}
 	template<typename rep, typename period> Timer& operator=(std::chrono::duration<rep, period> duration)
 	{
-		restart();
+		Restart();
 		m_start -= duration;
 		return *this;
 	}
