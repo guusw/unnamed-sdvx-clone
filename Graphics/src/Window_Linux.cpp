@@ -10,6 +10,15 @@ public:
 	Window_Impl(DesktopWindow& outer, Vector2i size, const CustomWindowStyle& customStyle) : outer(outer)
 	{
 		m_caption = L"Window";
+
+		// Open display
+		m_display = XOpenDisplay(nullptr);
+		assert(m_display);
+
+		// Create the window
+		win = XCreateSimpleWindow(m_display, DefaultRootWindow(m_display), 
+			0, 0, size.x, size.y, 5, white, black);
+		m_size = size;
 	}
 	~Window_Impl()
 	{
@@ -41,8 +50,9 @@ public:
 	}
 
 	bool m_closed = false;
+	Vector2i m_size;
 	Window m_window;
-	Display m_display;
+	Display* m_display;
 	WString m_caption;
 }
 

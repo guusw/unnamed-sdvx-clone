@@ -75,7 +75,7 @@ void RenderQueue::Process(bool clearQueue)
 			m_renderState.worldTransform = Transform();
 			SetupMaterial(pdc->mat, pdc->params);
 			PrimitiveType pt = pdc->mesh->GetPrimitiveType();
-			if(pt >= PrimitiveType::LineList || pt <= PrimitiveType::LineStrip)
+			if(pt >= PrimitiveType::LineList && pt <= PrimitiveType::LineStrip)
 			{
 				glLineWidth(pdc->size);
 			}
