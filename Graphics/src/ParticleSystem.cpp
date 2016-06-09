@@ -203,7 +203,7 @@ namespace Graphics
 		{
 			// Calculate number of new particles to spawn
 			float spawnsf;
-			m_spawnCounter = modf(m_spawnCounter, &spawnsf);
+			m_spawnCounter = modff(m_spawnCounter, &spawnsf);
 			numSpawns = (uint32)spawnsf;
 			spawnTimeOffsetStep = deltaTime / spawnsf;
 		}

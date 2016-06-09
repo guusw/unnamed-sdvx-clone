@@ -281,50 +281,51 @@ namespace Graphics
 
 		template<typename T> void BindShaderVar(uint32 shader, uint32 loc, const T& obj)
 		{
-			static_assert(false, "Incompatible shader uniform type");
-		}
-		template<> void BindShaderVar<Vector4>(uint32 shader, uint32 loc, const Vector4& obj)
-		{
-			glProgramUniform4fv(shader, loc, 1, &obj.x);
-		}
-		template<> void BindShaderVar<Vector3>(uint32 shader, uint32 loc, const Vector3& obj)
-		{
-			glProgramUniform3fv(shader, loc, 1, &obj.x);
-		}
-		template<> void BindShaderVar<Vector2>(uint32 shader, uint32 loc, const Vector2& obj)
-		{
-			glProgramUniform2fv(shader, loc, 1, &obj.x);
-		}
-		template<> void BindShaderVar<float>(uint32 shader, uint32 loc, const float& obj)
-		{
-			glProgramUniform1fv(shader, loc, 1, &obj);
-		}
-		template<> void BindShaderVar<Colori>(uint32 shader, uint32 loc, const Colori& obj)
-		{
-			Color c = obj;
-			glProgramUniform4fv(shader, loc, 1, &c.x);
-		}
-		template<> void BindShaderVar<Vector4i>(uint32 shader, uint32 loc, const Vector4i& obj)
-		{
-			glProgramUniform4iv(shader, loc, 1, &obj.x);
-		}
-		template<> void BindShaderVar<Vector3i>(uint32 shader, uint32 loc, const Vector3i& obj)
-		{
-			glProgramUniform3iv(shader, loc, 1, &obj.x);
-		}
-		template<> void BindShaderVar<Vector2i>(uint32 shader, uint32 loc, const Vector2i& obj)
-		{
-			glProgramUniform2iv(shader, loc, 1, &obj.x);
-		}
-		template<> void BindShaderVar<int32>(uint32 shader, uint32 loc, const int32& obj)
-		{
-			glProgramUniform1iv(shader, loc, 1, &obj);
-		}
-		template<> void BindShaderVar<Transform>(uint32 shader, uint32 loc, const Transform& obj)
-		{
-			glProgramUniformMatrix4fv(shader, loc, 1, GL_FALSE, obj.mat);
+			static_assert(sizeof(T) != 0, "Incompatible shader uniform type");
 		}
 	};
+	
+	template<> void Material_Impl::BindShaderVar<Vector4>(uint32 shader, uint32 loc, const Vector4& obj)
+	{
+		glProgramUniform4fv(shader, loc, 1, &obj.x);
+	}
+	template<> void Material_Impl::BindShaderVar<Vector3>(uint32 shader, uint32 loc, const Vector3& obj)
+	{
+		glProgramUniform3fv(shader, loc, 1, &obj.x);
+	}
+	template<> void Material_Impl::BindShaderVar<Vector2>(uint32 shader, uint32 loc, const Vector2& obj)
+	{
+		glProgramUniform2fv(shader, loc, 1, &obj.x);
+	}
+	template<> void Material_Impl::BindShaderVar<float>(uint32 shader, uint32 loc, const float& obj)
+	{
+		glProgramUniform1fv(shader, loc, 1, &obj);
+	}
+	template<> void Material_Impl::BindShaderVar<Colori>(uint32 shader, uint32 loc, const Colori& obj)
+	{
+		Color c = obj;
+		glProgramUniform4fv(shader, loc, 1, &c.x);
+	}
+	template<> void Material_Impl::BindShaderVar<Vector4i>(uint32 shader, uint32 loc, const Vector4i& obj)
+	{
+		glProgramUniform4iv(shader, loc, 1, &obj.x);
+	}
+	template<> void Material_Impl::BindShaderVar<Vector3i>(uint32 shader, uint32 loc, const Vector3i& obj)
+	{
+		glProgramUniform3iv(shader, loc, 1, &obj.x);
+	}
+	template<> void Material_Impl::BindShaderVar<Vector2i>(uint32 shader, uint32 loc, const Vector2i& obj)
+	{
+		glProgramUniform2iv(shader, loc, 1, &obj.x);
+	}
+	template<> void Material_Impl::BindShaderVar<int32>(uint32 shader, uint32 loc, const int32& obj)
+	{
+		glProgramUniform1iv(shader, loc, 1, &obj);
+	}
+	template<> void Material_Impl::BindShaderVar<Transform>(uint32 shader, uint32 loc, const Transform& obj)
+	{
+		glProgramUniformMatrix4fv(shader, loc, 1, GL_FALSE, obj.mat);
+	}
 
 	Material MaterialRes::Create(OpenGL* gl)
 	{

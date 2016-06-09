@@ -1,6 +1,6 @@
 /*
-	This file contains various particle parameter types and template types that can be used to specify Contants, Ranges, Curves or Distributions
-	these can then be set in Particle Systems for various properties
+This file contains various particle parameter types and template types that can be used to specify Contants, Ranges, Curves or Distributions
+these can then be set in Particle Systems for various properties
 */
 #pragma once
 // Prevent macro conflicts with class members
@@ -19,13 +19,13 @@ namespace Graphics
 		// Used to process over lifetime events
 		virtual T Sample(float duration) = 0;
 		virtual T GetMax() = 0;
-		virtual IParticleParameter* Duplicate() const = 0;
+		virtual IParticleParameter<T>* Duplicate() const = 0;
 	};
 
 	// Macro for implementing the Duplicate() function
-#define IMPLEMENT_DUPLICATE(__type) IParticleParameter* Duplicate() const { return new __type(*this); }
+#define IMPLEMENT_DUPLICATE(__type, __self) IParticleParameter<__type>* Duplicate() const { return new __self(*this); }
 
-/* A constant value at all times */
+	/* A constant value at all times */
 	template<typename T>
 	class PPConstant : public IParticleParameter<T>
 	{
@@ -39,7 +39,7 @@ namespace Graphics
 		{
 			return val;
 		}
-		IMPLEMENT_DUPLICATE(PPConstant);
+		IMPLEMENT_DUPLICATE(T, PPConstant);
 	private:
 		T val;
 	};
@@ -62,7 +62,7 @@ namespace Graphics
 		{
 			return Math::Max(max, min);
 		}
-		IMPLEMENT_DUPLICATE(PPRandomRange);
+		IMPLEMENT_DUPLICATE(T, PPRandomRange);
 	private:
 		T delta;
 		T min, max;
@@ -82,7 +82,7 @@ namespace Graphics
 		{
 			return Math::Max(max, min);
 		}
-		IMPLEMENT_DUPLICATE(PPRange);
+		IMPLEMENT_DUPLICATE(T, PPRange);
 	private:
 		T delta;
 		T min, max;
@@ -113,7 +113,7 @@ namespace Graphics
 		{
 			return Math::Max(max, min);
 		}
-		IMPLEMENT_DUPLICATE(PPRangeFadeIn);
+		IMPLEMENT_DUPLICATE(T, PPRangeFadeIn);
 	private:
 		float rangeOut;
 		float fadeIn;
@@ -136,7 +136,7 @@ namespace Graphics
 		{
 			return Vector3(radius);
 		}
-		IMPLEMENT_DUPLICATE(PPSphere);
+		IMPLEMENT_DUPLICATE(Vector3, PPSphere);
 	private:
 		float radius;
 	};
@@ -160,14 +160,14 @@ namespace Graphics
 		{
 			return size;
 		}
-		IMPLEMENT_DUPLICATE(PPBox);
+		IMPLEMENT_DUPLICATE(Vector3, PPBox);
 	private:
 		Vector3 size;
 	};
 
 	/*
-		Cone directional particle parameter
-		Cone angle is in degrees
+	Cone directional particle parameter
+	Cone angle is in degrees
 	*/
 	class PPCone : public IParticleParameter<Vector3>
 	{
@@ -209,7 +209,7 @@ namespace Graphics
 		{
 			return Vector3(0, 0, lengthMax);
 		}
-		IMPLEMENT_DUPLICATE(PPCone);
+		IMPLEMENT_DUPLICATE(Vector3, PPCone);
 	private:
 		float lengthMin, lengthMax;
 		float angle;

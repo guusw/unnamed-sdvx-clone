@@ -17,6 +17,47 @@ namespace Graphics
 	typedef Vector<VertexFormatDesc> VertexFormatList;
 
 	/*
+		Used By VertexFormat base class
+		see below 
+	*/
+	struct VertexFormats
+	{
+		// Vector formats
+		template<typename VT, size_t N>
+		static void AddFormat(VertexFormatList& dsc, VectorMath::VectorBase<VT, N> dummy)
+		{
+			VertexFormatDesc d;
+			d.components = N;
+			d.componentSize = sizeof(VT);
+			d.isFloat = std::is_floating_point<VT>::value;
+			d.isSigned = std::is_signed<VT>::value;
+			dsc.push_back(d);
+		}
+		// Integer and float formats
+		template<typename K>
+		static void AddFormat(VertexFormatList& dsc, K dummy)
+		{
+			VertexFormatDesc d;
+			d.components = 1;
+			d.componentSize = sizeof(K);
+			d.isFloat = std::is_floating_point<K>::value;
+			d.isSigned = std::is_signed<K>::value;
+			dsc.push_back(d);
+		}
+
+		template<size_t left, typename TFirst, typename... TRest>
+		static void AddFormats(VertexFormatList& dsc)
+		{
+			AddFormat(dsc, TFirst());
+			AddFormats<left - 1, TRest...>(dsc);
+		}
+	};
+	template<>
+	void VertexFormats::AddFormats<0, void>(VertexFormatList& dsc)
+	{
+	}
+	
+	/*
 		Structure that generates a vertex format layout based on a variadic template argument list
 		use this as a base class for a vertex structure and pass the data members of your structure as template arguments in order
 
@@ -36,42 +77,11 @@ namespace Graphics
 		static Vector<VertexFormatDesc> GetDescriptors()
 		{
 			Vector<VertexFormatDesc> res;
-			AddFormats<sizeof...(T), T..., void>(res);
+			VertexFormats::AddFormats<sizeof...(T), T..., void>(res);
 			return res;
 		}
 	private:
-		// Vector formats
-		template<typename VT, size_t N>
-		static void AddFormat(VertexFormatList& dsc, VectorMath::VectorBase<VT, N> dummy)
-		{
-			VertexFormatDesc d;
-			d.components = N;
-			d.componentSize = sizeof(VT);
-			d.isFloat = std::is_floating_point<VT>::value;
-			d.isSigned = std::is_signed<VT>::value;
-			dsc.push_back(d);
-		}
-		// Integer and float formats
-		template<typename T>
-		static void AddFormat(VertexFormatList& dsc, T dummy)
-		{
-			VertexFormatDesc d;
-			d.components = 1;
-			d.componentSize = sizeof(T);
-			d.isFloat = std::is_floating_point<T>::value;
-			d.isSigned = std::is_signed<T>::value;
-			dsc.push_back(d);
-		}
-
-		template<size_t left, typename TFirst, typename... TRest>
-		static void AddFormats(VertexFormatList& dsc)
-		{
-			AddFormat(dsc, TFirst());
-			AddFormats<left - 1, TRest...>(dsc);
-		}
-		template<>
-		static void AddFormats<0, void>(VertexFormatList& dsc)
-		{
-		}
+		
 	};
+	
 }

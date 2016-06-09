@@ -1,8 +1,10 @@
 # Graphics library
 cmake_minimum_required(VERSION 3.4)
 
+# GLEW is included statically and also doesn't need GLU(Which doesn't even exist on linux)
+add_definitions(-DGLEW_STATIC -DGLEW_NO_GLU)
+
 # Find files used for project
-add_definitions(-DGLEW_STATIC)
 file(GLOB Graphics_src "src/*.cpp" "src/glew.c" "include/Graphics/*.hpp")
 
 # Platform specific source files
@@ -33,6 +35,7 @@ endif(MSVC)
 
 target_link_libraries(Graphics png)
 target_link_libraries(Graphics jpeg)
+target_link_libraries(Graphics Shared)
 target_include_directories(Graphics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Find freetype library based on platform

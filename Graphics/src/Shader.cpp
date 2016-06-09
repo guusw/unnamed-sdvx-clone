@@ -25,22 +25,35 @@ namespace Graphics
 		OpenGL* m_gl;
 
 		String m_sourcePath;
+
+		// Hot Reload detection on windows
+#ifdef _WIN32
 		HANDLE m_changeNotification = INVALID_HANDLE_VALUE;
 		uint64 m_lwt = -1;
+#endif
 	public:
 		Shader_Impl(OpenGL* gl) : m_gl(gl)
 		{
 		}
 		~Shader_Impl()
 		{
+			// Cleanup OpenGL resource
+			if(glIsProgram(m_prog))
+			{
+				glDeleteProgram(m_prog);
+			}
+
+#ifdef _WIN32
 			// Close change notification handle
 			if(m_changeNotification != INVALID_HANDLE_VALUE)
 			{
 				CloseHandle(m_changeNotification);
 			}
+#endif
 		}
 		void SetupChangeHandler()
 		{
+#ifdef _WIN32
 			if(m_changeNotification != INVALID_HANDLE_VALUE)
 			{
 				CloseHandle(m_changeNotification);
@@ -49,6 +62,7 @@ namespace Graphics
 
 			String rootFolder = Path::RemoveLast(m_sourcePath);
 			m_changeNotification = FindFirstChangeNotificationA(*rootFolder, false, FILE_NOTIFY_CHANGE_LAST_WRITE);
+#endif
 		}
 		bool LoadProgram(uint32& programOut)
 		{
@@ -81,16 +95,16 @@ namespace Graphics
 			}
 
 			// Shader hot-reload in debug mode
-#if _DEBUG
-		// Store last write time
+#if defined(_DEBUG) && defined(_WIN32)
+			// Store last write time
 			m_lwt = in.GetLastWriteTime();
 			SetupChangeHandler();
 #endif
-
 			return true;
 		}
 		bool UpdateHotReload()
 		{
+#ifdef _WIN32
 			if(m_changeNotification != INVALID_HANDLE_VALUE)
 			{
 				if(WaitForSingleObject(m_changeNotification, 0) == WAIT_OBJECT_0)
@@ -111,6 +125,7 @@ namespace Graphics
 					SetupChangeHandler();
 				}
 			}
+#endif
 			return false;
 		}
 
