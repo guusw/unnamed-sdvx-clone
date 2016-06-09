@@ -10,7 +10,7 @@ set_target_properties(Main PROPERTIES
 	OUTPUT_NAME_DEBUG Main_Debug
 	OUTPUT_NAME_RELEASE Main_Release)
 	
-if(WIN32)
+if(MSVC)
    set_target_properties(Main PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
    
    set(PrecompiledHeaderSource stdafx.cpp)
@@ -19,8 +19,7 @@ if(WIN32)
    set_source_files_properties(${Main_src} PROPERTIES COMPILE_FLAGS "/Yu")
    # Set precompiled header
    set_source_files_properties(${PrecompiledHeaderSource} PROPERTIES COMPILE_FLAGS "/Yc")
-   
-endif(WIN32)
+endif(MSVC)
 	
 target_link_libraries(Main Shared)
 target_link_libraries(Main Graphics)

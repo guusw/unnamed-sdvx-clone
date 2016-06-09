@@ -7,211 +7,214 @@
 #undef min
 #undef max
 
-/* Base class for particle parameters */
-template<typename T>
-class IParticleParameter
+namespace Graphics
 {
-public:
-	// Used to initialize a starting attribute
-	virtual T Init(float systemTime) { return Sample(systemTime); }
-	// Used to process over lifetime events
-	virtual T Sample(float duration) = 0;
-	virtual T GetMax() = 0;
-	virtual IParticleParameter* Duplicate() const = 0;
-};
+	/* Base class for particle parameters */
+	template<typename T>
+	class IParticleParameter
+	{
+	public:
+		// Used to initialize a starting attribute
+		virtual T Init(float systemTime) { return Sample(systemTime); }
+		// Used to process over lifetime events
+		virtual T Sample(float duration) = 0;
+		virtual T GetMax() = 0;
+		virtual IParticleParameter* Duplicate() const = 0;
+	};
 
-// Macro for implementing the Duplicate() function
+	// Macro for implementing the Duplicate() function
 #define IMPLEMENT_DUPLICATE(__type) IParticleParameter* Duplicate() const { return new __type(*this); }
 
 /* A constant value at all times */
-template<typename T>
-class PPConstant : public IParticleParameter<T>
-{
-public:
-	PPConstant(const T& val) : val(val) {};
-	virtual T Sample(float in) override
+	template<typename T>
+	class PPConstant : public IParticleParameter<T>
 	{
-		return val;
-	}
-	virtual T GetMax()
-	{
-		return val;
-	}
-	IMPLEMENT_DUPLICATE(PPConstant);
-private:
-	T val;
-};
-
-/* A random value between A and B */
-template<typename T>
-class PPRandomRange : public IParticleParameter<T>
-{
-public:
-	PPRandomRange(const T& min, const T& max) : min(min), max(max) { delta = max - min; };
-	virtual T Init(float systemTime) override
-	{
-		return Sample(Random::Float());
-	}
-	virtual T Sample(float in) override
-	{
-		return (max - min) * in + min;
-	}
-	virtual T GetMax()
-	{
-		return Math::Max(max, min);
-	}
-	IMPLEMENT_DUPLICATE(PPRandomRange);
-private:
-	T delta;
-	T min, max;
-};
-
-/* A value that transitions from A to B over time */
-template<typename T>
-class PPRange : public IParticleParameter<T>
-{
-public:
-	PPRange(const T& min, const T& max) : min(min), max(max) { delta = max - min; };
-	virtual T Sample(float in) override
-	{
-		return (max - min) * in + min;
-	}
-	virtual T GetMax()
-	{
-		return Math::Max(max, min);
-	}
-	IMPLEMENT_DUPLICATE(PPRange);
-private:
-	T delta;
-	T min, max;
-};
-
-/* A 2 point gradient with a fade in value */
-template<typename T>
-class PPRangeFadeIn : public IParticleParameter<T>
-{
-public:
-	PPRangeFadeIn(const T& min, const T& max, const float fadeIn) : fadeIn(fadeIn), min(min), max(max)
-	{ 
-		delta = max - min; 
-		rangeOut = 1.0f - fadeIn;
+	public:
+		PPConstant(const T& val) : val(val) {};
+		virtual T Sample(float in) override
+		{
+			return val;
+		}
+		virtual T GetMax()
+		{
+			return val;
+		}
+		IMPLEMENT_DUPLICATE(PPConstant);
+	private:
+		T val;
 	};
-	virtual T Sample(float in) override
+
+	/* A random value between A and B */
+	template<typename T>
+	class PPRandomRange : public IParticleParameter<T>
 	{
-		if(in < fadeIn)
+	public:
+		PPRandomRange(const T& min, const T& max) : min(min), max(max) { delta = max - min; };
+		virtual T Init(float systemTime) override
 		{
-			return min * (in / fadeIn);
+			return Sample(Random::Float());
 		}
-		else
+		virtual T Sample(float in) override
 		{
-			return (in - fadeIn) / rangeOut * (max - min) + min;
+			return (max - min) * in + min;
 		}
-	}
-	virtual T GetMax()
-	{
-		return Math::Max(max, min);
-	}
-	IMPLEMENT_DUPLICATE(PPRangeFadeIn);
-private:
-	float rangeOut;
-	float fadeIn;
-	T delta;
-	T min, max;
-};
+		virtual T GetMax()
+		{
+			return Math::Max(max, min);
+		}
+		IMPLEMENT_DUPLICATE(PPRandomRange);
+	private:
+		T delta;
+		T min, max;
+	};
 
-/* A random sphere particle parameter */
-class PPSphere : public IParticleParameter<Vector3>
-{
-public:
-	PPSphere(float radius) : radius(radius)
+	/* A value that transitions from A to B over time */
+	template<typename T>
+	class PPRange : public IParticleParameter<T>
 	{
-	}
-	virtual Vector3 Sample(float in) override
-	{
-		return Vector3(Random::FloatRange(-1.0f, 1.0f), Random::FloatRange(-1.0f, 1.0f), Random::FloatRange(-1.0f, 1.0f)) * radius;
-	}
-	virtual Vector3 GetMax()
-	{
-		return Vector3(radius);
-	}
-	IMPLEMENT_DUPLICATE(PPSphere);
-private:
-	float radius;
-};
+	public:
+		PPRange(const T& min, const T& max) : min(min), max(max) { delta = max - min; };
+		virtual T Sample(float in) override
+		{
+			return (max - min) * in + min;
+		}
+		virtual T GetMax()
+		{
+			return Math::Max(max, min);
+		}
+		IMPLEMENT_DUPLICATE(PPRange);
+	private:
+		T delta;
+		T min, max;
+	};
 
-/* A centered random box particle parameter with a size */
-class PPBox : public IParticleParameter<Vector3>
-{
-public:
-	PPBox(Vector3 size) : size(size)
+	/* A 2 point gradient with a fade in value */
+	template<typename T>
+	class PPRangeFadeIn : public IParticleParameter<T>
 	{
-	}
-	virtual Vector3 Sample(float in) override
-	{
-		Vector3 offset = -size * 0.5f;
-		offset.x += Random::Float() * size.x;
-		offset.y += Random::Float() * size.y;
-		offset.z += Random::Float() * size.z;
-		return offset;
-	}
-	virtual Vector3 GetMax()
-	{
-		return size;
-	}
-	IMPLEMENT_DUPLICATE(PPBox);
-private:
-	Vector3 size;
-};
+	public:
+		PPRangeFadeIn(const T& min, const T& max, const float fadeIn) : fadeIn(fadeIn), min(min), max(max)
+		{
+			delta = max - min;
+			rangeOut = 1.0f - fadeIn;
+		};
+		virtual T Sample(float in) override
+		{
+			if(in < fadeIn)
+			{
+				return min * (in / fadeIn);
+			}
+			else
+			{
+				return (in - fadeIn) / rangeOut * (max - min) + min;
+			}
+		}
+		virtual T GetMax()
+		{
+			return Math::Max(max, min);
+		}
+		IMPLEMENT_DUPLICATE(PPRangeFadeIn);
+	private:
+		float rangeOut;
+		float fadeIn;
+		T delta;
+		T min, max;
+	};
 
-/* 
-	Cone directional particle parameter 
-	Cone angle is in degrees
-*/
-class PPCone : public IParticleParameter<Vector3>
-{
-public:
-	PPCone(Vector3 dir, float angle, float lengthMin, float lengthMax)
-		: angle(angle * Math::degToRad), lengthMin(lengthMin), lengthMax(lengthMax)
+	/* A random sphere particle parameter */
+	class PPSphere : public IParticleParameter<Vector3>
 	{
-		Vector3 normal = dir.Normalized();
-		Vector3 tangent = Vector3(normal.y, -normal.x, normal.z);
-		if(normal.x == 0 && normal.y == 0)
-			tangent = Vector3(normal.z, normal.y, -normal.x);
-		tangent = VectorMath::Cross(tangent, normal).Normalized();
-		Vector3 bitangent = VectorMath::Cross(tangent, normal);
-		mat = Transform::FromAxes(bitangent, tangent, normal);
-	}
-	virtual Vector3 Sample(float in) override
-	{
-		float length = Random::FloatRange(lengthMin, lengthMax);
-		
-		float a = Random::FloatRange(-1, 1);
-		float b = Random::FloatRange(-1, 1);
-		float c = Random::FloatRange(-1, 1);
-		a = a * a * Math::Sign(a);
-		b = b * b * Math::Sign(b);
-		c = c * c * Math::Sign(c);
+	public:
+		PPSphere(float radius) : radius(radius)
+		{
+		}
+		virtual Vector3 Sample(float in) override
+		{
+			return Vector3(Random::FloatRange(-1.0f, 1.0f), Random::FloatRange(-1.0f, 1.0f), Random::FloatRange(-1.0f, 1.0f)) * radius;
+		}
+		virtual Vector3 GetMax()
+		{
+			return Vector3(radius);
+		}
+		IMPLEMENT_DUPLICATE(PPSphere);
+	private:
+		float radius;
+	};
 
-		Vector3 v = Vector3(
-			-sin(a * angle),
-			sin(b * angle),
-			cos(c * angle)
+	/* A centered random box particle parameter with a size */
+	class PPBox : public IParticleParameter<Vector3>
+	{
+	public:
+		PPBox(Vector3 size) : size(size)
+		{
+		}
+		virtual Vector3 Sample(float in) override
+		{
+			Vector3 offset = -size * 0.5f;
+			offset.x += Random::Float() * size.x;
+			offset.y += Random::Float() * size.y;
+			offset.z += Random::Float() * size.z;
+			return offset;
+		}
+		virtual Vector3 GetMax()
+		{
+			return size;
+		}
+		IMPLEMENT_DUPLICATE(PPBox);
+	private:
+		Vector3 size;
+	};
+
+	/*
+		Cone directional particle parameter
+		Cone angle is in degrees
+	*/
+	class PPCone : public IParticleParameter<Vector3>
+	{
+	public:
+		PPCone(Vector3 dir, float angle, float lengthMin, float lengthMax)
+			: angle(angle * Math::degToRad), lengthMin(lengthMin), lengthMax(lengthMax)
+		{
+			Vector3 normal = dir.Normalized();
+			Vector3 tangent = Vector3(normal.y, -normal.x, normal.z);
+			if(normal.x == 0 && normal.y == 0)
+				tangent = Vector3(normal.z, normal.y, -normal.x);
+			tangent = VectorMath::Cross(tangent, normal).Normalized();
+			Vector3 bitangent = VectorMath::Cross(tangent, normal);
+			mat = Transform::FromAxes(bitangent, tangent, normal);
+		}
+		virtual Vector3 Sample(float in) override
+		{
+			float length = Random::FloatRange(lengthMin, lengthMax);
+
+			float a = Random::FloatRange(-1, 1);
+			float b = Random::FloatRange(-1, 1);
+			float c = Random::FloatRange(-1, 1);
+			a = a * a * Math::Sign(a);
+			b = b * b * Math::Sign(b);
+			c = c * c * Math::Sign(c);
+
+			Vector3 v = Vector3(
+				-sin(a * angle),
+				sin(b * angle),
+				cos(c * angle)
 			);
-		v = v.Normalized();
+			v = v.Normalized();
 
-		v = mat.TransformDirection(v);
-		v *= length;
-		return v;
-	}
-	virtual Vector3 GetMax()
-	{
-		return Vector3(0, 0, lengthMax);
-	}
-	IMPLEMENT_DUPLICATE(PPCone);
-private:
-	float lengthMin, lengthMax;
-	float angle;
-	Transform mat;
-};
+			v = mat.TransformDirection(v);
+			v *= length;
+			return v;
+		}
+		virtual Vector3 GetMax()
+		{
+			return Vector3(0, 0, lengthMax);
+		}
+		IMPLEMENT_DUPLICATE(PPCone);
+	private:
+		float lengthMin, lengthMax;
+		float angle;
+		Transform mat;
+	};
 
 #undef IMPLEMENT_DUPLICATE
+}

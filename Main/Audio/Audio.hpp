@@ -14,7 +14,7 @@ class Audio : Unique
 public:
 	Audio();
 	~Audio();
-	bool Init(class DesktopWindow& window);
+	bool Init(class Window& window);
 	void SetGlobalVolume(float vol);
 
 	// Opens a stream at path
@@ -32,6 +32,6 @@ public:
 	int64 audioLatency;
 
 private:
-	class DesktopWindow* m_window;
+	class Window* m_window;
 	bool m_initialized = false;
 };

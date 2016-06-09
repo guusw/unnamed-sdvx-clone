@@ -2,8 +2,11 @@
 #include "CustomWindowStyle.hpp"
 #include "ImageLoader.hpp"
 
-CustomWindowStyle::CustomWindowStyle()
+namespace Graphics
 {
+	CustomWindowStyle::CustomWindowStyle()
+	{
 
+	}
+	CustomWindowStyle CustomWindowStyle::Default;
 }
-CustomWindowStyle CustomWindowStyle::Default;

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Font.hpp"
-#include <Graphics/ResourceManager.hpp>
+#include <Graphics/ResourceManagers.hpp>
 #include "Image.hpp"
 #include "Texture.hpp"
 #include "Mesh.hpp"
@@ -9,355 +9,358 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-struct CachedText
+namespace Graphics
 {
-	Text text;
-	float lastUsage;
-};
-// Prevents continuous recreation of text that doesn't change
-class TextCache : public Map<WString, CachedText>
-{
-	Timer timer;
-public:
-	void Update()
+	struct CachedText
 	{
-		float currentTime = timer.SecondsAsFloat();
-		for(auto it = begin(); it != end();)
+		Text text;
+		float lastUsage;
+	};
+	// Prevents continuous recreation of text that doesn't change
+	class TextCache : public Map<WString, CachedText>
+	{
+		Timer timer;
+	public:
+		void Update()
 		{
-			float durationSinceUsed = currentTime - it->second.lastUsage;
-			if(durationSinceUsed > 1.0f)
+			float currentTime = timer.SecondsAsFloat();
+			for(auto it = begin(); it != end();)
 			{
-				it = erase(it);
-				continue;
+				float durationSinceUsed = currentTime - it->second.lastUsage;
+				if(durationSinceUsed > 1.0f)
+				{
+					it = erase(it);
+					continue;
+				}
+				it++;
 			}
-			it++;
 		}
-	}
-	Text GetText(const WString& key)
-	{
-		auto it = find(key);
-		if(it != end())
+		Text GetText(const WString& key)
 		{
-			it->second.lastUsage = timer.SecondsAsFloat();
-			return it->second.text;
+			auto it = find(key);
+			if(it != end())
+			{
+				it->second.lastUsage = timer.SecondsAsFloat();
+				return it->second.text;
+			}
+			return Text();
 		}
-		return Text();
-	}
-	void AddText(const WString& key, Text obj)
-	{
-		Update();
-		Add(key, { obj, timer.SecondsAsFloat() });
-	}
-};
-
-FT_Library library;
-class Font_Impl;
-
-using Utility::Reinterpret;
-using VectorMath::VectorBase;
-
-FT_Face fallbackFont;
-uint32 fallbackFontSize = 0;
-
-struct FontLibrary
-{
-	FontLibrary();
-	~FontLibrary();
-	bool LoadFallbackFont();
-	Buffer loadedFallbackFont;
-};
-static FontLibrary _libraryInitializer;
-
-struct CharInfo
-{
-	uint32 glyphID;
-	float advance;
-	int32 leftOffset;
-	int32 topOffset;
-	Recti coords;
-};
-struct FontSize
-{
-	SpriteMap spriteMap;
-	Texture textureMap;
-	FT_Face face;
-	Vector<CharInfo> infos;
-	Map<wchar_t, uint32> infoByChar;
-	bool bUpdated = false;
-	float lineHeight;
-	TextCache cache;
-
-	FontSize(OpenGL* gl, FT_Face& face)
-		: face(face), m_gl(gl)
-	{
-		spriteMap = SpriteMapRes::Create();
-		textureMap = TextureRes::Create(m_gl);
-		lineHeight = (float)face->size->metrics.height / 64.0f;
-	}
-	~FontSize()
-	{
-	}
-
-	const CharInfo& GetCharInfo(wchar_t t)
-	{
-		auto it = infoByChar.find(t);
-		if (it == infoByChar.end())
-			return AddCharInfo(t);
-		return infos[it->second];
-	}
-	Texture GetTextureMap()
-	{
-		if (bUpdated) 
+		void AddText(const WString& key, Text obj)
 		{
-			Image image = spriteMap->Generate();
-			textureMap->SetData(image->GetSize(), image->GetBits());
-			bUpdated = false;
+			Update();
+			Add(key, { obj, timer.SecondsAsFloat() });
 		}
-		return textureMap;
-	}
-private:
-	const CharInfo& AddCharInfo(wchar_t t)
+	};
+
+	FT_Library library;
+	class Font_Impl;
+
+	using Utility::Reinterpret;
+	using VectorMath::VectorBase;
+
+	FT_Face fallbackFont;
+	uint32 fallbackFontSize = 0;
+
+	struct FontLibrary
 	{
-		bUpdated = true;
-		infoByChar.Add(t, (uint32)infos.size());
-		infos.emplace_back();
-		CharInfo& ci = infos.back();
+		FontLibrary();
+		~FontLibrary();
+		bool LoadFallbackFont();
+		Buffer loadedFallbackFont;
+	};
+	static FontLibrary _libraryInitializer;
 
-		FT_Face* pFace = &face;
+	struct CharInfo
+	{
+		uint32 glyphID;
+		float advance;
+		int32 leftOffset;
+		int32 topOffset;
+		Recti coords;
+	};
+	struct FontSize
+	{
+		SpriteMap spriteMap;
+		Texture textureMap;
+		FT_Face face;
+		Vector<CharInfo> infos;
+		Map<wchar_t, uint32> infoByChar;
+		bool bUpdated = false;
+		float lineHeight;
+		TextCache cache;
 
-		ci.glyphID = FT_Get_Char_Index(*pFace, t);
-		if (ci.glyphID == 0)
+		FontSize(OpenGL* gl, FT_Face& face)
+			: face(face), m_gl(gl)
 		{
-			pFace = &fallbackFont;
+			spriteMap = SpriteMapRes::Create();
+			textureMap = TextureRes::Create(m_gl);
+			lineHeight = (float)face->size->metrics.height / 64.0f;
+		}
+		~FontSize()
+		{
+		}
+
+		const CharInfo& GetCharInfo(wchar_t t)
+		{
+			auto it = infoByChar.find(t);
+			if(it == infoByChar.end())
+				return AddCharInfo(t);
+			return infos[it->second];
+		}
+		Texture GetTextureMap()
+		{
+			if(bUpdated)
+			{
+				Image image = spriteMap->Generate();
+				textureMap->SetData(image->GetSize(), image->GetBits());
+				bUpdated = false;
+			}
+			return textureMap;
+		}
+	private:
+		const CharInfo& AddCharInfo(wchar_t t)
+		{
+			bUpdated = true;
+			infoByChar.Add(t, (uint32)infos.size());
+			infos.emplace_back();
+			CharInfo& ci = infos.back();
+
+			FT_Face* pFace = &face;
+
 			ci.glyphID = FT_Get_Char_Index(*pFace, t);
+			if(ci.glyphID == 0)
+			{
+				pFace = &fallbackFont;
+				ci.glyphID = FT_Get_Char_Index(*pFace, t);
+			}
+			FT_Load_Glyph(*pFace, ci.glyphID, FT_LOAD_DEFAULT);
+
+			if((*pFace)->glyph->format != FT_GLYPH_FORMAT_BITMAP)
+			{
+				FT_Render_Glyph((*pFace)->glyph, FT_RENDER_MODE_NORMAL);
+			}
+
+			ci.topOffset = (*pFace)->glyph->bitmap_top;
+			ci.leftOffset = (*pFace)->glyph->bitmap_left;
+			ci.advance = (float)(*pFace)->glyph->advance.x / 64.0f;
+
+			Image img = ImageRes::Create(Vector2i((*pFace)->glyph->bitmap.width, (*pFace)->glyph->bitmap.rows));
+			Colori* pDst = img->GetBits();
+			uint8* pSrc = (*pFace)->glyph->bitmap.buffer;
+			uint32 nLen = (*pFace)->glyph->bitmap.width * (*pFace)->glyph->bitmap.rows;
+			for(uint32 i = 0; i < nLen; i++)
+			{
+				pDst[0].w = pSrc[0];
+				Reinterpret<VectorBase<uint8, 3>>(pDst[0]) = VectorBase<uint8, 3>(255, 255, 255);
+				pSrc++;
+				pDst++;
+			}
+			uint32 nIndex = spriteMap->AddSegment(img);
+			ci.coords = spriteMap->GetCoords(nIndex);
+
+			return ci;
 		}
-		FT_Load_Glyph(*pFace, ci.glyphID, FT_LOAD_DEFAULT);
 
-		if ((*pFace)->glyph->format != FT_GLYPH_FORMAT_BITMAP)
-		{
-			FT_Render_Glyph((*pFace)->glyph, FT_RENDER_MODE_NORMAL);
-		}
+		OpenGL* m_gl;
+	};
 
-		ci.topOffset = (*pFace)->glyph->bitmap_top;
-		ci.leftOffset = (*pFace)->glyph->bitmap_left;
-		ci.advance = (float)(*pFace)->glyph->advance.x / 64.0f;
 
-		Image img = ImageRes::Create(Vector2i((*pFace)->glyph->bitmap.width, (*pFace)->glyph->bitmap.rows));
-		Colori* pDst = img->GetBits();
-		uint8* pSrc = (*pFace)->glyph->bitmap.buffer;
-		uint32 nLen = (*pFace)->glyph->bitmap.width * (*pFace)->glyph->bitmap.rows;
-		for (uint32 i = 0; i < nLen; i++)
-		{
-			pDst[0].w = pSrc[0];
-			Reinterpret<VectorBase<uint8,3>>(pDst[0]) = VectorBase<uint8, 3>(255,255,255);
-			pSrc++;
-			pDst++;
-		}
-		uint32 nIndex = spriteMap->AddSegment(img);
-		ci.coords = spriteMap->GetCoords(nIndex);
-
-		return ci;
+	TextRes::~TextRes()
+	{
+	}
+	void TextRes::Draw()
+	{
+		spriteMap->Bind();
+		mesh->Draw();
 	}
 
-	OpenGL* m_gl;
-};
-
-
-TextRes::~TextRes()
-{
-}
-void TextRes::Draw()
-{
-	spriteMap->Bind();
-	mesh->Draw();
-}
-
-class Font_Impl : public FontRes
-{
-	FT_Face m_face;
-	Buffer m_data;
-
-	Map<uint32, FontSize*> m_sizes;
-	uint32 m_currentSize = 0;
-
-	OpenGL* m_gl;
-
-	friend class TextRes;
-public:
-	Font_Impl(class OpenGL* gl) : m_gl(gl)
+	class Font_Impl : public FontRes
 	{
+		FT_Face m_face;
+		Buffer m_data;
 
-	}
-	void Dispose()
-	{
-		for (auto s : m_sizes)
+		Map<uint32, FontSize*> m_sizes;
+		uint32 m_currentSize = 0;
+
+		OpenGL* m_gl;
+
+		friend class TextRes;
+	public:
+		Font_Impl(class OpenGL* gl) : m_gl(gl)
 		{
-			delete s.second;
-		}
-		m_sizes.clear();
-		FT_Done_Face(m_face);
-	}
-	bool Init(const String& assetPath)
-	{
-		File in;
-		if(!in.OpenRead(assetPath))
-			return false;
 
-		m_data.resize(in.GetSize());
-		if (m_data.size() == 0)
-			return false;
-		
-		in.Read(&m_data.front(), m_data.size());
-		
-		if (FT_New_Memory_Face(library, m_data.data(), (FT_Long)m_data.size(), 0, &m_face) != 0)
-			return false;
-		
-		if(FT_Select_Charmap(m_face, FT_ENCODING_UNICODE) != 0)
+		}
+		void Dispose()
+		{
+			for(auto s : m_sizes)
+			{
+				delete s.second;
+			}
+			m_sizes.clear();
+			FT_Done_Face(m_face);
+		}
+		bool Init(const String& assetPath)
+		{
+			File in;
+			if(!in.OpenRead(assetPath))
+				return false;
+
+			m_data.resize(in.GetSize());
+			if(m_data.size() == 0)
+				return false;
+
+			in.Read(&m_data.front(), m_data.size());
+
+			if(FT_New_Memory_Face(library, m_data.data(), (FT_Long)m_data.size(), 0, &m_face) != 0)
+				return false;
+
+			if(FT_Select_Charmap(m_face, FT_ENCODING_UNICODE) != 0)
+				assert(false);
+
+			return true;
+		}
+
+		FontSize* GetSize(uint32 nSize)
+		{
+			if(m_currentSize != nSize)
+			{
+				FT_Set_Pixel_Sizes(m_face, 0, nSize);
+				m_currentSize = nSize;
+			}
+			if(fallbackFontSize != nSize)
+			{
+				FT_Set_Pixel_Sizes(fallbackFont, 0, nSize);
+				fallbackFontSize = nSize;
+			}
+
+			auto it = m_sizes.find(nSize);
+			if(it != m_sizes.end())
+				return it->second;
+
+			FontSize* pMap = new FontSize(m_gl, m_face);
+			m_sizes.Add(nSize, pMap);
+			return pMap;
+		}
+		Ref<TextRes> CreateText(const WString& str, uint32 nFontSize)
+		{
+			FontSize* size = GetSize(nFontSize);
+
+			Text cachedText = size->cache.GetText(str);
+			if(cachedText)
+				return cachedText;
+
+			struct TextVertex : public VertexFormat<Vector2, Vector2>
+			{
+				TextVertex(Vector2 point, Vector2 uv) : pos(point), tex(uv) {}
+				Vector2 pos;
+				Vector2 tex;
+			};
+
+			TextRes* ret = new TextRes();
+			ret->mesh = MeshRes::Create(m_gl);
+
+			Vector<TextVertex> vertices;
+			Vector2 pen;
+			for(wchar_t c : str)
+			{
+				const CharInfo& info = size->GetCharInfo(c);
+
+				if(info.coords.size.x != 0 && info.coords.size.y != 0)
+				{
+					Vector2 corners[4];
+					corners[0] = Vector2(0, 0);
+					corners[1] = Vector2((float)info.coords.size.x, 0);
+					corners[2] = Vector2((float)info.coords.size.x, (float)info.coords.size.y);
+					corners[3] = Vector2(0, (float)info.coords.size.y);
+
+					Vector2 offset = Vector2(pen.x, pen.y);
+					offset.x += info.leftOffset;
+					offset.y += size->lineHeight - info.topOffset;
+					pen.x = floorf(pen.x);
+					pen.y = floorf(pen.y);
+
+					vertices.emplace_back(offset + corners[2],
+						corners[2] + info.coords.pos);
+					vertices.emplace_back(offset + corners[0],
+						corners[0] + info.coords.pos);
+					vertices.emplace_back(offset + corners[1],
+						corners[1] + info.coords.pos);
+
+					vertices.emplace_back(offset + corners[3],
+						corners[3] + info.coords.pos);
+					vertices.emplace_back(offset + corners[0],
+						corners[0] + info.coords.pos);
+					vertices.emplace_back(offset + corners[2],
+						corners[2] + info.coords.pos);
+				}
+
+				if(c == L'\n')
+				{
+					pen.x = 0.0f;
+					pen.y += size->lineHeight;
+					ret->size.y = pen.y;
+				}
+				else if(c == L'\t')
+				{
+					const CharInfo& space = size->GetCharInfo(L' ');
+					pen.x += space.advance * 3.0f;
+				}
+				else
+				{
+					pen.x += info.advance;
+				}
+				ret->size.x = std::max(ret->size.x, pen.x);
+			}
+
+			ret->size.y += size->lineHeight;
+
+			ret->spriteMap = size->GetTextureMap();
+			ret->mesh->SetData(vertices);
+			ret->mesh->SetPrimitiveType(PrimitiveType::TriangleList);
+
+			Text textObj = Ref<TextRes>(ret);
+			// Insert into cache
+			size->cache.AddText(str, textObj);
+			return textObj;
+		}
+	};
+
+	Font FontRes::Create(OpenGL* gl, const String& assetPath)
+	{
+		Font_Impl* pImpl = new Font_Impl(gl);
+		if(pImpl->Init(assetPath))
+		{
+			return GetResourceManager<ResourceType::Font>().Register(pImpl);
+		}
+		else
+		{
+			delete pImpl;
+			return Font();
+		}
+	}
+
+	bool FontLibrary::LoadFallbackFont()
+	{
+		bool success = true;
+		success = success && EmbeddedResource::LoadResource(IDR_FALLBACKFONT, loadedFallbackFont);
+		success = success && FT_New_Memory_Face(library, loadedFallbackFont.data(), (uint32)loadedFallbackFont.size(), 0, &fallbackFont) == 0;
+		success = success && FT_Select_Charmap(fallbackFont, FT_ENCODING_UNICODE) == 0;
+		return success;
+	}
+	FontLibrary::FontLibrary()
+	{
+		bool success = true;
+		success = success && FT_Init_FreeType(&library) == FT_Err_Ok;
+		if(!LoadFallbackFont())
+		{
+			Log("Failed to load embeded fallback font", Logger::Warning);
+		}
+		if(!success)
 			assert(false);
-
-		return true;
 	}
-
-	FontSize* GetSize(uint32 nSize)
+	FontLibrary::~FontLibrary()
 	{
-		if (m_currentSize != nSize)
-		{
-			FT_Set_Pixel_Sizes(m_face, 0, nSize);
-			m_currentSize = nSize;
-		}
-		if (fallbackFontSize != nSize)
-		{
-			FT_Set_Pixel_Sizes(fallbackFont, 0, nSize);
-			fallbackFontSize = nSize;
-		}
-
-		auto it = m_sizes.find(nSize);
-		if (it != m_sizes.end())
-			return it->second;
-
-		FontSize* pMap = new FontSize(m_gl, m_face);
-		m_sizes.Add(nSize, pMap);
-		return pMap;
+		FT_Done_Face(fallbackFont);
+		FT_Done_FreeType(library);
 	}
-	Ref<TextRes> CreateText(const WString& str, uint32 nFontSize)
-	{
-		FontSize* size = GetSize(nFontSize);
-
-		Text cachedText = size->cache.GetText(str);
-		if(cachedText)
-			return cachedText;
-
-		struct TextVertex : public VertexFormat<Vector2, Vector2>
-		{
-			TextVertex(Vector2 point, Vector2 uv) : pos(point), tex(uv) {}
-			Vector2 pos;
-			Vector2 tex;
-		};
-		
-		TextRes* ret = new TextRes();
-		ret->mesh = MeshRes::Create(m_gl);
-
-		Vector<TextVertex> vertices;
-		Vector2 pen;
-		for (wchar_t c : str)
-		{
-			const CharInfo& info = size->GetCharInfo(c);
-
-			if (info.coords.size.x != 0 && info.coords.size.y != 0)
-			{
-				Vector2 corners[4];
-				corners[0] = Vector2(0, 0);
-				corners[1] = Vector2((float)info.coords.size.x, 0);
-				corners[2] = Vector2((float)info.coords.size.x, (float)info.coords.size.y);
-				corners[3] = Vector2(0, (float)info.coords.size.y);
-
-				Vector2 offset = Vector2(pen.x, pen.y);
-				offset.x += info.leftOffset;
-				offset.y += size->lineHeight - info.topOffset;
-				pen.x = floorf(pen.x);
-				pen.y = floorf(pen.y);
-
-				vertices.emplace_back(offset + corners[2],
-					corners[2] + info.coords.pos);
-				vertices.emplace_back(offset + corners[0],
-					corners[0] + info.coords.pos);
-				vertices.emplace_back(offset + corners[1],
-					corners[1] + info.coords.pos);
-
-				vertices.emplace_back(offset + corners[3],
-					corners[3] + info.coords.pos);
-				vertices.emplace_back(offset + corners[0],
-					corners[0] + info.coords.pos);
-				vertices.emplace_back(offset + corners[2],
-					corners[2] + info.coords.pos);
-			}
-
-			if (c == L'\n')
-			{
-				pen.x = 0.0f;
-				pen.y += size->lineHeight;
-				ret->size.y = pen.y;
-			}
-			else if (c == L'\t')
-			{
-				const CharInfo& space = size->GetCharInfo(L' ');
-				pen.x += space.advance * 3.0f;
-			}
-			else
-			{
-				pen.x += info.advance;
-			}
-			ret->size.x = std::max(ret->size.x, pen.x);
-		}
-
-		ret->size.y += size->lineHeight;
-
-		ret->spriteMap = size->GetTextureMap();
-		ret->mesh->SetData(vertices);
-		ret->mesh->SetPrimitiveType(PrimitiveType::TriangleList);
-
-		Text textObj = Ref<TextRes>(ret);
-		// Insert into cache
-		size->cache.AddText(str, textObj);
-		return textObj;
-	}
-};
-
-Font FontRes::Create(OpenGL* gl, const String& assetPath)
-{
-	Font_Impl* pImpl = new Font_Impl(gl);
-	if (pImpl->Init(assetPath))
-	{
-		return GetResourceManager<ResourceType::Font>().Register(pImpl);
-	}
-	else
-	{
-		delete pImpl;
-		return Font();
-	}
-}
-
-bool FontLibrary::LoadFallbackFont()
-{
-	bool success = true;
-	success = success && EmbeddedResource::LoadResource(IDR_FALLBACKFONT, loadedFallbackFont);
-	success = success && FT_New_Memory_Face(library, loadedFallbackFont.data(), (uint32)loadedFallbackFont.size(), 0, &fallbackFont) == 0;
-	success = success && FT_Select_Charmap(fallbackFont, FT_ENCODING_UNICODE) == 0;
-	return success;
-}
-FontLibrary::FontLibrary()
-{
-	bool success = true;
-	success = success && FT_Init_FreeType(&library) == FT_Err_Ok;
-	if(!LoadFallbackFont())
-	{
-		Log("Failed to load embeded fallback font", Logger::Warning);
-	}
-	if(!success)
-		assert(false);
-}
-FontLibrary::~FontLibrary()
-{
-	FT_Done_Face(fallbackFont);
-	FT_Done_FreeType(library);
 }

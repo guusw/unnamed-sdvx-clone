@@ -4,7 +4,6 @@
 /*
 	The object responsible for drawing the track.
 */
-class RenderQueue;
 class Track : Unique
 {
 public:

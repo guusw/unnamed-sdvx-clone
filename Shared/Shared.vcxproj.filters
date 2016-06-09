@@ -13,9 +13,6 @@
     <ClCompile Include="E:\Projects\hello-world\Shared\src\Color.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\File.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Shared\src\FileStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -34,9 +31,6 @@
     <ClCompile Include="E:\Projects\hello-world\Shared\src\Random.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\ResourceManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Shared\src\String.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -50,6 +44,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Shared\src\stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Shared\src\Windows\File.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Shared\src\Windows\Path.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

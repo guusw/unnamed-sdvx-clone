@@ -1,22 +1,25 @@
 #pragma once
 #include <Graphics/Image.hpp>
 
-/*
-	Window style customization.
-	this allows for things like custom window borders.
-*/
-class CustomWindowStyle
+namespace Graphics
 {
-public:
-	CustomWindowStyle();
+	/*
+		Window style customization.
+		this allows for things like custom window borders.
+	*/
+	class CustomWindowStyle
+	{
+	public:
+		CustomWindowStyle();
 
-	bool enabled = false;
+		bool enabled = false;
 
-	// The image used for the border
-	Image borderImage;
+		// The image used for the border
+		Image borderImage;
 
-	// The size of the border around the window client area
-	Margini borderMargin;
+		// The size of the border around the window client area
+		Margini borderMargin;
 
-	static CustomWindowStyle Default;
-};
+		static CustomWindowStyle Default;
+	};
+}

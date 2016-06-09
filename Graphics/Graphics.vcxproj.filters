@@ -25,16 +25,13 @@
     <ClCompile Include="E:\Projects\hello-world\Graphics\src\MeshGenerators.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\OpenGL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Graphics\src\ParticleSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Graphics\src\RenderQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\ResourceManager.cpp">
+    <ClCompile Include="E:\Projects\hello-world\Graphics\src\ResourceManagers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Graphics\src\Shader.cpp">
@@ -46,21 +43,86 @@
     <ClCompile Include="E:\Projects\hello-world\Graphics\src\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Window_Internal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Window_Linux.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Window_Windows.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Graphics\src\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Graphics\src\glew.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Windows\OpenGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Windows\Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\CustomWindowStyle.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Font.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Framebuffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\GL.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Image.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ImageLoader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Material.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Mesh.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\MeshGenerators.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\OpenGL.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ParticleEmitter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ParticleParameter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ParticleParameters.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ParticleSystem.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\RenderQueue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\RenderState.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ResourceManagers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ResourceTypes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Shader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Texture.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\VertexFormat.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Window.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="E:\Projects\hello-world\Graphics\CMakeLists.txt" />
@@ -68,6 +130,9 @@
   <ItemGroup>
     <Filter Include="Source Files">
       <UniqueIdentifier>{2D439907-4FB9-3B26-960D-49EC1B0F87A8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{5E153632-3DCC-3CFF-85FD-0B063F9B5F3C}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

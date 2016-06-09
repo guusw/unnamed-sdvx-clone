@@ -30,6 +30,7 @@
 #include <Graphics/MeshGenerators.hpp>
 #include <Graphics/Font.hpp>
 #include <Graphics/Framebuffer.hpp>
+using namespace Graphics;
 
 // Asset loading macro
 #define CheckedLoad(__stmt) if(!(__stmt)){Logf("Failed to load asset [%s]", Logger::Error, #__stmt); return false; }
