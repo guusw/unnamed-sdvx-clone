@@ -52,11 +52,9 @@ namespace Graphics
 			AddFormats<left - 1, TRest...>(dsc);
 		}
 	};
-	template<>
-	void VertexFormats::AddFormats<0, void>(VertexFormatList& dsc)
-	{
-	}
-	
+
+	template<> void VertexFormats::AddFormats<0, void>(VertexFormatList& dsc);
+
 	/*
 		Structure that generates a vertex format layout based on a variadic template argument list
 		use this as a base class for a vertex structure and pass the data members of your structure as template arguments in order

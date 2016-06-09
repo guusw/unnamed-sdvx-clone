@@ -1,5 +1,6 @@
 #pragma once
 #include <Graphics/CustomWindowStyle.hpp>
+#include <Graphics/Keys.hpp>
 
 namespace Graphics
 {
@@ -49,9 +50,12 @@ namespace Graphics
 		void UnsetStyles(uint32 mask);
 		// Checks the given bits in the window style and returns the AND'ed result
 		uint32 HasStyle(uint32 mask);
+		
+		// Checks if a key is pressed
+		void IsKeyPressed(Key key) const;
 
-		Delegate<uint8> OnKeyPressed;
-		Delegate<uint8> OnKeyReleased;
+		Delegate<Key> OnKeyPressed;
+		Delegate<Key> OnKeyReleased;
 		Delegate<const Vector2i&> OnResized;
 
 	private:

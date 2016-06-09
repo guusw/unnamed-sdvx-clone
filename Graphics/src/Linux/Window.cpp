@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Window.hpp"
 #include <X11/XKBlib.h>
+#include "KeyMap.hpp"
 
 namespace Graphics
 {
@@ -12,6 +13,26 @@ namespace Graphics
 	public:
 		Window_Impl(Window& outer, Vector2i size, const CustomWindowStyle& customStyle) : outer(outer)
 		{
+			// Initialize button mapping
+			m_keyMapping.AddRangeMapping(XK_A, XK_Z, Key::A);
+			m_keyMapping.AddRangeMapping(XK_0, XK_9, Key::Top0);
+			m_keyMapping.AddRangeMapping(XK_F1, XK_F12, Key::F1);
+			m_keyMapping.AddMapping(XK_Print, Key::PrntScr);
+			m_keyMapping.AddMapping(XK_Scroll_Lock , Key::ScrollLock);
+			m_keyMapping.AddMapping(XK_Pause, Key::Pause);
+			m_keyMapping.AddMapping(XK_Escape, Key::Escape);
+			m_keyMapping.AddMapping(XK_grave, Key::Tilde);
+			m_keyMapping.AddMapping(XK_Page_Up, Key::PageUp);
+			m_keyMapping.AddMapping(XK_Page_Down, Key::PageDown);
+			m_keyMapping.AddMapping(XK_Return, Key::Return);
+			m_keyMapping.AddMapping(XK_plus, Key::Plus);
+			m_keyMapping.AddMapping(XK_minus, Key::Minus);
+			m_keyMapping.AddMapping(XK_Left, Key::ArrowLeft);
+			m_keyMapping.AddMapping(XK_Right, Key::ArrowRight);
+			m_keyMapping.AddMapping(XK_Up, Key::ArrowUp);
+			m_keyMapping.AddMapping(XK_Down, Key::ArrowDown);
+			m_keyMapping.AddMapping(XK_space, Key::Space);
+			
 			m_caption = L"Window";
 
 			// Open display

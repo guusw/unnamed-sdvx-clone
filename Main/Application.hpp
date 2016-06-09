@@ -38,8 +38,8 @@ public:
 
 private:
 	void m_Cleanup();
-	void m_OnKeyPressed(uint8 key);
-	void m_OnKeyReleased(uint8 key);
+	void m_OnKeyPressed(Key key);
+	void m_OnKeyReleased(Key key);
 	void m_OnWindowResized(const Vector2i& newSize);
 
 	RenderState m_renderStateBase;

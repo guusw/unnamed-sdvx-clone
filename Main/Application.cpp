@@ -385,23 +385,23 @@ Transform Application::GetGUIProjection() const
 {
 	return ProjectionMatrix::CreateOrthographic(0.0f, (float)g_resolution.x, (float)g_resolution.y, 0.0f, 0.0f, 100.0f);
 }
-void Application::m_OnKeyPressed(uint8 key)
+void Application::m_OnKeyPressed(Key key)
 {
 	if(g_game)
 	{
 		g_game->OnKeyPressed(key);
 	}
-	if(key == VK_ESCAPE)
+	if(key == Key::Escape)
 	{
 		Shutdown();
 	}
-	if(key == VK_F5) // Restart map
+	if(key == Key::F5) // Restart map
 	{
 		CleanupGame();
 		LaunchMap(m_lastMapPath);
 	}
 }
-void Application::m_OnKeyReleased(uint8 key)
+void Application::m_OnKeyReleased(Key key)
 {
 	if(g_game)
 	{

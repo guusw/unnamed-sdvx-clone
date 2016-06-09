@@ -479,7 +479,7 @@ public:
 		Length,
 	};
 	bool buttonStates[(size_t)Button::Length];
-	Map<uint32, Button> buttonMap;
+	Map<Key, Button> buttonMap;
 	float GetInputLaserDir(uint32 laserIdx)
 	{
 		size_t base = (size_t)Button::LS_0Neg;
@@ -511,37 +511,37 @@ public:
 		memset(buttonStates, 0, sizeof(buttonStates));
 
 		// Default KShoot mapping
-		buttonMap['S'] = Button::BT_0;
-		buttonMap['D'] = Button::BT_1;
-		buttonMap['K'] = Button::BT_2;
-		buttonMap['L'] = Button::BT_3;
-		buttonMap['H'] = Button::BT_0Alt;
-		buttonMap['J'] = Button::BT_1Alt;
-		buttonMap['F'] = Button::BT_2Alt;
-		buttonMap['G'] = Button::BT_3Alt;
+		buttonMap[(Key)'S'] = Button::BT_0;
+		buttonMap[(Key)'D'] = Button::BT_1;
+		buttonMap[(Key)'K'] = Button::BT_2;
+		buttonMap[(Key)'L'] = Button::BT_3;
+		buttonMap[(Key)'H'] = Button::BT_0Alt;
+		buttonMap[(Key)'J'] = Button::BT_1Alt;
+		buttonMap[(Key)'F'] = Button::BT_2Alt;
+		buttonMap[(Key)'G'] = Button::BT_3Alt;
 
-		buttonMap['C'] = Button::FX_0;
-		buttonMap['M'] = Button::FX_1;
-		buttonMap['N'] = Button::FX_0Alt;
-		buttonMap['V'] = Button::FX_1Alt;
+		buttonMap[(Key)'C'] = Button::FX_0;
+		buttonMap[(Key)'M'] = Button::FX_1;
+		buttonMap[(Key)'N'] = Button::FX_0Alt;
+		buttonMap[(Key)'V'] = Button::FX_1Alt;
 
-		buttonMap['W'] = Button::LS_0Neg;
-		buttonMap['E'] = Button::LS_0Pos;
-		buttonMap['O'] = Button::LS_1Neg;
-		buttonMap['P'] = Button::LS_1Pos;
+		buttonMap[(Key)'W'] = Button::LS_0Neg;
+		buttonMap[(Key)'E'] = Button::LS_0Pos;
+		buttonMap[(Key)'O'] = Button::LS_1Neg;
+		buttonMap[(Key)'P'] = Button::LS_1Pos;
 
 	}
-	virtual void OnKeyPressed(uint8 key) override
+	virtual void OnKeyPressed(Key key) override
 	{
-		if(key == VK_PAUSE)
+		if(key == Key::Pause)
 		{
 			m_audioPlayback.TogglePause();
 		}
-		else if(key == VK_RETURN) // Skip intro
+		else if(key == Key::Return) // Skip intro
 		{
 			SkipIntro();
 		}
-		else if(key == VK_PRIOR)
+		else if(key == Key::PageUp)
 		{
 			m_audioPlayback.Advance(5000);
 			//QWORD bytePos = BASS_ChannelGetPosition(m_audio, BASS_POS_BYTE);
@@ -549,11 +549,11 @@ public:
 			//playbackPosition += 5.0f;
 			//BASS_ChannelSetPosition(m_audio, BASS_ChannelSeconds2Bytes(m_audio, playbackPosition), BASS_POS_BYTE);
 		}
-		else if(key == VK_ADD)
+		else if(key == Key::Plus)
 		{
 			g_audio->audioLatency += 1;
 		}
-		else if(key == VK_SUBTRACT)
+		else if(key == Key::Minus)
 		{
 			g_audio->audioLatency -= 1;
 		}
@@ -565,7 +565,7 @@ public:
 				OnButtonInput(it->second, true);
 		}
 	}
-	virtual void OnKeyReleased(uint8 key) override
+	virtual void OnKeyReleased(Key key) override
 	{
 		// Handle button mappings
 		auto it = buttonMap.find(key);

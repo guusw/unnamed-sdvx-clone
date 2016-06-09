@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Window.hpp"
 #include "HBitmap.hpp"
+#include "KeyMap.hpp"
 #include <Windowsx.h>
 #include <Uxtheme.h>
 #include <dwmapi.h>
@@ -25,6 +26,26 @@ namespace Graphics
 	public:
 		Window_Impl(Window& outer, Vector2i size, const CustomWindowStyle& customStyle) : outer(outer)
 		{
+			// Initialize button mapping
+			m_keyMapping.AddRangeMapping('A', 'Z', Key::A);
+			m_keyMapping.AddRangeMapping('0', '9', Key::Top0);
+			m_keyMapping.AddRangeMapping(VK_F1, VK_F12, Key::F1);
+			m_keyMapping.AddMapping(VK_PRINT, Key::PrntScr);
+			m_keyMapping.AddMapping(VK_SCROLL, Key::ScrollLock);
+			m_keyMapping.AddMapping(VK_PAUSE, Key::Pause);
+			m_keyMapping.AddMapping(VK_ESCAPE, Key::Escape);
+			m_keyMapping.AddMapping(VK_OEM_3, Key::Tilde);
+			m_keyMapping.AddMapping(VK_PRIOR, Key::PageUp);
+			m_keyMapping.AddMapping(VK_NEXT, Key::PageDown);
+			m_keyMapping.AddMapping(VK_RETURN, Key::Return);
+			m_keyMapping.AddMapping(VK_ADD, Key::Plus);
+			m_keyMapping.AddMapping(VK_SUBTRACT, Key::Minus);
+			m_keyMapping.AddMapping(VK_LEFT, Key::ArrowLeft);
+			m_keyMapping.AddMapping(VK_RIGHT, Key::ArrowRight);
+			m_keyMapping.AddMapping(VK_UP, Key::ArrowUp);
+			m_keyMapping.AddMapping(VK_DOWN, Key::ArrowDown);
+			m_keyMapping.AddMapping(VK_SPACE, Key::Space);
+
 			m_customWindowStyle = customStyle;
 
 			Utility::MemsetZero(m_wndClass);
@@ -166,11 +187,11 @@ namespace Graphics
 		{
 			if(newState == 1)
 			{
-				outer.OnKeyPressed.Call(code);
+				outer.OnKeyPressed.Call(m_keyMapping.Translate(code));
 			}
 			else
 			{
-				outer.OnKeyReleased.Call(code);
+				outer.OnKeyReleased.Call(m_keyMapping.Translate(code));
 			}
 		}
 		void HandleRawInput(WPARAM wp, LPARAM lp)
@@ -190,7 +211,7 @@ namespace Graphics
 				auto& kb = input->data.keyboard;
 				uint8 keyCode = kb.VKey & 0xFF;
 				uint8 newState = (kb.Flags & RI_KEY_BREAK) ? 0 : 1;
-				uint8& currentState = keyStates[keyCode];
+				uint8& currentState = m_keyStates[keyCode];
 				if(currentState != newState)
 				{
 					currentState = newState;
@@ -302,7 +323,8 @@ namespace Graphics
 		Ref<HBitmap> m_border;
 
 		// Window Input State
-		uint8 keyStates[256] = { 0 };
+		uint8 m_keyStates[256] = { 0 };
+		KeyMap m_keyMapping;
 
 		// Various window state
 		bool m_active = true;
@@ -594,5 +616,9 @@ namespace Graphics
 	{
 		LONG style = GetWindowLong(m_impl->m_handle, GWL_STYLE);
 		return style & mask;
+	}
+	void Window::IsKeyPressed(Key key) const
+	{
+
 	}
 }
