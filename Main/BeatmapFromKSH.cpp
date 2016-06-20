@@ -352,7 +352,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 					}
 					else if(c >= 'S' && c <= 'W') // Retrigger 8/16/32/12/24
 					{
-						state->effectType = EffectType::Gate;
+						state->effectType = EffectType::Retrigger;
 						EffectParam paramMap[] = {
 							8, 16, 32, 12, 24
 						};

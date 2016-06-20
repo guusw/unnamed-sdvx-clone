@@ -96,6 +96,12 @@ void Scoring::Tick(float deltaTime)
 					/// TODO: if object is shorted than maxEarlyHitTime * 2 then it is never missed, fix this.
 					if(-endDelta > maxEarlyHitTime)
 					{
+						if(currentComboCounter > 0)
+						{
+							// Register miss debug info
+							hitStats.Add(HitStat(time, (MapTime)-endDelta, HitStatFlags::ComboBreak | HitStatFlags::Hold));
+						}
+
 						// Combo break, released too early
 						m_ResetCombo();
 						continue;
@@ -114,7 +120,8 @@ void Scoring::Tick(float deltaTime)
 				uint32 comboTickCurrent = (uint32)floor(((double)lastHoldDuration[hold->index] * (double)tp->numerator) / tp->beatDuration);
 				if(comboTickCurrent > comboTickLast)
 				{
-					m_AddCombo();
+					m_AddCombo(); 
+					hitStats.Add(HitStat(time, (MapTime)0, HitStatFlags::Tick | HitStatFlags::Hold));
 
 					currentHitScore += 1;
 					currentMaxScore += 1;
@@ -229,7 +236,7 @@ void Scoring::Tick(float deltaTime)
 		// Whenether the user is holding the right direction
 		bool isBeingControlled = Math::Sign(laserDelta) == Math::Sign(laserInput[i]);
 
-		if((laser->flags & LaserObjectState::flag_Instant) != 0)
+		if((laser->flags & LaserObjectState::flag_Instant) != 0) // Laser Slam?
 		{
 			if(isBeingControlled && (!laser->prev || hitDelta > 0))
 			{
@@ -257,10 +264,10 @@ void Scoring::Tick(float deltaTime)
 				AdvanceLaser();
 
 				// Register statistic
-				hitStats.Add(HitStat(time, hitDelta));
+				hitStats.Add(HitStat(time, hitDelta, HitStatFlags::Laser));
 			}
 		}
-		else
+		else // Regular laser segments
 		{
 			// Combo points for laser
 			const TimingPoint* tp = m_playback->GetTimingPointAt(laser->time);
@@ -307,6 +314,7 @@ void Scoring::Tick(float deltaTime)
 				if(comboTickCurrent > comboTickLast)
 				{
 					m_AddCombo();
+					hitStats.Add(HitStat(time, 0, HitStatFlags::Laser | HitStatFlags::Tick));
 
 					currentHitScore += 1;
 					currentMaxScore += 1;
@@ -314,6 +322,12 @@ void Scoring::Tick(float deltaTime)
 			}
 			else
 			{
+				if(currentComboCounter > 0)
+				{
+					// Register miss debug info
+					hitStats.Add(HitStat(time, (MapTime)laserMissDuration[i], HitStatFlags::ComboBreak | HitStatFlags::Laser));
+				}
+
 				// Combo break on laser segment
 				m_ResetCombo();
 				laserHoldDuration[i] = 0; 
@@ -579,4 +593,10 @@ float Scoring::m_SampleLaserPosition(MapTime time, LaserObjectState* laser)
 	time -= laser->time;
 	float r = Math::Clamp((float)time / Math::Max(1.0f, (float)laser->duration), 0.0f, 1.0f);
 	return laser->points[0] + (laser->points[1] - laser->points[0]) * r;
+}
+
+// OR operator for HitStatFlags enum
+HitStatFlags operator|(const HitStatFlags& l, const HitStatFlags& r)
+{
+	return (HitStatFlags)((uint8)l | (uint8)r);
 }

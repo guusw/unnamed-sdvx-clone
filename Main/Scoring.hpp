@@ -15,13 +15,24 @@ struct ObjectHitState
 	int64 hitDeltas[6];
 	uint32 mask;
 };
+// Flags for HitStat's
+enum class HitStatFlags : uint8
+{
+	None = 0,
+	Laser = 1,
+	Hold = 2,
+	ComboBreak = 4,
+	Tick = 8,
+};
 struct HitStat
 {
-	HitStat(MapTime time, MapTime delta) : time(time), delta(delta) {};
+	HitStat(MapTime time, MapTime delta, HitStatFlags flags = HitStatFlags::None) : time(time), delta(delta), flags(flags) {};
 	bool operator<(const HitStat& other) { return time < other.time; }
+	HitStatFlags flags;
 	MapTime time;
 	MapTime delta;
 };
+HitStatFlags operator|(const HitStatFlags& l, const HitStatFlags& r);
 
 /*
 	Calculates game score and checks which objects are hit

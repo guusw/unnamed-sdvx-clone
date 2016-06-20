@@ -235,7 +235,7 @@ void RetriggerDSP::Process(float*& out, uint32 numSamples)
 {
 	for(uint32 i = 0; i < numSamples; i++)
 	{
-		if(m_loops < 0)
+		if(m_loops == 0)
 		{
 			// Store samples for later
 			m_sampleBuffer.Add(out[i * 2]);
@@ -258,9 +258,9 @@ void RetriggerDSP::Process(float*& out, uint32 numSamples)
 
 void WobbleDSP::Process(float*& out, uint32 numSamples)
 {
-	float f = 1- abs(cos(Math::pi * ((float)m_currentSample / (float)delay)));
-	float r = (audio->GetSampleRate() / 44100.0f);
-	float freq = 50.0f * r + f * audio->GetSampleRate() * 0.2f;
+	float f = 1 - abs(cos(Math::pi * ((float)m_currentSample / (float)delay)));
+	f *= f;
+	float freq = 250.0f + 8820 * f;
 	SetLowPass(1.5f, freq);
 
 	BQFDSP::Process(out, numSamples);

@@ -426,15 +426,48 @@ public:
 		// List recent hits and their delay
 		Vector2 tableStart = textPos;
 		uint32 hitsShown = 0;
+
+		// Debug UI prefixed for hits
+		wchar_t* hitFlagPrefixes[8] = 
+		{
+			L"L", // Laser
+			L"H", // Hold
+			L"C", // Combo Break
+			L"T", // Tick
+		};
+
+		// Show all hit debug info on screen (up to a maximum)
 		for(auto it = m_scoring.hitStats.rbegin(); it != m_scoring.hitStats.rend(); it++)
 		{
-			if(hitsShown++ > 16)
+			if(hitsShown++ > 16) // Max of 16 entries to display
 				break;
 
 			float time = Math::Clamp<float>((m_lastMapTime - it->time) / 3000.0f, 0.0f, 0.5f);
 
+			// Add prefix for flags?
+			WString prefix;
+			if(it->flags != HitStatFlags::None)
+			{
+				prefix = L"[";
+				uint8 bits = (uint8)it->flags;
+				for(uint32 i = 0; i < 4; i++)
+				{
+					uint8 mask = 1 << i;
+					if((bits & mask) == mask)
+					{
+						prefix += hitFlagPrefixes[i];
+					}
+				}
+				prefix += L"] ";
+			}
+
+			// Color based on hit timing
 			Color baseColor;
-			WString what = (it->delta < 0) ? L"Early" : L"Late ";
+			WString rating = L"Perfect";
+			if(it->delta != 0)
+			{
+				rating = ((it->delta < 0) ? L"Early" : L"Late ");
+			}
 			switch(m_scoring.GetHitRatingFromDelta(it->delta))
 			{
 			case ScoreHitRating::Perfect:
@@ -445,9 +478,10 @@ public:
 				break;
 			case ScoreHitRating::Miss:
 				baseColor = Color::Red;
-				what = L"Miss ";
+				rating = L"Miss ";
 				break;
 			}
+			WString what = prefix + rating;
 			Color c = VectorMath::Lerp(baseColor, Color::Black, time);
 			WString text = Utility::WSprintf(L"%s %i", what, it->delta);
 			textPos.y += RenderText(guiRq, text, textPos, c).y;
