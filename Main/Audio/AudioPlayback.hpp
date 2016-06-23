@@ -43,6 +43,7 @@ public:
 
 	// Set the mix value of the effect on lasers
 	void SetLaserEffectMix(float mix);
+	float GetLaserEffectMix() const;
 
 	// Toggle FX track or normal track
 	// this is just to support maps that do actually have an FX track

@@ -149,7 +149,7 @@ public:
 	{
 		m_volume = vol;
 	}
-	virtual void Process(float*& out, uint32 numSamples) override
+	virtual void Process(float* out, uint32 numSamples) override
 	{
 		if(!m_playing || m_paused)
 			return;

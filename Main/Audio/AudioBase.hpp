@@ -10,7 +10,7 @@ protected:
 public:
 	virtual ~DSP();
 	// Process <numSamples> amount of samples in stereo float format
-	virtual void Process(float*& out, uint32 numSamples) = 0;
+	virtual void Process(float* out, uint32 numSamples) = 0;
 
 	float mix = 1.0f;
 	uint32 priority = 0;
@@ -26,7 +26,7 @@ class AudioBase
 public:
 	virtual ~AudioBase();
 	// Process <numSamples> amount of samples in stereo float format
-	virtual void Process(float*& out, uint32 numSamples) = 0;
+	virtual void Process(float* out, uint32 numSamples) = 0;
 	void ProcessDSPs(float*& out, uint32 numSamples);
 	// Adds a signal processor to the audio
 	void AddDSP(DSP* dsp);

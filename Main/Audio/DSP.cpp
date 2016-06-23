@@ -3,7 +3,7 @@
 #include "AudioOutput.hpp"
 #include "Audio_Impl.hpp"
 
-void PanDSP::Process(float*& out, uint32 numSamples)
+void PanDSP::Process(float* out, uint32 numSamples)
 {
 	for(uint32 i = 0; i < numSamples; i++)
 	{
@@ -14,7 +14,7 @@ void PanDSP::Process(float*& out, uint32 numSamples)
 	}
 }
 
-void BQFDSP::Process(float*& out, uint32 numSamples)
+void BQFDSP::Process(float* out, uint32 numSamples)
 {
 	for(uint32 c = 0; c < 2; c++)
 	{
@@ -59,7 +59,6 @@ void BQFDSP::SetPeaking(float bandWidth, float freq, float gain)
 	a1 = -2 * (float)cos(w0);
 	a2 = 1 - (float)(alpha / A); 
 }
-
 void BQFDSP::SetLowPass(float q, float freq)
 {
 	assert(freq > 0.0);
@@ -119,7 +118,7 @@ void BQFDSP::SetBandPass(float bandWidth, float freq)
 	a2 = 1 - alpha;
 }
 
-void LimiterDSP::Process(float*& out, uint32 numSamples)
+void LimiterDSP::Process(float* out, uint32 numSamples)
 {
 	float secondsPerSample = (float)audio->GetSecondsPerSample();
 	for(uint32 i = 0; i < numSamples; i++)
@@ -157,7 +156,7 @@ void BitCrusherDSP::SetPeriod(float period /*= 0*/)
 	m_period = (uint32)(f * period * (double)(1 << 16));
 }
 
-void BitCrusherDSP::Process(float*& out, uint32 numSamples)
+void BitCrusherDSP::Process(float* out, uint32 numSamples)
 {
 	for(uint32 i = 0; i < numSamples; i++)
 	{
@@ -174,7 +173,7 @@ void BitCrusherDSP::Process(float*& out, uint32 numSamples)
 	}
 }
 
-void GateDSP::Process(float*& out, uint32 numSamples)
+void GateDSP::Process(float* out, uint32 numSamples)
 {
 	if(delay < 2)
 		return;
@@ -203,7 +202,7 @@ void TapeStopDSP::SetLength(uint32 length)
 	m_sampleBuffer.reserve(length);
 }
 
-void TapeStopDSP::Process(float*& out, uint32 numSamples)
+void TapeStopDSP::Process(float* out, uint32 numSamples)
 {
 	for(uint32 i = 0; i < numSamples; i++)
 	{
@@ -231,7 +230,7 @@ void TapeStopDSP::Process(float*& out, uint32 numSamples)
 	}
 }
 
-void RetriggerDSP::Process(float*& out, uint32 numSamples)
+void RetriggerDSP::Process(float* out, uint32 numSamples)
 {
 	for(uint32 i = 0; i < numSamples; i++)
 	{
@@ -256,20 +255,22 @@ void RetriggerDSP::Process(float*& out, uint32 numSamples)
 	}
 }
 
-void WobbleDSP::Process(float*& out, uint32 numSamples)
+void WobbleDSP::Process(float* out, uint32 numSamples)
 {
-	float f = 1 - abs(cos(Math::pi * ((float)m_currentSample / (float)delay)));
-	f *= f;
-	float freq = 250.0f + 8820 * f;
-	SetLowPass(1.5f, freq);
+	for(uint32 i = 0; i < numSamples; i++)
+	{
+		float f = abs(2.0f * ((float)m_currentSample / (float)delay) - 1.0f);
+		f = 1.0f - pow(f, 1.5f) * 0.4f;
+		float freq = (float)pow(22000.0f, f);
+		SetLowPass(0.7f, freq);
 
-	BQFDSP::Process(out, numSamples);
-
-	m_currentSample += numSamples;
-	m_currentSample %= delay;
+		BQFDSP::Process(&out[i * 2], 1);
+		m_currentSample++;
+		m_currentSample %= delay;
+	}
 }
 
-void PhaserDSP::Process(float*& out, uint32 numSamples)
+void PhaserDSP::Process(float* out, uint32 numSamples)
 {
 	for(uint32 i = 0; i < numSamples; i++)
 	{
@@ -312,7 +313,7 @@ float PhaserDSP::APF::Update(float in)
 	return y;
 }
 
-void FlangerDSP::Process(float*& out, uint32 numSamples)
+void FlangerDSP::Process(float* out, uint32 numSamples)
 {
 	if(m_sampleBuffer.size() != (max*2))
 		m_sampleBuffer.resize(max*2);

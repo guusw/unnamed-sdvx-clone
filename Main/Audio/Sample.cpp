@@ -133,7 +133,7 @@ public:
 
 		return true;
 	}
-	virtual void Process(float*& out, uint32 numSamples) override
+	virtual void Process(float* out, uint32 numSamples) override
 	{
 		if(!m_playing)
 			return;

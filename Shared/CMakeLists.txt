@@ -1,5 +1,4 @@
 # Shared Library
-cmake_minimum_required(VERSION 3.4)
 
 # Find files used for project
 file(GLOB Shared_src "src/*.cpp" "include/Shared/*.hpp")
@@ -14,15 +13,9 @@ endif(WIN32)
 include_directories(include include/Shared src)
 add_library(Shared ${Shared_src})
 
-# C++11 support enabled for linux compilers
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
-if(MSVC)
-   set(PrecompiledHeaderSource src/stdafx.cpp)
-   
-   # Set precompiled header usage
-   set_source_files_properties(${Shared_src} PROPERTIES COMPILE_FLAGS "/Yu")
-   # Set precompiled header
-   set_source_files_properties(${PrecompiledHeaderSource} PROPERTIES COMPILE_FLAGS "/Yc")
-endif(MSVC)
+# Public include paths for library
 target_include_directories(Shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# Compiler stuff
+enable_cpp11()
+enable_precompiled_headers(${Shared_src} src/stdafx.cpp)

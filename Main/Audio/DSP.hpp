@@ -9,7 +9,7 @@ class PanDSP : public DSP
 public:
 	// -1 to 1 LR pan value
 	float panning = 0.0f;
-	virtual void Process(float*& out, uint32 numSamples);
+	virtual void Process(float* out, uint32 numSamples);
 };
 
 // Biquad Filter
@@ -25,7 +25,7 @@ public:
 	float a1 = 0.0f;
 	float a2 = 0.0f;
 
-	virtual void Process(float*& out, uint32 numSamples);
+	virtual void Process(float* out, uint32 numSamples);
 
 	// Sets the filter to behave as a peaking filter
 	void SetPeaking(float bandWidth, float freq, float gain);
@@ -47,7 +47,7 @@ class LimiterDSP : public DSP
 {
 public:
 	float releaseTime = 0.1f;
-	virtual void Process(float*& out, uint32 numSamples);
+	virtual void Process(float* out, uint32 numSamples);
 private:
 	float m_currentMaxVolume = 1.0f;
 	float m_currentReleaseTimer = releaseTime;
@@ -58,7 +58,7 @@ class BitCrusherDSP : public DSP
 public:
 	// Duration of samples, <1 = disable
 	void SetPeriod(float period = 0);
-	virtual void Process(float*& out, uint32 numSamples);
+	virtual void Process(float* out, uint32 numSamples);
 private:
 	uint32 m_period = 1;
 	uint32 m_increment = 0;
@@ -73,7 +73,7 @@ public:
 	uint32 delay = 0;
 	float low = 0.1f;
 
-	virtual void Process(float*& out, uint32 numSamples);
+	virtual void Process(float* out, uint32 numSamples);
 private:
 	uint32 m_currentSample = 0;
 };
@@ -84,7 +84,7 @@ public:
 	// Length of the effect in samples
 	void SetLength(uint32 length);
 
-	virtual void Process(float*& out, uint32 numSamples);
+	virtual void Process(float* out, uint32 numSamples);
 private:
 	uint32 m_length = 0;
 	Vector<float> m_sampleBuffer;
@@ -99,7 +99,7 @@ public:
 	// Length of the effect
 	uint32 delay = 0;
 
-	virtual void Process(float*& out, uint32 numSamples);
+	virtual void Process(float* out, uint32 numSamples);
 private:
 	Vector<float> m_sampleBuffer;
 	uint32 m_loops = 0;
@@ -110,7 +110,7 @@ class WobbleDSP : public BQFDSP
 {
 public:
 	uint32 delay;
-	virtual void Process(float*& out, uint32 numSamples);
+	virtual void Process(float* out, uint32 numSamples);
 private:
 	uint32 m_currentSample = 0;
 };
@@ -128,7 +128,7 @@ public:
 	float fb = 0.2f; //feedback
 	float depth = 1.0f;
 	
-	virtual void Process(float*& out, uint32 numSamples);
+	virtual void Process(float* out, uint32 numSamples);
 
 private:
 	// All pass filter
@@ -154,7 +154,7 @@ public:
 	uint32 min = 0;
 	uint32 max = 0;
 
-	virtual void Process(float*& out, uint32 numSamples);
+	virtual void Process(float* out, uint32 numSamples);
 private:
 	Vector<float> m_sampleBuffer;
 	uint32 m_loops = 0;

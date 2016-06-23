@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="E:\Projects\hello-world\Graphics\src\CustomWindowStyle.cpp">
@@ -43,6 +43,9 @@
     <ClCompile Include="E:\Projects\hello-world\Graphics\src\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Graphics\src\VertexFormat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Graphics\src\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -53,9 +56,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Graphics\src\Windows\Window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VertexFormat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

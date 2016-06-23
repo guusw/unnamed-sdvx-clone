@@ -316,9 +316,9 @@ namespace VectorMath
 			lhs.x * rhs.y - lhs.y * rhs.x);
 	}
 	template<typename T>
-	static VectorBase<T, 3> Cross2D(const VectorBase<T, 2>& lhs, const VectorBase<T, 2>& rhs)
+	static float Cross2D(const VectorBase<T, 2>& lhs, const VectorBase<T, 2>& rhs)
 	{
-		return Cross(VectorBase<T, 3>(lhs, 0), VectorBase<T, 3>(rhs, 0));
+		return lhs.x * rhs.y - lhs.y * rhs.x;
 	}
 
 	// Vector length and squared length

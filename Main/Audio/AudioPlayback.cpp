@@ -239,6 +239,10 @@ void AudioPlayback::SetLaserEffectMix(float mix)
 {
 	m_laserEffectMix = mix;
 }
+float AudioPlayback::GetLaserEffectMix() const
+{
+	return m_laserEffectMix;
+}
 
 AudioStream AudioPlayback::m_GetDSPTrack()
 {
@@ -337,7 +341,6 @@ void AudioPlayback::m_SetLaserEffectParameter(float input)
 	}
 	case LaserEffectType::HighPassFilter:
 	{
-		input *= m_laserEffectMix;
 		float v = input;
 		v *= v; // ^2 for slope
 		float freq =  100.0f + 4000 * v;
