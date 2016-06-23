@@ -54,17 +54,27 @@ bool AudioOutput::Init()
 		// Get Device Properties(Name, etc.)
 		IPropertyStore* props;
 		m_device->OpenPropertyStore(STGM_READ, &props);
+
+		// Get device description
+		props->GetValue(PKEY_Device_DeviceDesc, &property);
+		wcstombs(tmpStr, property.pwszVal, sizeof(tmpStr) - 1);
+		String desc = tmpStr;
+
 		props->GetValue(PKEY_Device_FriendlyName, &property);
 		wcstombs(tmpStr, property.pwszVal, sizeof(tmpStr) - 1);
+		String friendlyName = tmpStr;
+
 		props->Release();
 
-		Logf("Audio Device found [%d]-> %s", Logger::Info, i, tmpStr);
+		Logf("Audio Device found [%d]-> %s (%s)", Logger::Info, i, friendlyName, desc);
 
-		break;
 	}
 	PropVariantClear(&property);
 
-
+	/// TODO: Allow user selected device
+	// Select default device
+	SAFE_RELEASE(m_device);
+	deviceEnumerator->GetDefaultAudioEndpoint(EDataFlow::eRender, ERole::eMultimedia, &m_device);
 	SAFE_RELEASE(deviceEnumerator);
 
 	// Obtain audio client
