@@ -173,23 +173,47 @@ void BitCrusherDSP::Process(float* out, uint32 numSamples)
 	}
 }
 
+void GateDSP::SetLength(uint32 length)
+{
+	m_length = length;
+	m_halfway = m_length / 2;
+	const float fadeDuration = 0.05f;
+	m_fadeIn = (uint32)((float)m_halfway * fadeDuration);
+	m_fadeOut = (uint32)((float)m_halfway * (1.0f-fadeDuration));
+	m_currentSample = 0;
+}
 void GateDSP::Process(float* out, uint32 numSamples)
 {
-	if(delay < 2)
+	if(m_length < 2)
 		return;
 
-	uint32 halfwayDelay = delay / 2;
 	for(uint32 i = 0; i < numSamples; i++)
 	{
-		if(m_currentSample > halfwayDelay)
+		float c = 1.0f;
+		if(m_currentSample < m_halfway)
 		{
-			// Dim volume
-			out[i * 2] *= low * mix + (1 - mix) * 1;
-			out[i * 2 + 1] *= low * mix + (1 - mix) * 1;
+			// Fade out before silence
+			if(m_currentSample > m_fadeOut)
+				c = 1-(float)(m_currentSample - m_fadeOut) / (float)m_fadeIn;
+		}
+		else
+		{
+			uint32 t = m_currentSample - m_halfway;
+			// Fade in again
+			if(t > m_fadeOut)
+				c = (float)(t - m_fadeOut) / (float)m_fadeIn;
+			else
+				c = 0.0f;
 		}
 
+		// Multiply volume
+		c = (c * (1 - low) + low); // Range [low, 1]
+		c = c * mix + (1.0f-mix);
+		out[i * 2] *= c;
+		out[i * 2 + 1] *= c;
+
 		m_currentSample++;
-		m_currentSample %= delay;
+		m_currentSample %= m_length;
 	}
 }
 
@@ -230,6 +254,12 @@ void TapeStopDSP::Process(float* out, uint32 numSamples)
 	}
 }
 
+void RetriggerDSP::SetLength(uint32 length)
+{
+	m_length = length;
+	m_gateLength = (uint32)((float)length * 0.5f);
+}
+
 void RetriggerDSP::Process(float* out, uint32 numSamples)
 {
 	for(uint32 i = 0; i < numSamples; i++)
@@ -237,8 +267,16 @@ void RetriggerDSP::Process(float* out, uint32 numSamples)
 		if(m_loops == 0)
 		{
 			// Store samples for later
-			m_sampleBuffer.Add(out[i * 2]);
-			m_sampleBuffer.Add(out[i * 2 + 1]);
+			if(m_currentSample > m_gateLength) // Additional gating
+			{
+				m_sampleBuffer.Add(0.0f);
+				m_sampleBuffer.Add(0.0f);
+			}
+			else
+			{
+				m_sampleBuffer.Add(out[i * 2]);
+				m_sampleBuffer.Add(out[i * 2 + 1]);
+			}
 		}
 
 		// Sample from buffer
@@ -247,9 +285,9 @@ void RetriggerDSP::Process(float* out, uint32 numSamples)
 		
 		// Increase index
 		m_currentSample++;
-		if(m_currentSample > delay)
+		if(m_currentSample > m_length)
 		{
-			m_currentSample -= delay;
+			m_currentSample -= m_length;
 			m_loops++;
 		}
 	}
@@ -344,8 +382,10 @@ void FlangerDSP::Process(float* out, uint32 numSamples)
 		data[1] = out[i*2+1];
 
 		// Apply delay
-		out[i * 2] += data[d * 2] * mix + out[i * 2] * (1 - mix);
-		out[i * 2 + 1] += data[d * 2+1] * mix + out[i * 2+1] * (1 - mix);
+		out[i * 2] = (data[d * 2] + out[i*2]) * 0.5f * mix + 
+			out[i * 2] * (1 - mix);
+		out[i * 2 + 1] = (data[d * 2+1] + out[i*2+1]) * 0.5f * mix + 
+			out[i * 2+1] * (1 - mix);
 
 		time++;
 	}

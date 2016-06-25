@@ -145,10 +145,7 @@ public:
 		ov_pcm_seek(&m_ovf, SecondsToSamples((double)pos / 1000.0));
 		m_lock.unlock();
 	}
-	virtual void SetVolume(float vol) override
-	{
-		m_volume = vol;
-	}
+	
 	virtual void Process(float* out, uint32 numSamples) override
 	{
 		if(!m_playing || m_paused)
@@ -166,8 +163,8 @@ public:
 				uint32 readOffset = 0; // Offset from the start to read from
 				for(uint32 i = 0; outCount < numSamples && readOffset < readBufferData; i++)
 				{
-					out[outCount * 2] = m_readBuffer[0][idxStart + readOffset] * m_volume;
-					out[outCount * 2 + 1] = m_readBuffer[1][idxStart + readOffset] * m_volume;
+					out[outCount * 2] = m_readBuffer[0][idxStart + readOffset];
+					out[outCount * 2 + 1] = m_readBuffer[1][idxStart + readOffset];
 					outCount++;
 
 					// Increment source sample with resampling
@@ -218,19 +215,24 @@ public:
 		double timingDelta = GetPositionSeconds() - SamplesToSeconds(m_samplePos);
 
 		// This is to stabilize the running timer with the actual audio stream, the delta is added for 50% as an offset to this timer 
-		if(abs(timingDelta) > 0.001)
+		if(abs(timingDelta) > 0.002)
 		{
 			ResyncTiming(timingDelta);
 		}
 
 		m_lock.unlock();
 	}
+
 	void ResyncTiming(double delta)
 	{
 		if(abs(delta) > 1.5)
 			RestartTiming();
 		else
-			m_offsetCorrection += delta * 0.5;
+		{
+			double syncAmount = delta * 0.3;
+			Logf("Resyncing timing, %f", Logger::Warning, syncAmount);
+			m_offsetCorrection += syncAmount;
+		}
 	}
 	void RestartTiming()
 	{

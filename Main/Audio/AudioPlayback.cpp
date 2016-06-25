@@ -121,7 +121,7 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 	{
 		GateDSP* gate = new GateDSP();
 		double delay = (barDelay / object->effectParam) / 1000.0;
-		gate->delay = (uint32)(delay * g_audio->GetSampleRate());
+		gate->SetLength((uint32)(delay * g_audio->GetSampleRate()));
 		dsp = gate;
 		m_GetDSPTrack()->AddDSP(dsp);
 		break;
@@ -140,7 +140,7 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 	{
 		RetriggerDSP* re = new RetriggerDSP();
 		double delay = (barDelay / object->effectParam) / 1000.0;
-		re->delay = (uint32)(delay * g_audio->GetSampleRate());
+		re->SetLength((uint32)(delay * g_audio->GetSampleRate()));
 		dsp = re;
 		m_GetDSPTrack()->AddDSP(dsp);
 		break;

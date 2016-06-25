@@ -19,9 +19,6 @@ public:
 	virtual int32 GetPosition() const = 0;
 	// Sets the playback position in milliseconds
 	virtual void SetPosition(int32 pos) = 0;
-
-	// Stream volume from 0-1
-	virtual void SetVolume(float vol) = 0;
 };
 
 typedef Ref<AudioStreamRes> AudioStream;

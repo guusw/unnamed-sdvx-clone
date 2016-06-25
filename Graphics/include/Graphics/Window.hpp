@@ -56,6 +56,10 @@ namespace Graphics
 
 		Delegate<Key> OnKeyPressed;
 		Delegate<Key> OnKeyReleased;
+#ifdef _WIN32
+		// Delegate called for window messages
+		Delegate<HWND, UINT, WPARAM, LPARAM> OnWindowMessage;
+#endif
 		Delegate<const Vector2i&> OnResized;
 
 	private:

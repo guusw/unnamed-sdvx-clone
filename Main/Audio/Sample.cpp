@@ -59,7 +59,6 @@ public:
 	uint64 m_playbackPointer = 0;
 	uint64 m_length = 0;
 	bool m_playing = false;
-	float m_volume = 1.0f;
 
 public:
 	~Sample_Impl()
@@ -72,10 +71,6 @@ public:
 		m_playing = true;
 		m_playbackPointer = 0;
 		m_lock.unlock();
-	}
-	virtual void SetVolume(float volume) override
-	{
-		m_volume = volume;
 	}
 	bool Init(const String& path)
 	{
@@ -152,8 +147,8 @@ public:
 				}
 
 				int16* src = ((int16*)m_pcm.data()) + m_playbackPointer;
-				out[i * 2] = (float)src[0] / (float)0x7FFF * m_volume;
-				out[i * 2 + 1] = (float)src[1] / (float)0x7FFF * m_volume;
+				out[i * 2] = (float)src[0] / (float)0x7FFF;
+				out[i * 2 + 1] = (float)src[1] / (float)0x7FFF;
 
 				// Increment source sample with resampling
 				m_sampleStep += m_sampleStepIncrement;
@@ -177,8 +172,8 @@ public:
 				}
 
 				int16* src = ((int16*)m_pcm.data()) + m_playbackPointer;
-				out[i * 2] = (float)src[0] / (float)0x7FFF * m_volume;
-				out[i * 2 + 1] = (float)src[0] / (float)0x7FFF * m_volume;
+				out[i * 2] = (float)src[0] / (float)0x7FFF;
+				out[i * 2 + 1] = (float)src[0] / (float)0x7FFF;
 
 				// Increment source sample with resampling
 				m_sampleStep += m_sampleStepIncrement;

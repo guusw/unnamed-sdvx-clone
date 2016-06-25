@@ -54,11 +54,11 @@ void Audio_Impl::AudioThread()
 				}
 #endif
 
-				// Mix into buffer
+				// Mix into buffer and apply volume scaling
 				for(uint32 i = 0; i < numSamples; i++)
 				{
-					data[i * 2 + 0] += tempData[i * 2];
-					data[i * 2 + 1] += tempData[i * 2 + 1];
+					data[i * 2 + 0] += tempData[i * 2] * item->GetVolume();
+					data[i * 2 + 1] += tempData[i * 2 + 1] * item->GetVolume();
 				}
 			}
 			lock.unlock();

@@ -376,8 +376,12 @@ namespace Graphics
 		}
 
 		Window_Impl* impl = (Window_Impl*)GetWindowLongPtr(wnd, GWLP_USERDATA);
+
 		if(impl)
 		{
+			// Call delegates
+			impl->outer.OnWindowMessage.Call(wnd, msg, wp, lp);
+
 			CustomWindowStyle& cws = impl->m_customWindowStyle;
 
 			if(msg == WM_INPUT)

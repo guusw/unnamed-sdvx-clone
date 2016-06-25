@@ -35,6 +35,18 @@ public:
 
 	void Deregister();
 
+	// Stream volume from 0-1
+	void SetVolume(float volume)
+	{
+		m_volume = volume;
+	}
+	float GetVolume() const
+	{
+		return m_volume;
+	}
+
 	Vector<DSP*> DSPs;
 	class Audio_Impl* audio = nullptr;
+private:
+	float m_volume;
 };

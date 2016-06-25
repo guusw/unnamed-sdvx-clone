@@ -69,12 +69,18 @@ private:
 class GateDSP : public DSP
 {
 public:
-	// The amount of time for a single cycle
-	uint32 delay = 0;
+	// The amount of time for a single cycle in samples
+	void SetLength(uint32 length);
+
+	// Low volume
 	float low = 0.1f;
 
 	virtual void Process(float* out, uint32 numSamples);
 private:
+	uint32 m_length = 0;
+	uint32 m_fadeIn = 0; // Fade In mark
+	uint32 m_fadeOut = 0; // Fade Out mark
+	uint32 m_halfway; // Halfway mark
 	uint32 m_currentSample = 0;
 };
 
@@ -96,11 +102,13 @@ private:
 class RetriggerDSP : public DSP
 {
 public:
-	// Length of the effect
-	uint32 delay = 0;
+	// Length of the effect in sample
+	void SetLength(uint32 length);
 
 	virtual void Process(float* out, uint32 numSamples);
 private:
+	uint32 m_length = 0;
+	uint32 m_gateLength = 0;
 	Vector<float> m_sampleBuffer;
 	uint32 m_loops = 0;
 	uint32 m_currentSample = 0;
