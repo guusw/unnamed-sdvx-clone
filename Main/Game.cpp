@@ -433,7 +433,7 @@ public:
 		if(m_scoring.autoplay)
 			textPos.y += RenderText(guiRq, "Autoplay enabled", textPos, Color::Blue).y;
 
-		// List recent hits and their delay
+		// List recent hits and their delay	
 		Vector2 tableStart = textPos;
 		uint32 hitsShown = 0;
 		// Show all hit debug info on screen (up to a maximum)

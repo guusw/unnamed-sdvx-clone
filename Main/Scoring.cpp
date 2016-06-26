@@ -12,6 +12,8 @@ Scoring::Scoring()
 }
 Scoring::~Scoring()
 {
+	m_CleanupHitStats();
+	m_CleanupTicks();
 }
 
 void Scoring::SetPlayback(BeatmapPlayback& playback)
@@ -64,6 +66,9 @@ void Scoring::Reset()
 
 	// Recalculate maximum score
 	totalMaxScore = CalculateMaxScore();
+
+	m_CleanupHitStats();
+	m_CleanupTicks();
 }
 
 void Scoring::Tick(float deltaTime)
@@ -171,6 +176,14 @@ HitStat* Scoring::m_AddOrUpdateHitStat(ObjectState* object)
 	// Shouldn't get here
 	assert(false);
 	return nullptr;
+}
+
+void Scoring::m_CleanupHitStats()
+{
+	for(HitStat* hit : hitStats)
+		delete hit;
+	hitStats.clear();
+	m_holdHitStats.clear();
 }
 
 bool Scoring::IsObjectHeld(ObjectState* object)
@@ -502,6 +515,16 @@ void Scoring::m_TickMiss(ScoreTick* tick, uint32 index)
 	// All misses reset combo
 	m_ResetCombo();
 	m_OnTickProcessed(tick, index);
+}
+
+void Scoring::m_CleanupTicks()
+{
+	for(uint32 i = 0; i < 8; i++)
+	{
+		for(ScoreTick* tick : m_ticks[i])
+			delete tick;
+		m_ticks[i].clear();
+	}
 }
 
 void Scoring::m_AddScore(uint32 score)

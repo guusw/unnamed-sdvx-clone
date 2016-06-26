@@ -154,6 +154,7 @@ private:
 	void m_OnTickProcessed(ScoreTick* tick, uint32 index);
 	void m_TickHit(ScoreTick* tick, uint32 index, MapTime delta = 0);
 	void m_TickMiss(ScoreTick* tick, uint32 index);
+	void m_CleanupTicks();
 
 	// Called when score is gained
 	//	should only be called once for a single object since this also increments the combo counter
@@ -176,6 +177,7 @@ private:
 
 	// Creates or retrieves an existing hit stat and returns it
 	HitStat* m_AddOrUpdateHitStat(ObjectState* object);
+	void m_CleanupHitStats();
 
 	// Updates laser output with or without interpolation
 	bool m_interpolateLaserOutput = false;
