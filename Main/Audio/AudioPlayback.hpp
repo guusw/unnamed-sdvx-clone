@@ -67,4 +67,5 @@ private:
 	uint32 m_buttonEffectParams[2] = { 0 };
 	EffectType m_buttonEffectTypes[2] = { EffectType::None };
 	class DSP* m_buttonDSPs[2] = { nullptr };
+	float m_effectMix[2] = { 0.0f };
 };

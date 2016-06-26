@@ -30,7 +30,7 @@ public:
 		emitter->SetFadeOverTime(PPRangeFadeIn<float>(1.0f, 0.0f, 0.4f));
 		emitter->SetLifetime(PPRandomRange<float>(0.27f, 0.3f));
 		emitter->SetStartDrag(PPConstant<float>(0.0f));
-		emitter->SetStartVelocity(PPConstant<Vector3>({ 0,1,0 }));
+		emitter->SetStartVelocity(PPConstant<Vector3>({ 0,2,0 }));
 		emitter->SetStartColor(PPConstant<Color>(color));
 		return emitter;
 	}

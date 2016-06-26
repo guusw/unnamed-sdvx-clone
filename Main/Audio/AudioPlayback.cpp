@@ -186,16 +186,18 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 
 	if(dsp)
 	{
-		dsp->mix = 0;
+		// Initialize mix value to previous value
+		dsp->mix = m_effectMix[index];
 	}
 }
 
 void AudioPlayback::SetEffectEnabled(uint32 index, bool enabled)
 {
 	assert(index >= 0 && index <= 1);
+	m_effectMix[index] = enabled ? 1.0f : 0.0f;
 	if(m_buttonDSPs[index])
 	{
-		m_buttonDSPs[index]->mix = enabled ? 1.0f : 0.0f;
+		m_buttonDSPs[index]->mix = m_effectMix[index];
 	}
 }
 

@@ -208,3 +208,17 @@ TObjectState<ObjectTypeData_Laser>* ObjectTypeData_Laser::GetRoot()
 		ptr = ptr->prev;
 	return ptr;
 }
+float ObjectTypeData_Laser::GetDirection() const
+{
+	return Math::Sign(points[1] - points[0]);
+}
+float ObjectTypeData_Laser::SamplePosition(MapTime time) const
+{
+	const LaserObjectState* state = (LaserObjectState*)this;
+	while(state->next && (state->time + state->duration) < time)
+	{
+		state = state->next;
+	}
+	float f = Math::Clamp((float)(time - state->time) / (float)Math::Max(1, state->duration), 0.0f, 1.0f);
+	return (state->points[1] - state->points[0]) * f + state->points[0];
+}

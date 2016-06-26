@@ -281,7 +281,7 @@ void Track::DrawObjectState(RenderQueue& rq, class BeatmapPlayback& playback, Ob
 			MaterialParameterSet laserParams;
 
 			// Make not yet hittable lasers slightly glowing
-			if((laser->GetRoot()->time + Scoring::maxLaserHitTime) > playback.GetLastTime())
+			if((laser->GetRoot()->time + Scoring::goodHitTime) > playback.GetLastTime())
 				laserParams.SetParameter("objectGlow", 0.2f);
 			else
 				laserParams.SetParameter("objectGlow", active ? objectGlow : 0.0f);

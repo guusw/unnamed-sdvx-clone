@@ -1,5 +1,6 @@
 #pragma once
 #include <math.h>
+#include <cmath>
 
 namespace Math
 {
@@ -46,7 +47,8 @@ namespace Math
 	}
 
 	// Gets the sign of a value
-	template <typename T> T Sign(T val) {
+	template <typename T> T Sign(T val) 
+	{
 		return (T)((T(0) < val) - (val < T(0)));
 	}
 
@@ -54,4 +56,20 @@ namespace Math
 	// closest path
 	// Values must be in the range [0, 2pi]
 	float AngularDifference(float a, float b);
+
+	template<typename T>
+	T Floor(T t)
+	{
+		return std::floor(t);
+	}
+	template<typename T>
+	T Ceil(T t)
+	{
+		return std::ceil(t);
+	}
+	template<typename T>
+	T Round(T t)
+	{
+		return std::round(t);
+	}
 }

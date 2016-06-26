@@ -30,10 +30,10 @@ public:
 	Color laserColors[2] = {};
 
 	// Hit effect color settings
-	// 0 = Idle
-	// 1 = Perfect
-	// 2 = Good
-	// 3 = Miss
+	// 0 = Miss
+	// 1 = Good
+	// 2 = Perfect
+	// 3 = Idle
 	Color hitColors[4] = {};
 
 public:

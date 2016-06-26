@@ -9,6 +9,7 @@
 #include "Camera.hpp"
 #include "Background.hpp"
 #include "AudioPlayback.hpp"
+#include "Input.hpp"
 
 class Game_Impl : public Game
 {
@@ -30,6 +31,9 @@ class Game_Impl : public Game
 
 	// The play field
 	Track* m_track;
+
+	// Input controller
+	Input m_input;
 
 	// The camera watching the playfield
 	Camera m_camera;
@@ -63,6 +67,7 @@ public:
 			delete m_track;
 		if(m_background)
 			delete m_background;
+		m_input.Cleanup();
 	}
 
 	// Normal/FX button x placement
@@ -94,13 +99,14 @@ public:
 
 		// Load beatmap audio
 		if(!m_audioPlayback.Init(*m_beatmap, mapPath))
-		return false;
+			return false;
 
 		if(!InitGameplay())
-		return false;
+			return false;
 
 		if(!InitSFX())
-		return false;
+			return false;
+
 
 		// Intialize track graphics
 		m_track = new Track();
@@ -110,13 +116,13 @@ public:
 		}
 
 		if(!InitParticles())
-		return false;
+			return false;
 
 		// Background graphics
 		CheckedLoad(m_background = CreateBackground(this));
 
 		if(!InitHUD())
-		return false;
+			return false;
 
 		return true;
 	}
@@ -136,6 +142,7 @@ public:
 		float rollA = m_scoring.GetLaserRollOutput(0);
 		float rollB = m_scoring.GetLaserRollOutput(1);
 		m_camera.SetTargetRoll((rollA + rollB) * 0.05f);
+
 		// Set track zoom
 		m_camera.zoomBottom = m_playback.GetZoom(0);
 		m_camera.zoomTop = m_playback.GetZoom(1);
@@ -156,7 +163,8 @@ public:
 		m_track->DrawBase(renderQueue);
 		for(auto& object : m_currentObjectSet)
 		{
-			m_track->DrawObjectState(renderQueue, m_playback, object, m_scoring.IsActive(object));
+			/// #Scoring
+			m_track->DrawObjectState(renderQueue, m_playback, object, m_scoring.IsObjectHeld(object));
 		}
 
 		// Use new camera for scoring overlay
@@ -165,8 +173,19 @@ public:
 		rs = m_camera.CreateRenderState(false);
 		RenderQueue scoringRq(g_gl, rs);
 
-		// Copy laser positions
-		memcpy(m_track->laserPositions, m_scoring.laserPositions, sizeof(float) * 2);
+		// Copy over laser position
+		for(uint32 i = 0; i < 2; i++)
+		{
+			if(m_scoring.IsLaserHeld(i))
+			{
+				m_track->laserPositions[i] = m_scoring.laserTargetPositions[i];
+			}
+			else
+			{
+				m_track->laserPositions[i] = m_scoring.laserPositions[i];
+			}
+		}
+		
 		m_track->DrawOverlays(scoringRq);
 		float comboZoom = Math::Max(0.0f, (1.0f - (m_comboAnimation.SecondsAsFloat() / 0.2f)) * 0.5f);
 		m_track->DrawCombo(scoringRq, m_scoring.currentComboCounter, Color::White, 1.0f + comboZoom);
@@ -178,7 +197,7 @@ public:
 		// Set laser follow particle visiblity
 		for(uint32 i = 0; i < 2; i++)
 		{
-			if(m_scoring.laserActive[i])
+			if(m_scoring.IsLaserHeld(i))
 			{
 				if(!m_laserFollowEmitters[i])
 					m_laserFollowEmitters[i] = CreateTrailEmitter(m_track->laserColors[i]);
@@ -198,7 +217,7 @@ public:
 		// Set hold button particle visibility
 		for(uint32 i = 0; i < 6; i++)
 		{
-			if(m_scoring.activeHoldObjects[i])
+			if(m_scoring.IsObjectHeld(i))
 			{
 				if(!m_holdEmitters[i])
 				{
@@ -256,11 +275,11 @@ public:
 		emitter->SetFadeOverTime(PPRangeFadeIn<float>(1.0f, 0.0f, 0.4f));
 		emitter->SetLifetime(PPRandomRange<float>(0.17f, 0.2f));
 		emitter->SetStartDrag(PPConstant<float>(0.0f));
-		emitter->SetStartVelocity(PPConstant<Vector3>({ 0,0,0.5f }));
+		emitter->SetStartVelocity(PPConstant<Vector3>({ 0, 0.0f, 2.0f }));
 		emitter->SetSpawnVelocityScale(PPRandomRange<float>(0.9f, 2));
 		emitter->SetStartColor(PPConstant<Color>(color));
 		emitter->SetGravity(PPConstant<Vector3>(Vector3(0.0f, 0.0f, -9.81f)));
-		emitter->position.y = 0.2f;
+		emitter->position.y = 0.0f;
 		emitter->scale = 0.3f;
 		return emitter;
 	}
@@ -272,8 +291,8 @@ public:
 		emitter->loops = 0;
 		emitter->duration = 5.0f;
 		emitter->SetSpawnRate(PPRandomRange<float>(50, 100));
-		emitter->SetStartPosition(PPBox({ width * 1.0f, 0.1f, 0.0f }));
-		emitter->SetStartSize(PPRandomRange<float>(0.6f, 0.7f));
+		emitter->SetStartPosition(PPBox({ width * 1.1f, 0.1f, 0.0f }));
+		emitter->SetStartSize(PPRandomRange<float>(0.5f, 0.6f));
 		emitter->SetFadeOverTime(PPRangeFadeIn<float>(1.0f, 0.0f, 0.4f));
 		emitter->SetLifetime(PPRandomRange<float>(0.17f, 0.2f));
 		emitter->SetStartDrag(PPConstant<float>(0.0f));
@@ -406,20 +425,10 @@ public:
 		textPos.y += RenderText(guiRq, Utility::Sprintf("BPM: %.1f", currentBPM), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Time Signature: %d/4", tp.numerator), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Laser Effect Mix: %f", m_audioPlayback.GetLaserEffectMix()), textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("Laser Filter Input: %f (x%f)", m_scoring.GetLaserOutput(), 1.0f), textPos).y;
-		for(uint32 i = 0; i < 2; i++)
-		{
-			textPos.y += RenderText(guiRq, Utility::Sprintf("Laser Input %d: %f", i, m_scoring.laserInput[i]), textPos).y;
-			if(m_scoring.activeLaserObjects[i])
-			{
-				textPos.y += RenderText(guiRq,
-					Utility::Sprintf("Laser %s: %d (h:%f) (m:%f)",
-						i == 0 ? "L" : "R",
-						m_scoring.activeLaserObjects[i]->time,
-						m_scoring.laserHoldDuration[i],
-						m_scoring.laserMissDuration[i]), textPos).y;
-			}
-		}
+		//textPos.y += RenderText(guiRq, Utility::Sprintf("Laser Filter Input: %f (x%f)", m_scoring.GetLaserOutput(), 1.0f), textPos).y;
+		
+		textPos.y += RenderText(guiRq, Utility::Sprintf("Score: %d (Max: %d)", m_scoring.currentHitScore, m_scoring.totalMaxScore), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("Actual Score: %d", m_scoring.CalculateCurrentScore()), textPos).y;
 
 		if(m_scoring.autoplay)
 			textPos.y += RenderText(guiRq, "Autoplay enabled", textPos, Color::Blue).y;
@@ -427,64 +436,34 @@ public:
 		// List recent hits and their delay
 		Vector2 tableStart = textPos;
 		uint32 hitsShown = 0;
-
-		// Debug UI prefixed for hits
-		wchar_t* hitFlagPrefixes[8] = 
-		{
-			L"L", // Laser
-			L"H", // Hold
-			L"C", // Combo Break
-			L"T", // Tick
-		};
-
 		// Show all hit debug info on screen (up to a maximum)
 		for(auto it = m_scoring.hitStats.rbegin(); it != m_scoring.hitStats.rend(); it++)
 		{
 			if(hitsShown++ > 16) // Max of 16 entries to display
 				break;
 
-			float time = Math::Clamp<float>((m_lastMapTime - it->time) / 3000.0f, 0.0f, 0.5f);
+			
+			static Color hitColors[] = {
+				Color::Red,
+				Color::Yellow,
+				Color::Green,
+			};
+			Color c = hitColors[(size_t)(*it)->rating];
+			String text;
 
-			// Add prefix for flags?
-			WString prefix;
-			if(it->flags != HitStatFlags::None)
+			MultiObjectState* obj = *(*it)->object;
+			if(obj->type == ObjectType::Single)
 			{
-				prefix = L"[";
-				uint8 bits = (uint8)it->flags;
-				for(uint32 i = 0; i < 4; i++)
-				{
-					uint8 mask = 1 << i;
-					if((bits & mask) == mask)
-					{
-						prefix += hitFlagPrefixes[i];
-					}
-				}
-				prefix += L"] ";
+				text = Utility::Sprintf("[%d] %d", obj->button.index, (*it)->delta);
 			}
-
-			// Color based on hit timing
-			Color baseColor;
-			WString rating = L"Perfect";
-			if(it->delta != 0)
+			else if(obj->type == ObjectType::Hold)
 			{
-				rating = ((it->delta < 0) ? L"Early" : L"Late ");
+				text = Utility::Sprintf("Hold [%d] [%d/%d]", obj->button.index, (*it)->hold, (*it)->holdMax);
 			}
-			switch(m_scoring.GetHitRatingFromDelta(it->delta))
+			else if(obj->type == ObjectType::Laser)
 			{
-			case ScoreHitRating::Perfect:
-				baseColor = Color::Green;
-				break;
-			case ScoreHitRating::Good:
-				baseColor = Color(1.0f, 0.5f, 0.0f);
-				break;
-			case ScoreHitRating::Miss:
-				baseColor = Color::Red;
-				rating = L"Miss ";
-				break;
+				text = Utility::Sprintf("Laser [%d] [%d/%d]", obj->laser.index, (*it)->hold, (*it)->holdMax);
 			}
-			WString what = prefix + rating;
-			Color c = VectorMath::Lerp(baseColor, Color::Black, time);
-			WString text = Utility::WSprintf(L"%s %i", what, it->delta);
 			textPos.y += RenderText(guiRq, text, textPos, c).y;
 		}
 
@@ -493,201 +472,74 @@ public:
 		glCullFace(GL_BACK);
 	}
 
-	enum class Button
-	{
-		BT_0,
-		BT_1,
-		BT_2,
-		BT_3,
-		BT_0Alt, // Button alternatives
-		BT_1Alt, // Button alternatives
-		BT_2Alt, // Button alternatives
-		BT_3Alt, // Button alternatives
-		FX_0,
-		FX_1,
-		FX_0Alt, // Button alternatives
-		FX_1Alt, // Button alternatives
-		LS_0Neg, // Left laser- 
-		LS_0Pos, // Left laser+		(|---->)
-		LS_1Neg, // Right laser-	(<----|)
-		LS_1Pos, // Right laser+
-		Length,
-	};
-	bool buttonStates[(size_t)Button::Length];
-	Map<Key, Button> buttonMap;
-	float GetInputLaserDir(uint32 laserIdx)
-	{
-		size_t base = (size_t)Button::LS_0Neg;
-		if(laserIdx == 1)
-		{
-			base = (size_t)Button::LS_1Neg;
-		}
-		float r = 0.0f;
-		r -= 1.0f * buttonStates[base];
-		r += 1.0f * buttonStates[base + 1];
-		return r;
-	}
-	float GetInputLaserDir(uint32 laserIndex, Button b, bool pressed)
-	{
-		// Pressed always overrides the previous state
-		uint32 bid = (b > Button::LS_0Pos) ? 1 : 0;
-		if(pressed && bid == laserIndex)
-		{
-			if(b == Button::LS_0Pos || b == Button::LS_1Pos)
-				return 1.0f;
-			else
-				return -1.0f;
-		}
-		else
-			return GetInputLaserDir(laserIndex); // Get last state
-	}
-	void InitButtonMapping()
-	{
-		memset(buttonStates, 0, sizeof(buttonStates));
-
-		// Default KShoot mapping
-		buttonMap[(Key)'S'] = Button::BT_0;
-		buttonMap[(Key)'D'] = Button::BT_1;
-		buttonMap[(Key)'K'] = Button::BT_2;
-		buttonMap[(Key)'L'] = Button::BT_3;
-		buttonMap[(Key)'H'] = Button::BT_0Alt;
-		buttonMap[(Key)'J'] = Button::BT_1Alt;
-		buttonMap[(Key)'F'] = Button::BT_2Alt;
-		buttonMap[(Key)'G'] = Button::BT_3Alt;
-
-		buttonMap[(Key)'C'] = Button::FX_0;
-		buttonMap[(Key)'M'] = Button::FX_1;
-		buttonMap[(Key)'N'] = Button::FX_0Alt;
-		buttonMap[(Key)'V'] = Button::FX_1Alt;
-
-		buttonMap[(Key)'W'] = Button::LS_0Neg;
-		buttonMap[(Key)'E'] = Button::LS_0Pos;
-		buttonMap[(Key)'O'] = Button::LS_1Neg;
-		buttonMap[(Key)'P'] = Button::LS_1Pos;
-
-	}
-	virtual void OnKeyPressed(Key key) override
-	{
-		if(key == Key::Pause)
-		{
-			m_audioPlayback.TogglePause();
-		}
-		else if(key == Key::Return) // Skip intro
-		{
-			SkipIntro();
-		}
-		else if(key == Key::PageUp)
-		{
-			m_audioPlayback.Advance(5000);
-			//QWORD bytePos = BASS_ChannelGetPosition(m_audio, BASS_POS_BYTE);
-			//double playbackPosition = BASS_ChannelBytes2Seconds(m_audio, bytePos);
-			//playbackPosition += 5.0f;
-			//BASS_ChannelSetPosition(m_audio, BASS_ChannelSeconds2Bytes(m_audio, playbackPosition), BASS_POS_BYTE);
-		}
-		else if(key == Key::Plus)
-		{
-			g_audio->audioLatency += 1;
-		}
-		else if(key == Key::Minus)
-		{
-			g_audio->audioLatency -= 1;
-		}
-		else
-		{
-			// Handle button mappings
-			auto it = buttonMap.find(key);
-			if(it != buttonMap.end())
-				OnButtonInput(it->second, true);
-		}
-	}
-	virtual void OnKeyReleased(Key key) override
-	{
-		// Handle button mappings
-		auto it = buttonMap.find(key);
-		if(it != buttonMap.end())
-			OnButtonInput(it->second, false);
-	}
-
-	// Handle button input for game
-	void OnButtonInput(Button b, bool pressed) // Raw input handler
-	{
-		bool& state = buttonStates[(size_t)b];
-		if(state == pressed)
-			return; // Nothing changed
-		state = pressed; // Store state
-
-		// Ignore game input when autoplay is on
-		if(m_scoring.autoplay)
-			return;
-
-		if(b >= Button::BT_0 && b <= Button::BT_3Alt)
-		{
-			OnButtonInput((size_t)b % 4, pressed);
-		}
-		else if(b >= Button::FX_0 && b <= Button::FX_1Alt)
-		{
-			OnButtonInput(4 + (size_t)b % 2, pressed);
-		}
-		else // Update lasers
-		{
-			m_scoring.laserInput[0] = GetInputLaserDir(0, b, pressed);
-			m_scoring.laserInput[1] = GetInputLaserDir(1, b, pressed);
-		}
-	}
-	void OnButtonInput(uint32 buttonIdx, bool pressed)
-	{
-		if(pressed)
-		{
-			ObjectState* hitObject = m_scoring.OnButtonPressed(buttonIdx);
-			if(!hitObject)
-			{
-				m_track->AddEffect(new ButtonHitEffect(buttonIdx, m_track->hitColors[0]));
-			}
-		}
-		else
-		{
-			m_scoring.OnButtonReleased(buttonIdx);
-		}
-	}
-	void OnButtonMiss(uint32 buttonIdx)
-	{
-		m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, ScoreHitRating::Miss));
-	}
-	void OnLaserSlamHit(uint32 laserIndex, float dir, float target)
+	void OnLaserSlamHit(LaserObjectState* object)
 	{
 		CameraShake shake(0.2f, 0.5f, 170.0f);
 		shake.amplitude = Vector3(0.02f, 0.01f, 0.0f); // Mainly x-axis
 		m_camera.AddCameraShake(shake);
 		m_slamSample->Play();
 
-		float laserPos = m_track->trackWidth * target - m_track->trackWidth * 0.5f;
-		Ref<ParticleEmitter> ex = CreateExplosionEmitter(m_track->laserColors[laserIndex], Vector3(dir, 0, 0));
+		float dir = Math::Sign(object->points[1] - object->points[0]);
+		float laserPos = m_track->trackWidth * object->points[1] - m_track->trackWidth * 0.5f;
+		Ref<ParticleEmitter> ex = CreateExplosionEmitter(m_track->laserColors[object->index], Vector3(dir, 0, 0));
 		ex->position = Vector3(laserPos, 0.5f, -0.1f);
 	}
-	void OnButtonHit(uint32 buttonIdx, ObjectState* hitObject)
+	void OnButtonHit(Input::Button button, ScoreHitRating rating, ObjectState* hitObject)
 	{
-		if(hitObject->type == ObjectType::Single)
+		uint32 buttonIdx = (uint32)button;
+		Color c = m_track->hitColors[(size_t)rating];
+
+		// The color effect in the button lane
+		m_track->AddEffect(new ButtonHitEffect(buttonIdx, c));
+
+		if(rating != ScoreHitRating::Idle)
 		{
-			MapTime hitDelta = m_scoring.GetObjectHitDelta(hitObject);
-			ScoreHitRating rating = m_scoring.GetHitRatingFromDelta(hitDelta);
-			Color c = m_track->hitColors[(size_t)rating + 1];
-			m_track->AddEffect(new ButtonHitEffect(buttonIdx, c));
+			// Floating text effect
 			m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, rating));
 
+			// Create hit effect particle
 			Color hitColor = (buttonIdx < 4) ? Color::White : Color::FromHSV(20, 0.7f, 1.0f);
 			float hitWidth = (buttonIdx < 4) ? m_track->buttonWidth : m_track->fxbuttonWidth;
-
-			// Create hit effect particle
 			Ref<ParticleEmitter> emitter = CreateHitEmitter(hitColor, hitWidth);
 			emitter->position.x = GetButtonPlacement(buttonIdx);
 			emitter->position.z = -0.1f;
 			emitter->position.y = 0.2f;
 		}
 	}
+	void OnButtonMiss(Input::Button button)
+	{
+		uint32 buttonIdx = (uint32)button;
+		m_track->AddEffect(new ButtonHitRatingEffect(buttonIdx, ScoreHitRating::Miss));
+	}
 	void OnComboChanged(uint32 newCombo)
 	{
 		m_comboAnimation.Restart();
 	}
+
+	// These functions control if FX button DSP's are muted or not
+	void OnObjectHold(Input::Button, ObjectState* object)
+	{
+		if(object->type == ObjectType::Hold)
+		{
+			HoldObjectState* hold = (HoldObjectState*)object;
+			if(hold->effectType != EffectType::None)
+			{
+				m_audioPlayback.SetEffectEnabled(hold->index - 4, true);
+			}
+		}
+	}
+	void OnObjectReleased(Input::Button, ObjectState* object)
+	{
+		if(object->type == ObjectType::Hold)
+		{
+			HoldObjectState* hold = (HoldObjectState*)object;
+			if(hold->effectType != EffectType::None)
+			{
+				m_audioPlayback.SetEffectEnabled(hold->index - 4, false);
+			}
+		}
+	}
+
 	void OnEventChanged(EventKey key, EventData data)
 	{
 		if(key == EventKey::LaserEffectType)
@@ -713,7 +565,6 @@ public:
 	{
 		assert(object->index >= 4 && object->index <= 5);
 		m_audioPlayback.SetEffect(object->index - 4, object, m_playback);
-		m_audioPlayback.SetEffectEnabled(object->index - 4, true);
 	}
 	void OnFXEnd(HoldObjectState* object)
 	{
@@ -731,9 +582,6 @@ public:
 	}
 	bool InitGameplay()
 	{
-		// Input
-		InitButtonMapping();
-
 		// Playback and timing
 		m_playback = BeatmapPlayback(*m_beatmap);
 		m_playback.OnEventChanged.Add(this, &Game_Impl::OnEventChanged);
@@ -742,13 +590,19 @@ public:
 		if(!m_playback.Reset()) // Initialize
 			return false;
 
-		m_playback.hittableObjectTreshold = Scoring::maxEarlyHitTime;
+		m_playback.hittableObjectTreshold = Scoring::goodHitTime;
+
+		// Initialize game input
+		m_input.Init(*g_gameWindow);
 
 		m_scoring.SetPlayback(m_playback);
+		m_scoring.SetInput(&m_input);
 		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
 		m_scoring.OnLaserSlamHit.Add(this, &Game_Impl::OnLaserSlamHit);
 		m_scoring.OnButtonHit.Add(this, &Game_Impl::OnButtonHit);
 		m_scoring.OnComboChanged.Add(this, &Game_Impl::OnComboChanged);
+		m_scoring.OnObjectHold.Add(this, &Game_Impl::OnObjectHold);
+		m_scoring.OnObjectReleased.Add(this, &Game_Impl::OnObjectReleased);
 		m_scoring.Reset(); // Initialize
 
 		// Autoplay enabled?
@@ -804,13 +658,10 @@ public:
 			//}
 		}
 
+		/// #Scoring
 		// Update music filter states
-		m_audioPlayback.SetLaserFilterInput(m_scoring.GetLaserOutput(), m_scoring.IsLaserActive());
+		m_audioPlayback.SetLaserFilterInput(m_scoring.GetLaserOutput(), m_scoring.IsLaserHeld(0) || m_scoring.IsLaserHeld(1));
 		m_audioPlayback.Tick(m_playback, deltaTime);
-
-		// Set audability of effect buttons
-		m_audioPlayback.SetEffectEnabled(0, m_scoring.activeHoldObjects[4] != nullptr);
-		m_audioPlayback.SetEffectEnabled(1, m_scoring.activeHoldObjects[5] != nullptr);
 
 		// Link FX track to combo counter for now
 		m_audioPlayback.SetFXTrackEnabled(m_scoring.currentComboCounter > 0);
@@ -844,6 +695,22 @@ public:
 	virtual bool IsPlaying() const override
 	{
 		return m_playing;
+	}
+
+	virtual void OnKeyPressed(Key key) override
+	{
+		if(key == Key::Pause)
+		{
+			m_audioPlayback.TogglePause();
+		}
+		else if(key == Key::Return) // Skip intro
+		{
+			SkipIntro();
+		}
+		else if(key == Key::PageUp)
+		{
+			m_audioPlayback.Advance(5000);
+		}
 	}
 
 	virtual class Track& GetTrack() override
