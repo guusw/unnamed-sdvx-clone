@@ -22,6 +22,12 @@
     <ClCompile Include="E:\Projects\hello-world\Main\Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Main\HitStat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Main\Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Main\KShootMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -91,6 +97,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Main\Game.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Main\HitStat.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Main\Input.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Main\KShootMap.hpp">

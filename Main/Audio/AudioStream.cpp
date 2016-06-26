@@ -73,6 +73,7 @@ public:
 		// Calculate the sample step if the rate is not the same as the output rate
 		double sampleStep = (double)m_info->rate / (double)audio->GetSampleRate();
 		m_sampleStepIncrement = (uint64)(sampleStep * (double)fp_sampleStep);
+		double stepCheck = (double)m_sampleStepIncrement / (double)fp_sampleStep;
 
 		long numStreams = ov_streams(&m_ovf);
 
@@ -122,7 +123,7 @@ public:
 	}
 	double GetPositionSeconds() const
 	{
-		double samplePosTime = SamplesToSeconds(m_samplePos);;
+		double samplePosTime = SamplesToSeconds(m_samplePos);
 		if(m_paused)
 			return samplePosTime;
 		else
@@ -146,6 +147,7 @@ public:
 		m_lock.unlock();
 	}
 	
+	uint32 m_outSamples = 0;
 	virtual void Process(float* out, uint32 numSamples) override
 	{
 		if(!m_playing || m_paused)
@@ -158,14 +160,15 @@ public:
 		{
 			if(m_remainingBufferData > 0)
 			{
-				uint32 readBufferData = Math::Min(m_remainingBufferData, numSamples-outCount);
 				uint32 idxStart = (m_currentBufferSize - m_remainingBufferData);
 				uint32 readOffset = 0; // Offset from the start to read from
-				for(uint32 i = 0; outCount < numSamples && readOffset < readBufferData; i++)
+				for(uint32 i = 0; outCount < numSamples && readOffset < m_remainingBufferData; i++)
 				{
 					out[outCount * 2] = m_readBuffer[0][idxStart + readOffset];
 					out[outCount * 2 + 1] = m_readBuffer[1][idxStart + readOffset];
 					outCount++;
+
+					m_outSamples++;
 
 					// Increment source sample with resampling
 					m_sampleStep += m_sampleStepIncrement;
@@ -212,6 +215,7 @@ public:
 
 		// Store timing info
 		m_samplePos = (uint32)ov_pcm_tell(&m_ovf) - m_remainingBufferData;
+		double r = (double)m_samplePos / (double)m_outSamples;
 		double timingDelta = GetPositionSeconds() - SamplesToSeconds(m_samplePos);
 
 		// This is to stabilize the running timer with the actual audio stream, the delta is added for 50% as an offset to this timer 
