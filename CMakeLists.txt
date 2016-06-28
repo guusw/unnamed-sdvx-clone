@@ -2,9 +2,6 @@
 cmake_minimum_required(VERSION 3.4)
 project(FX)
 
-# Additional modules
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-
 # Project configurations
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 set(CMAKE_DEBUG_POSTFIX _Debug)
