@@ -105,15 +105,12 @@ RenderState Camera::CreateRenderState(bool clipped)
 	float nearDist = nearDistBase;
 
 	// Trying to calculate tilt and camera yz position based on top/bottom zoom values
-	float cameraTilt = -zoomTop * 15.0f + 4.0f;
+	float cameraTilt = -zoomTop * 10.0f + 4.0f;
 	float zoomBottomMult = 1.0f;
-	if(zoomBottom < 0)
-		zoomBottomMult = 0.5;
 	cameraHeight += -zoomBottom * zoomBottomMult * 0.3f;
 	nearDist += -zoomBottom * zoomBottomMult* nearDistZoom;
 	if(zoomBottom < 0)
 		cameraTilt += 8.0f * -zoomBottom * zoomBottomMult;
-
 
 	Transform cameraTransform;
 	float nearDistance = Math::Max(maxNearPlane, nearDist - viewRangeExtension);

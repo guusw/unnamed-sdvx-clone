@@ -31,6 +31,8 @@ public:
 	MapTime GetHitWindow() const;
 	// Hit rating when hitting object at given time
 	ScoreHitRating GetHitRating(MapTime currentTime) const;
+	// Hit rating when hitting object give a delta 
+	ScoreHitRating GetHitRatingFromDelta(MapTime delta) const;
 	// Check a flag
 	bool HasFlag(TickFlags flag) const;
 	void SetFlag(TickFlags flag);

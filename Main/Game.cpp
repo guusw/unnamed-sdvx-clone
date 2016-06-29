@@ -430,6 +430,9 @@ public:
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Score: %d (Max: %d)", m_scoring.currentHitScore, m_scoring.totalMaxScore), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Actual Score: %d", m_scoring.CalculateCurrentScore()), textPos).y;
 
+		textPos.y += RenderText(guiRq, Utility::Sprintf("Track Zoom Top: %f", m_camera.zoomTop), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("Track Zoom Bottom: %f", m_camera.zoomBottom), textPos).y;
+
 		if(m_scoring.autoplay)
 			textPos.y += RenderText(guiRq, "Autoplay enabled", textPos, Color::Blue).y;
 

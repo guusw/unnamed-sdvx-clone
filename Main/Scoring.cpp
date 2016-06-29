@@ -472,11 +472,10 @@ void Scoring::m_TickHit(ScoreTick* tick, uint32 index, MapTime delta /*= 0*/)
 	HitStat* stat = m_AddOrUpdateHitStat(tick->object);
 	if(tick->HasFlag(TickFlags::Button))
 	{
-		ScoreHitRating rating = tick->GetHitRating(m_playback->GetLastTime());
-		OnButtonHit.Call((Input::Button)index, rating, tick->object);
 		stat->delta = delta;
-		stat->rating = tick->GetHitRating(m_playback->GetLastTime());
-		m_AddScore((uint32)rating);
+		stat->rating = tick->GetHitRatingFromDelta(delta);
+		OnButtonHit.Call((Input::Button)index, stat->rating, tick->object);
+		m_AddScore((uint32)stat->rating);
 	}
 	else if(tick->HasFlag(TickFlags::Hold))
 	{
@@ -776,6 +775,10 @@ MapTime ScoreTick::GetHitWindow() const
 ScoreHitRating ScoreTick::GetHitRating(MapTime currentTime) const
 {
 	MapTime delta = abs(time - currentTime);
+	return GetHitRatingFromDelta(delta);
+}
+ScoreHitRating ScoreTick::GetHitRatingFromDelta(MapTime delta) const
+{
 	if(HasFlag(TickFlags::Button))
 	{
 		// Button hit judgeing
@@ -787,6 +790,7 @@ ScoreHitRating ScoreTick::GetHitRating(MapTime currentTime) const
 	}
 	return ScoreHitRating::Perfect;
 }
+
 bool ScoreTick::HasFlag(TickFlags flag) const
 {
 	return (flags & flag) != TickFlags::None;
