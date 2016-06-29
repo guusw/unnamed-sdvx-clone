@@ -40,12 +40,16 @@ enum class EventKey : uint8
 
 enum class TrackRollBehaviour : uint8
 {
-	Normal,
-	Bigger,
-	Biggest,
-	Keep,
-	Zero,
+	// Either one of the following four
+	Zero = 0,
+	Normal = 0x1,
+	Bigger = 0x2,
+	Biggest = 0x3, 
+	// Flag for keep
+	Keep = 0x4,
 };
+TrackRollBehaviour operator|(const TrackRollBehaviour& l, const TrackRollBehaviour& r);
+TrackRollBehaviour operator&(const TrackRollBehaviour& l, const TrackRollBehaviour& r);
 
 // Common data for all object types
 struct ObjectTypeData_Base
@@ -154,6 +158,7 @@ struct EventData
 		int32 intVal;
 		uint8 byteVal;
 		LaserEffectType effectVal;
+		TrackRollBehaviour rollVal;
 	};
 
 	// Address of operator that returns a pointer to 32-bit data

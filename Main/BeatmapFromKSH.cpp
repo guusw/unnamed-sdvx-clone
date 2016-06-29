@@ -273,6 +273,35 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 				point->zoom = (float)atol(*p.second) / 100.0f;
 				m_zoomControlPoints.Add(point);
 			}
+			else if(p.first == "tilt")
+			{
+				EventObjectState* evt = new EventObjectState();
+				evt->time = mapTime;
+				evt->key = EventKey::TrackRollBehaviour;
+				evt->data.rollVal = TrackRollBehaviour::Zero;
+				String v = p.second;
+				size_t f = v.find("keep_");
+				if(f != -1)
+				{
+					evt->data.rollVal = TrackRollBehaviour::Keep;
+					v = v.substr(f + 5);
+				}
+
+				if(v == "normal")
+				{
+					evt->data.rollVal = evt->data.rollVal | TrackRollBehaviour::Normal;
+				}
+				else if(v == "bigger")
+				{
+					evt->data.rollVal = evt->data.rollVal | TrackRollBehaviour::Bigger;
+				}
+				else if(v == "biggest")
+				{
+					evt->data.rollVal = evt->data.rollVal | TrackRollBehaviour::Biggest;
+				}
+
+				m_objectStates.Add(*evt);
+			}
 		}
 
 		// Set button states

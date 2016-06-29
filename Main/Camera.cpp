@@ -38,8 +38,11 @@ void Camera::Tick(float deltaTime)
 		m_roll = m_ClampRoll(m_roll);
 	}
 
-	m_targetRollSet = false;
-	m_targetRoll = 0.0f;
+	if(!rollKeep)
+	{
+		m_targetRollSet = false;
+		m_targetRoll = 0.0f;
+	}
 
 	// Update camera shake effects
 	m_shakeOffset = Vector3(0.0f);
@@ -73,6 +76,11 @@ void Camera::AddCameraShake(CameraShake cameraShake)
 void Camera::AddRollImpulse(float dir, float strength)
 {
 	m_rollVelocity += dir * strength;
+}
+
+void Camera::SetRollIntensity(float val)
+{
+	m_rollIntensity = val;
 }
 
 Vector2 Camera::Project(const Vector3& pos)
@@ -129,8 +137,30 @@ RenderState Camera::CreateRenderState(bool clipped)
 
 void Camera::SetTargetRoll(float target)
 {
-	m_targetRoll = target;
-	m_targetRollSet = true;
+	if(!rollKeep)
+	{
+		m_targetRoll = target;
+		m_targetRollSet = true;
+	}
+	else
+	{
+		if(m_targetRoll == 0.0f || Math::Sign(m_targetRoll) == target)
+		{
+			if(m_targetRoll == 0)
+				m_targetRoll = target;
+			if(m_targetRoll < 0 && target < m_targetRoll)
+				m_targetRoll = target;
+			else if(target > m_targetRoll)
+				m_targetRoll = target;
+
+		}
+		m_targetRollSet = true;
+	}
+}
+
+float Camera::GetRoll() const
+{
+	return m_roll;
 }
 
 float Camera::m_ClampRoll(float in) const

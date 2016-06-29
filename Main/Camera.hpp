@@ -29,13 +29,19 @@ public:
 	void AddCameraShake(CameraShake camerShake);
 	void AddRollImpulse(float dir, float strength);
 
+	// Changes the amount of roll applied when lasers are controlled, default = 1
+	void SetRollIntensity(float val);
+
+	void SetTargetRoll(float target);
+	float GetRoll() const;
+
 	Vector2 Project(const Vector3& pos);
 
 	// Generates a new render state for drawing from this cameras Point of View
 	// the clipped boolean indicates whenether to clip the cameras clipping planes to the track range
 	RenderState CreateRenderState(bool clipped);
 
-	void SetTargetRoll(float target);
+	bool rollKeep = false;
 
 	// The track being watched
 	class Track* track;
@@ -54,6 +60,7 @@ private:
 	bool m_targetRollSet = false;
 	// Roll force
 	float m_rollVelocity = 0.0f;
+	float m_rollIntensity;
 
 	RenderState m_rsLast;
 

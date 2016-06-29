@@ -53,6 +53,10 @@ class Game_Impl : public Game
 	Sample m_slamSample;
 	Sample m_clickSamples[2];
 
+	// Roll intensity, default = 1
+	const float m_rollIntensityBase = 0.03f;
+	float m_rollIntensity = m_rollIntensityBase;
+
 	// Particle effects
 	Material particleMaterial;
 	Texture basicParticleTexture;
@@ -141,7 +145,7 @@ public:
 		// Get render state from the camera
 		float rollA = m_scoring.GetLaserRollOutput(0);
 		float rollB = m_scoring.GetLaserRollOutput(1);
-		m_camera.SetTargetRoll((rollA + rollB) * 0.05f);
+		m_camera.SetTargetRoll((rollA + rollB) * m_rollIntensity);
 
 		// Set track zoom
 		m_camera.zoomBottom = m_playback.GetZoom(0);
@@ -271,13 +275,13 @@ public:
 		emitter->duration = 5.0f;
 		emitter->SetSpawnRate(PPRandomRange<float>(250, 300));
 		emitter->SetStartPosition(PPBox({ 0.5f, 0.1f, 0.0f }));
-		emitter->SetStartSize(PPRandomRange<float>(0.2f, 0.3f));
+		emitter->SetStartSize(PPRandomRange<float>(0.25f, 0.4f));
 		emitter->SetFadeOverTime(PPRangeFadeIn<float>(1.0f, 0.0f, 0.4f));
 		emitter->SetLifetime(PPRandomRange<float>(0.17f, 0.2f));
 		emitter->SetStartDrag(PPConstant<float>(0.0f));
 		emitter->SetStartVelocity(PPConstant<Vector3>({ 0, 0.0f, 2.0f }));
 		emitter->SetSpawnVelocityScale(PPRandomRange<float>(0.9f, 2));
-		emitter->SetStartColor(PPConstant<Color>(color));
+		emitter->SetStartColor(PPConstant<Color>(color * 0.7f));
 		emitter->SetGravity(PPConstant<Vector3>(Vector3(0.0f, 0.0f, -9.81f)));
 		emitter->position.y = 0.0f;
 		emitter->scale = 0.3f;
@@ -296,10 +300,10 @@ public:
 		emitter->SetFadeOverTime(PPRangeFadeIn<float>(1.0f, 0.0f, 0.4f));
 		emitter->SetLifetime(PPRandomRange<float>(0.17f, 0.2f));
 		emitter->SetStartDrag(PPConstant<float>(0.0f));
-		emitter->SetStartVelocity(PPConstant<Vector3>({ 0,0,0.5f }));
+		emitter->SetStartVelocity(PPConstant<Vector3>({ 0,-10.0f,0.5f }));
 		emitter->SetSpawnVelocityScale(PPRandomRange<float>(0.9f, 2));
-		emitter->SetStartColor(PPConstant<Color>(color));
-		emitter->SetGravity(PPConstant<Vector3>(Vector3(0.0f, 0.0f, -9.81f)));
+		emitter->SetStartColor(PPConstant<Color>(color*0.6f));
+		emitter->SetGravity(PPConstant<Vector3>(Vector3(0.0f, 0.0f, -1.81f)));
 		emitter->position.y = 0.2f;
 		emitter->scale = 0.4f;
 		return emitter;
@@ -425,10 +429,15 @@ public:
 		textPos.y += RenderText(guiRq, Utility::Sprintf("BPM: %.1f", currentBPM), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Time Signature: %d/4", tp.numerator), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Laser Effect Mix: %f", m_audioPlayback.GetLaserEffectMix()), textPos).y;
-		//textPos.y += RenderText(guiRq, Utility::Sprintf("Laser Filter Input: %f (x%f)", m_scoring.GetLaserOutput(), 1.0f), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("Laser Filter Input: %f", m_scoring.GetLaserOutput()), textPos).y;
 		
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Score: %d (Max: %d)", m_scoring.currentHitScore, m_scoring.totalMaxScore), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Actual Score: %d", m_scoring.CalculateCurrentScore()), textPos).y;
+
+		textPos.y += RenderText(guiRq, Utility::Sprintf("Health Gauge: %f", m_scoring.currentGauge), textPos).y;
+
+		textPos.y += RenderText(guiRq, Utility::Sprintf("Roll: %f(x%f) %s", 
+			m_camera.GetRoll(), m_rollIntensity, m_camera.rollKeep ? "[Keep]" : ""), textPos).y;
 
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Track Zoom Top: %f", m_camera.zoomTop), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Track Zoom Bottom: %f", m_camera.zoomBottom), textPos).y;
@@ -555,6 +564,14 @@ public:
 		}
 		else if(key == EventKey::TrackRollBehaviour)
 		{
+			m_camera.rollKeep = (data.rollVal & TrackRollBehaviour::Keep) == TrackRollBehaviour::Keep;
+			int32 i = (uint8)data.rollVal & 0x3;
+			if(i == 0)
+				m_rollIntensity = 0;
+			else
+			{
+				m_rollIntensity = m_rollIntensityBase + (float)(i - 1) * 0.03f;
+			}
 		}
 		else if(key == EventKey::SlamVolume)
 		{

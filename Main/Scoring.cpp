@@ -67,6 +67,10 @@ void Scoring::Reset()
 	// Recalculate maximum score
 	totalMaxScore = CalculateMaxScore();
 
+	// Recalculate gauge gain
+	criticalGaugeGain = 3.5f / totalMaxScore;
+	currentGauge = 0.0f;
+
 	m_CleanupHitStats();
 	m_CleanupTicks();
 }
@@ -508,18 +512,22 @@ void Scoring::m_TickMiss(ScoreTick* tick, uint32 index)
 	{
 		OnButtonMiss.Call((Input::Button)index); 
 		stat->rating = ScoreHitRating::Miss;
+		currentGauge -= 0.02f;
 	}
 	else if(tick->HasFlag(TickFlags::Hold))
 	{
 		m_ReleaseHoldObject(index);
+		currentGauge -= 0.005f;
 		stat->rating = ScoreHitRating::Miss;
 	}
 	else if(tick->HasFlag(TickFlags::Laser))
 	{
 		m_ReleaseHoldObject(index);
+		currentGauge -= 0.005f;
 		stat->rating = ScoreHitRating::Miss;
 	}
 	// All misses reset combo
+	currentGauge = std::max(0.0f, currentGauge);
 	m_ResetCombo();
 	m_OnTickProcessed(tick, index);
 }
@@ -538,6 +546,15 @@ void Scoring::m_AddScore(uint32 score)
 {
 	assert(score > 0 && score <= 2);
 	currentHitScore += score;
+	if (score == 2)
+	{
+		currentGauge += criticalGaugeGain;
+	}
+	else
+	{
+		currentGauge += criticalGaugeGain / 3.0f;
+	}
+	currentGauge = std::min(1.0f, currentGauge);
 	currentComboCounter += 1;
 	OnComboChanged.Call(currentComboCounter);
 }
@@ -756,7 +773,9 @@ uint32 Scoring::CalculateMaxScore() const
 
 uint32 Scoring::CalculateCurrentScore() const
 {
-	return (uint32)((double)currentHitScore / (double)totalMaxScore * 10000000);
+	// Final Score = Score * 0.9 + Gauge * 0.1
+	return (uint32)((double)currentHitScore / (double)totalMaxScore * 9000000 +
+		currentGauge * 1000000.0);
 }
 
 MapTime ScoreTick::GetHitWindow() const

@@ -222,3 +222,13 @@ float ObjectTypeData_Laser::SamplePosition(MapTime time) const
 	float f = Math::Clamp((float)(time - state->time) / (float)Math::Max(1, state->duration), 0.0f, 1.0f);
 	return (state->points[1] - state->points[0]) * f + state->points[0];
 }
+
+// Enum OR, AND
+TrackRollBehaviour operator|(const TrackRollBehaviour& l, const TrackRollBehaviour& r)
+{
+	return (TrackRollBehaviour)((uint8)l | (uint8)r);
+}
+TrackRollBehaviour operator&(const TrackRollBehaviour& l, const TrackRollBehaviour& r)
+{
+	return (TrackRollBehaviour)((uint8)l & (uint8)r);
+}

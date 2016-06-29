@@ -137,8 +137,8 @@ namespace Graphics
 	{
 		// Cleanup particle parameters
 #define PARTICLE_PARAMETER(__name, __type)\
-	if(m_param_##__name)\
-		delete m_param_##__name;
+	if(m_param_##__name){\
+		delete m_param_##__name; m_param_##__name = nullptr; }
 #include "ParticleParameters.hpp"
 
 		if(m_particles)

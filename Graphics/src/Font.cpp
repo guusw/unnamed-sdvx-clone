@@ -190,7 +190,7 @@ namespace Graphics
 		{
 
 		}
-		void Dispose()
+		~Font_Impl()
 		{
 			for(auto s : m_sizes)
 			{

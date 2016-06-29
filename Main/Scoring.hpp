@@ -119,6 +119,12 @@ public:
 	// The actual amount of gotten score
 	uint32 currentHitScore = 0;
 
+	// Amount of gauge to gain on a critical
+	float criticalGaugeGain = 0.0f;
+
+	// Current gauge 0 to 1
+	float currentGauge = 0.0f;
+
 	// Current combo
 	uint32 currentComboCounter;
 

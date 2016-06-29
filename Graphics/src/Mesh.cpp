@@ -25,7 +25,7 @@ namespace Graphics
 		Mesh_Impl()
 		{
 		}
-		void Dispose()
+		~Mesh_Impl()
 		{
 			if(m_buffer)
 				glDeleteBuffers(1, &m_buffer);

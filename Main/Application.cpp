@@ -156,7 +156,7 @@ int32 Application::Run()
 
 		// Gameplay loop
 		/// TODO: Add timing management
-		for(uint32 i = 0; i < 32; i++)
+		for(uint32 i = 0; i < 1; i++)
 		{
 			// Input update
 			if(!g_gameWindow->Update())
@@ -188,7 +188,6 @@ int32 Application::Run()
 				if(!g_tickables.empty())
 				{
 					IApplicationTickable* tickable = g_tickables.back();
-					tickable->Tick(deltaTime);
 
 					tickable->Render(deltaTime);
 					g_gl->SwapBuffers();

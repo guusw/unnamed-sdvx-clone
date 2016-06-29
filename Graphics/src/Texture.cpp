@@ -19,7 +19,7 @@ namespace Graphics
 		Texture_Impl()
 		{
 		}
-		void Dispose()
+		~Texture_Impl()
 		{
 			if(m_texture)
 				glDeleteTextures(1, &m_texture);

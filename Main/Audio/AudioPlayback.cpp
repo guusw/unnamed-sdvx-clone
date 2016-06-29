@@ -10,6 +10,9 @@ AudioPlayback::AudioPlayback()
 }
 AudioPlayback::~AudioPlayback()
 {
+	m_CleanupDSP(m_buttonDSPs[0]);
+	m_CleanupDSP(m_buttonDSPs[1]);
+	m_CleanupDSP(m_laserDSP);
 }
 bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 {
