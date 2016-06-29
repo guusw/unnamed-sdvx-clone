@@ -21,6 +21,10 @@ Track::~Track()
 		if(m_laserTrackBuilder[i])
 			delete m_laserTrackBuilder[i];
 	}
+	for(auto it = m_hitEffects.begin(); it != m_hitEffects.end(); it++)
+	{
+		delete *it;
+	}
 }
 bool Track::Init()
 {
