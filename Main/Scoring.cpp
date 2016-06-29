@@ -387,7 +387,7 @@ void Scoring::m_UpdateTicks()
 			{
 				if(tick->HasFlag(TickFlags::Button) && autoplay)
 				{
-					m_TickHit(tick, buttonCode, delta);
+					m_TickHit(tick, buttonCode, 0);
 					processed = true;
 				}
 
