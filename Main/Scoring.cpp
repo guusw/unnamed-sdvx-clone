@@ -216,7 +216,8 @@ void Scoring::m_CalculateHoldTicks(HoldObjectState* hold, Vector<MapTime>& ticks
 	const TimingPoint* tp = m_playback->GetTimingPointAt(hold->time);
 	// Get the amount of ticks in this hold note by taking the length 
 	// ticks at 1/16
-	double tickInterval = Math::Floor(tp->GetBarDuration() / 16.0);
+	const double tickRate = (tp->GetBPM() >= 250) ? 8 : 16;
+	double tickInterval = Math::Floor(tp->GetBarDuration() / tickRate);
 	uint32 numTicks = (uint32)Math::Floor((double)hold->duration / tickInterval);
 	if(numTicks < 1)
 		numTicks = 1; // At least 1 tick at the start
@@ -232,6 +233,7 @@ void Scoring::m_CalculateLaserTicks(LaserObjectState* laserRoot, Vector<ScoreTic
 	const TimingPoint* tp = m_playback->GetTimingPointAt(laserRoot->time);
 	// Get the amount of ticks in this laser by taking the length 
 	// ticks at 1/16
+	const double tickRate = (tp->GetBPM() >= 250) ? 8 : 16;
 	double tickInterval = Math::Floor(tp->GetBarDuration() / 16.0);
 
 	LaserObjectState* sectionStart = laserRoot;
@@ -383,10 +385,16 @@ void Scoring::m_UpdateTicks()
 			bool processed = false;
 			if(delta >= 0)
 			{
+				if(tick->HasFlag(TickFlags::Button) && autoplay)
+				{
+					m_TickHit(tick, buttonCode, delta);
+					processed = true;
+				}
+
 				if(tick->HasFlag(TickFlags::Hold))
 				{
 					// Check buttons here for holds
-					if(m_input && m_input->GetButton(button))
+					if(m_input && (m_input->GetButton(button) || autoplay))
 					{
 						m_TickHit(tick, buttonCode);
 						processed = true;
@@ -610,7 +618,7 @@ void Scoring::m_UpdateLasers(float deltaTime)
 			}
 		}
 
-		m_laserInput[i] = m_input->GetInputLaserDir(i);
+		m_laserInput[i] = autoplay ? 0.0f : m_input->GetInputLaserDir(i);
 
 		// Update idle laser
 		if(IsLaserIdle(i))
@@ -641,6 +649,13 @@ void Scoring::m_UpdateLasers(float deltaTime)
 				float laserDir = currentSegment->GetDirection();
 				float moveDir = Math::Sign(positionDelta);
 				float input = m_input->GetInputLaserDir(i);
+				if(autoplay)
+				{
+					if(abs(positionDelta) > 0.05f)
+						input = positionDelta;
+					else
+						input = laserDir;
+				}
 				float inputDir = Math::Sign(input);
 
 				if(inputDir != 0.0f)
@@ -674,6 +689,10 @@ void Scoring::m_UpdateLasers(float deltaTime)
 
 void Scoring::m_OnButtonPressed(Input::Button buttonCode)
 {
+	// Ignore buttons on autoplay
+	if(autoplay)
+		return;
+
 	if(buttonCode < Input::Button::LS_0Neg)
 	{
 		ObjectState* obj = m_ConsumeTick((uint32)buttonCode);

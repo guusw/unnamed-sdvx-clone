@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="E:\Projects\hello-world\Main\Application.cpp">
@@ -20,6 +20,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Main\Game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Main\HitStat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Main\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Main\KShootMap.cpp">
@@ -47,30 +53,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Main\Audio\Audio.cpp">
-      <Filter>Source Files\Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioBase.cpp">
-      <Filter>Source Files\Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioOutput.cpp">
-      <Filter>Source Files\Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioPlayback.cpp">
-      <Filter>Source Files\Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioStream.cpp">
-      <Filter>Source Files\Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Audio\DSP.cpp">
-      <Filter>Source Files\Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Audio\Sample.cpp">
-      <Filter>Source Files\Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\HitStat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Input.cpp">
+    <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioOutput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioPlayback.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Main\Audio\DSP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Main\Audio\Sample.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -99,6 +99,12 @@
     <ClInclude Include="E:\Projects\hello-world\Main\Game.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Main\HitStat.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Main\Input.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Main\KShootMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -118,36 +124,30 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Main\Audio\Audio.hpp">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\Audio_Impl.hpp">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioBase.hpp">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioEffects.hpp">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioOutput.hpp">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioPlayback.hpp">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioStream.hpp">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\Sample.hpp">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\DSP.hpp">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\HitStat.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Input.hpp">
+    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioEffects.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioOutput.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioPlayback.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioStream.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Main\Audio\Audio_Impl.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Main\Audio\DSP.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Main\Audio\Sample.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -166,14 +166,5 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{5E153632-3DCC-3CFF-85FD-0B063F9B5F3C}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Audio">
-      <UniqueIdentifier>{9ae54114-bd75-4813-9082-5a38eb933ce2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Audio">
-      <UniqueIdentifier>{366e260f-ec7c-4ed2-b6d2-c7419b8a2875}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <Font Include="fallbackfont.otf" />
   </ItemGroup>
 </Project>

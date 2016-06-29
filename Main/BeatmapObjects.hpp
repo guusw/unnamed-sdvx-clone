@@ -209,6 +209,7 @@ struct TimingPoint
 	static bool StaticSerialize(BinaryStream& stream, TimingPoint*& out);
 
 	double GetBarDuration() const { return numerator * beatDuration / (denominator / 4); }
+	double GetBPM() const { return 60000.0 / beatDuration; }
 
 	// Position in ms when this timing point appears
 	MapTime time;
