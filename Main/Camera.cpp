@@ -144,7 +144,7 @@ void Camera::SetTargetRoll(float target)
 	}
 	else
 	{
-		if(m_targetRoll == 0.0f || Math::Sign(m_targetRoll) == target)
+		if(m_targetRoll == 0.0f || Math::Sign(m_targetRoll) == Math::Sign(target))
 		{
 			if(m_targetRoll == 0)
 				m_targetRoll = target;
