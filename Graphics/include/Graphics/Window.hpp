@@ -36,8 +36,13 @@ namespace Graphics
 		// Switches between borderless and windowed
 		void SetWindowStyle(WindowStyle style);
 
+		// Get full window position
+		Vector2i GetWindowPos() const;
+		// Set full window position
+		void SetWindowPos(const Vector2i& pos);
+
 		// Window Client area size
-		Vector2i GetWindowSize();
+		Vector2i GetWindowSize() const;
 		// Set window client area size
 		void SetWindowSize(const Vector2i& size);
 		void SwitchFullscreen(uint32 monitorID = -1);

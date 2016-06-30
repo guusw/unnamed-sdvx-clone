@@ -38,25 +38,43 @@ protected:
 		m_isReading = isReading;
 	}
 public:
-	// Reads or writes a struct or native type's data based on the stream's mode of operation
+	// Reads or writes strings
+	bool SerializeObject(String& obj);
+	bool SerializeObject(WString& obj);
+
+	// Vector/Map serialization helpers
 	template<typename T>
-	typename std::enable_if<!std::is_pointer<T>::value, bool>::type SerializeObject(T& obj)
-	{
-		static_assert(std::is_trivially_copyable<T>::value == true, "Type is not trivially copyable");
-		Serialize(&obj, sizeof(obj));
-		return true;
-	}
+	bool SerializeObject(Vector<T>& obj);
+	template<typename K, typename V>
+	bool SerializeObject(Map<K, V>& obj);
+
 	// Writes or reads a pointer type by calling StaticSerialize on the type
+	// prototype is:
+	//	static bool StaticSerialize(BinaryStream& stream, T*& object);
+	//
+	// This function needs to assign the pointer if the stream is in reading mode
+#define has_serialize_function_t (!std::is_trivial<T>::value && !std::is_void<decltype(T::StaticSerialize(*(BinaryStream*)0, *(T**)0))>::value)
 	template <typename T>
-	typename std::enable_if<!std::is_void<decltype(T::StaticSerialize(*(BinaryStream*)0, *(T**)0))>::value, bool>::type SerializeObject(T*& obj)
+	typename std::enable_if<has_serialize_function_t, bool>::type SerializeObject(T*& obj)
 	{
 		return T::StaticSerialize(*this, obj);
 	}
 	template <typename T>
-	typename std::enable_if<std::is_pointer<T>::value, bool>::type SerializeObject(T& obj)
+	typename std::enable_if<has_serialize_function_t, bool>::type SerializeObject(T& obj)
 	{
-		// Note: size check inside static_assert to disallow gcc from needlesly asserting on this
-		static_assert(sizeof(T) == 0, "Can't serialize pointer, no static SerializeObject(BinaryStream&, T*&) found");
+		T* tempObj = &obj;
+		bool r = T::StaticSerialize(*this, tempObj);
+		if(IsReading())
+			obj = *tempObj;
+		return r;
+	}
+
+	// Reads or writes a struct or native type's data based on the stream's mode of operation
+	template<typename T>
+	typename std::enable_if<!std::is_pointer<T>::value && std::is_trivially_copyable<T>::value, bool>::type SerializeObject(T& obj)
+	{
+		Serialize(&obj, sizeof(obj));
+		return true;
 	}
 
 	// Reads or writes data based on the stream's mode of operation
@@ -80,29 +98,12 @@ public:
 	virtual size_t GetSize() const = 0;
 
 	// Stream operators
-#define DECLARE_STREAMABLE_TYPE(_type)\
-	BinaryStream& operator<<(_type& obj);
-
-	DECLARE_STREAMABLE_TYPE(char);
-	DECLARE_STREAMABLE_TYPE(float);
-	DECLARE_STREAMABLE_TYPE(double);
-	DECLARE_STREAMABLE_TYPE(uint8);
-	DECLARE_STREAMABLE_TYPE(uint16);
-	DECLARE_STREAMABLE_TYPE(uint32);
-	DECLARE_STREAMABLE_TYPE(uint64);
-	DECLARE_STREAMABLE_TYPE(int8);
-	DECLARE_STREAMABLE_TYPE(int16);
-	DECLARE_STREAMABLE_TYPE(int32);
-	DECLARE_STREAMABLE_TYPE(int64);
-	DECLARE_STREAMABLE_TYPE(String);
-	DECLARE_STREAMABLE_TYPE(WString);
-
-#undef DECLARE_STREAMABLE_TYPE
-
-	template<typename T>
-	BinaryStream& operator<<(Vector<T>& obj);
-	template<typename K, typename V>
-	BinaryStream& operator<<(Map<K, V>& obj);
+	// this template operator just routes everything to SerlializeObject
+	template<typename T> BinaryStream& operator<<(T& obj)
+	{
+		SerializeObject(obj);
+		return *this;
+	}
 
 	bool IsReading() const 
 	{
@@ -117,7 +118,7 @@ protected:
 };
 
 template<typename T>
-BinaryStream& BinaryStream::operator<<(Vector<T>& obj)
+bool BinaryStream::SerializeObject(Vector<T>& obj)
 {
 	if(IsReading())
 	{
@@ -142,10 +143,10 @@ BinaryStream& BinaryStream::operator<<(Vector<T>& obj)
 			assert(ok);
 		}
 	}
-	return *this;
+	return true;
 }
 template<typename K, typename V>
-BinaryStream& BinaryStream::operator<<(Map<K, V>& obj)
+bool BinaryStream::SerializeObject(Map<K, V>& obj)
 {
 	if(IsReading())
 	{
@@ -175,5 +176,5 @@ BinaryStream& BinaryStream::operator<<(Map<K, V>& obj)
 			assert(ok);
 		}
 	}
-	return *this;
+	return true;
 }

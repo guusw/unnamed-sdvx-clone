@@ -26,7 +26,7 @@ bool TextStream::ReadLine(BinaryStream& stream, String& out, const String& lineE
 		_continue:
 		pos++;
 	}
-	return false;
+	return out.size() > 0;
 }
 void TextStream::Write(BinaryStream& stream, const String& out)
 {

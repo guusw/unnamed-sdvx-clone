@@ -120,12 +120,17 @@ namespace Graphics
 			}
 		}
 
+		void SetWindowPos(const Vector2i& pos)
+		{
+			::SetWindowPos(m_handle, 0, pos.x, pos.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		}
+
 		void SetWindowSize(const Vector2i& size)
 		{
 			// Resize window to client size
 			RECT wndRect = { 0, 0, size.x, size.y };
 			AdjustWindowRect(wndRect);
-			SetWindowPos(m_handle, 0, 0, 0, wndRect.right - wndRect.left, wndRect.bottom - wndRect.top, SWP_NOMOVE | SWP_NOZORDER);
+			::SetWindowPos(m_handle, 0, 0, 0, wndRect.right - wndRect.left, wndRect.bottom - wndRect.top, SWP_NOMOVE | SWP_NOZORDER);
 			m_clntSize = size;
 		}
 		Vector2i GetWindowSize() const
@@ -538,8 +543,20 @@ namespace Graphics
 			UnsetStyles(WS_OVERLAPPEDWINDOW);
 		}
 	}
-	Vector2i Window::GetWindowSize()
+
+	Vector2i Window::GetWindowPos() const
 	{
+		RECT r;
+		::GetWindowRect(m_impl->m_handle, &r);
+		return Vector2i(r.left, r.top);
+	}
+	void Window::SetWindowPos(const Vector2i& pos)
+	{
+		m_impl->SetWindowPos(pos);
+	}
+
+	Vector2i Window::GetWindowSize() const
+{
 		return m_impl->GetWindowSize();
 	}
 	void Window::SetWindowSize(const Vector2i& size)
@@ -587,7 +604,7 @@ namespace Graphics
 			SetWindowStyle(WindowStyle::Borderless);
 			int32 sizex = monitorRect.right - monitorRect.left;
 			int32 sizey = monitorRect.bottom - monitorRect.top;
-			SetWindowPos(m_impl->m_handle, 0, monitorRect.left, monitorRect.top,
+			::SetWindowPos(m_impl->m_handle, 0, monitorRect.left, monitorRect.top,
 				sizex, sizey, SWP_SHOWWINDOW);
 			m_impl->m_fullscreen = true;
 		}
@@ -598,7 +615,7 @@ namespace Graphics
 			SetWindowStyle(WindowStyle::Windowed);
 			int32 sizex = rect.right - rect.left;
 			int32 sizey = rect.bottom - rect.top;
-			SetWindowPos(m_impl->m_handle, 0, rect.left, rect.top,
+			::SetWindowPos(m_impl->m_handle, 0, rect.left, rect.top,
 				sizex, sizey, 0);
 			m_impl->m_fullscreen = false;
 		}
