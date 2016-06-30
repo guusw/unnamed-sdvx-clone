@@ -96,6 +96,7 @@ bool KShootMap::Init(BinaryStream& input)
 		String k, v;
 		if(!line.Split("=", &k, &v))
 			return false;
+		WString str = Utility::ConvertToUnicode(v);
 		settings.FindOrAdd(k) = v;
 	}
 

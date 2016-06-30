@@ -86,7 +86,9 @@ namespace Utility
 		return WString(buffer);
 	}
 
-	String ConvertToANSI(const WString& unicodeString);
+	// Unicode(wchar's on windows) to UTF8
+	String ConvertToUTF8(const WString& unicodeString);
+	// UTF8 to Unicode(wchar's on windows)
 	WString ConvertToUnicode(const String& ansiString);
 }
 

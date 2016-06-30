@@ -39,7 +39,7 @@ int32 Application::Run()
 		ProfilerScope $("Application Setup");
 
 		// Split up command line parameters
-		String cmdLine = Utility::ConvertToANSI(GetCommandLine());
+		String cmdLine = Utility::ConvertToUTF8(GetCommandLine());
 		m_commandLine = Path::SplitCommandLine(cmdLine);
 		assert(m_commandLine.size() >= 1);
 
