@@ -419,7 +419,7 @@ void Scoring::m_UpdateTicks()
 
 				if(shouldMiss && !processed)
 				{
-					m_TickMiss(tick, buttonCode);
+					m_TickMiss(tick, buttonCode, delta);
 					processed = true;
 				}
 
@@ -505,13 +505,14 @@ void Scoring::m_TickHit(ScoreTick* tick, uint32 index, MapTime delta /*= 0*/)
 	}
 	m_OnTickProcessed(tick, index);
 }
-void Scoring::m_TickMiss(ScoreTick* tick, uint32 index)
+void Scoring::m_TickMiss(ScoreTick* tick, uint32 index, MapTime delta)
 {
 	HitStat* stat = m_AddOrUpdateHitStat(tick->object);
 	if(tick->HasFlag(TickFlags::Button))
 	{
 		OnButtonMiss.Call((Input::Button)index); 
 		stat->rating = ScoreHitRating::Miss;
+		stat->delta = delta;
 		currentGauge -= 0.02f;
 	}
 	else if(tick->HasFlag(TickFlags::Hold))

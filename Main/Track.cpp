@@ -7,7 +7,7 @@
 #include "BeatmapObjects.hpp"
 
 const float Track::trackWidth = 1.0f;
-const float Track::trackLength = 25.0f;
+const float Track::trackLength = 30.0f;
 const float Track::buttonWidth = 1.0f / 6;
 const float Track::laserWidth = buttonWidth * 0.7f;
 const float Track::fxbuttonWidth = buttonWidth * 2;
