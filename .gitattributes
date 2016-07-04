@@ -1,1 +1,4 @@
 third_party/* linguist-vendored
+third_party/LZMA/* linguist-vendored
+third_party/zlib-1.2.8/* linguist-vendored
+
