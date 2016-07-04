@@ -43,7 +43,6 @@ bool AudioOutput::Init()
 
 	PROPVARIANT property;
 	PropVariantInit(&property);
-	char tmpStr[1024];
 	uint32_t numDevices = 0;
 	devices->GetCount(&numDevices);
 	for(uint32_t i = 0; i < numDevices; i++)
@@ -57,12 +56,10 @@ bool AudioOutput::Init()
 
 		// Get device description
 		props->GetValue(PKEY_Device_DeviceDesc, &property);
-		wcstombs(tmpStr, property.pwszVal, sizeof(tmpStr) - 1);
-		String desc = tmpStr;
+		String desc = Utility::ConvertToUTF8(property.pwszVal);
 
 		props->GetValue(PKEY_Device_FriendlyName, &property);
-		wcstombs(tmpStr, property.pwszVal, sizeof(tmpStr) - 1);
-		String friendlyName = tmpStr;
+		String friendlyName = Utility::ConvertToUTF8(property.pwszVal);
 
 		props->Release();
 

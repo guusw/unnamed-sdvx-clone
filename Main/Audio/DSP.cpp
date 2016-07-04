@@ -38,7 +38,7 @@ void BQFDSP::Process(float* out, uint32 numSamples)
 			za[c][1] = za[c][0];
 			za[c][0] = filtered;
 
-			sample = filtered * mix + sample * (1 - mix);
+			sample = filtered;
 		}
 	}
 }
