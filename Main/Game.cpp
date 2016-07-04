@@ -255,7 +255,7 @@ public:
 		CheckedLoad(particleMaterial = g_application->LoadMaterial("particle"));
 		particleMaterial->blendMode = MaterialBlendMode::Additive;
 		particleMaterial->opaque = false;
-		CheckedLoad(basicParticleTexture = g_application->LoadTexture("ParticleFlare.png"));
+		CheckedLoad(basicParticleTexture = g_application->LoadTexture("particle_flare.png"));
 
 		m_laserFollowEmitters[0] = CreateTrailEmitter(m_track->laserColors[0]);
 

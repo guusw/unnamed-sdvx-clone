@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="E:\Projects\hello-world\Shared\src\Bezier.cpp">
@@ -11,6 +11,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Shared\src\Color.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Shared\src\Config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Shared\src\FileStream.cpp">
@@ -40,6 +43,9 @@
     <ClCompile Include="E:\Projects\hello-world\Shared\src\Transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Shared\src\Variant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Shared\src\VectorMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,12 +58,6 @@
     <ClCompile Include="E:\Projects\hello-world\Shared\src\Windows\Path.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Config.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Variant.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\BinaryStream.hpp">
@@ -67,6 +67,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Color.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Config.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Delegate.hpp">
@@ -141,16 +144,13 @@
     <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Utility.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Variant.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Vector.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\VectorMath.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Shared\Config.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Shared\Variant.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -275,7 +275,7 @@ namespace Graphics
 
 					Vector2 offset = Vector2(pen.x, pen.y);
 					offset.x += info.leftOffset;
-					offset.y += size->lineHeight - info.topOffset;
+					offset.y += nFontSize - info.topOffset;
 					pen.x = floorf(pen.x);
 					pen.y = floorf(pen.y);
 

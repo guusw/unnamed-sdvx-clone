@@ -34,6 +34,8 @@ namespace Graphics
 	{
 		assert(m_ogl);
 
+		bool scissorEnabled = false;
+
 		// Create a new list of items
 		for(RenderQueueItem* item : m_orderedCommands)
 		{
@@ -69,10 +71,41 @@ namespace Graphics
 				SimpleDrawCall* sdc = (SimpleDrawCall*)item;
 				m_renderState.worldTransform = sdc->worldTransform;
 				SetupMaterial(sdc->mat, sdc->params);
+
+				// Check if scissor is enabled
+				bool useScissor = (sdc->scissorRect.size.x >= 0);
+				if(useScissor)
+				{
+					// Apply scissor
+					if(!scissorEnabled)
+					{
+						glEnable(GL_SCISSOR_TEST);
+						scissorEnabled = true;
+					}
+					float scissorY = m_renderState.viewportSize.y - sdc->scissorRect.Bottom();
+					glScissor((int32)sdc->scissorRect.Left(), (int32)scissorY,
+						(int32)sdc->scissorRect.size.x, (int32)sdc->scissorRect.size.y);
+				}
+				else
+				{
+					if(scissorEnabled)
+					{
+						glDisable(GL_SCISSOR_TEST);
+						scissorEnabled = false;
+					}
+				}
+
 				sdc->mesh->Draw();
 			}
 			else if(Cast<PointDrawCall>(item))
 			{
+				if(scissorEnabled)
+				{
+					// Disable scissor
+					glDisable(GL_SCISSOR_TEST);
+					scissorEnabled = false;
+				}
+
 				PointDrawCall* pdc = (PointDrawCall*)item;
 				m_renderState.worldTransform = Transform();
 				SetupMaterial(pdc->mat, pdc->params);
@@ -88,6 +121,8 @@ namespace Graphics
 				pdc->mesh->Draw();
 			}
 		}
+
+		glDisable(GL_SCISSOR_TEST);
 
 		if(clearQueue)
 		{
@@ -125,6 +160,30 @@ namespace Graphics
 		sdc->worldTransform = worldTransform;
 		m_orderedCommands.push_back(sdc);
 	}
+
+	void RenderQueue::DrawScissored(Rect scissor, Transform worldTransform, Mesh m, Material mat, const MaterialParameterSet& params /*= MaterialParameterSet()*/)
+	{
+		SimpleDrawCall* sdc = new SimpleDrawCall();
+		sdc->mat = mat;
+		sdc->mesh = m;
+		sdc->params = params;
+		sdc->worldTransform = worldTransform;
+		sdc->scissorRect = scissor;
+		m_orderedCommands.push_back(sdc);
+	}
+	void RenderQueue::DrawScissored(Rect scissor, Transform worldTransform, Ref<class TextRes> text, Material mat, const MaterialParameterSet& params /*= MaterialParameterSet()*/)
+	{
+		SimpleDrawCall* sdc = new SimpleDrawCall();
+		sdc->mat = mat;
+		sdc->mesh = text->GetMesh();
+		sdc->params = params;
+		// Set Font texture map
+		sdc->params.SetParameter("mainTex", text->GetTexture());
+		sdc->worldTransform = worldTransform;
+		sdc->scissorRect = scissor;
+		m_orderedCommands.push_back(sdc);
+	}
+
 	void RenderQueue::DrawPoints(Mesh m, Material mat, const MaterialParameterSet& params, float pointSize)
 	{
 		PointDrawCall* pdc = new PointDrawCall();
@@ -134,4 +193,11 @@ namespace Graphics
 		pdc->size = pointSize;
 		m_orderedCommands.push_back(pdc);
 	}
+
+	// Initializes the simple draw call structure
+	SimpleDrawCall::SimpleDrawCall()
+		: scissorRect(Vector2(), Vector2(-1))
+	{
+	}
+
 }

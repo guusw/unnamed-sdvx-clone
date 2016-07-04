@@ -397,23 +397,43 @@ void Scoring::m_UpdateTicks()
 
 				if(tick->HasFlag(TickFlags::Hold))
 				{
-					// Check buttons here for holds
-					if(m_input && (m_input->GetButton(button) || autoplay))
+					// Ignore the first hold note ticks
+					//	except for autoplay, which just hits it.
+					if(!tick->HasFlag(TickFlags::Start) || autoplay)
 					{
-						m_TickHit(tick, buttonCode);
-						processed = true;
+						// Check buttons here for holds
+						if(m_input && (m_input->GetButton(button) || autoplay))
+						{
+							m_TickHit(tick, buttonCode);
+							processed = true;
+						}
 					}
 				}
 				else if(tick->HasFlag(TickFlags::Laser))
 				{
-					// Check laser input
 					LaserObjectState* laserObject = (LaserObjectState*)tick->object;
-					
-					float laserDelta = abs(laserPositions[laserObject->index] - laserTargetPositions[laserObject->index]);
-					if(laserDelta < 0.083f)
+					if(tick->HasFlag(TickFlags::Slam))
 					{
-						m_TickHit(tick, buttonCode);
-						processed = true;
+						// Check if slam hit
+						float dirSign = Math::Sign(laserObject->GetDirection());
+						float inputSign = Math::Sign(m_input->GetInputLaserDir(buttonCode - 6));
+						if(autoplay)
+							inputSign = dirSign;
+						if(dirSign == inputSign && delta > 0)
+						{
+							m_TickHit(tick, buttonCode);
+							processed = true;
+						}
+					}
+					else
+					{
+						// Check laser input
+						float laserDelta = abs(laserPositions[laserObject->index] - laserTargetPositions[laserObject->index]);
+						if(laserDelta < 0.083f)
+						{
+							m_TickHit(tick, buttonCode);
+							processed = true;
+						}
 					}
 				}
 
@@ -454,8 +474,8 @@ ObjectState* Scoring::m_ConsumeTick(uint32 buttonCode)
 
 			if(tick->HasFlag(TickFlags::Laser))
 			{
+				// Ignore laser ticks
 				continue;
-				//if(tick->HasFlag(TickFlags::Slam && ! TickFlags::Start))
 			}
 
 			m_TickHit(tick, buttonCode, delta);
@@ -787,7 +807,7 @@ MapTime ScoreTick::GetHitWindow() const
 	// Laser ticks also don't have a hit window except for the first ticks and slam segments
 	if(HasFlag(TickFlags::Laser))
 	{
-		if(!(HasFlag(TickFlags::Start) || HasFlag(TickFlags::Slam)))
+		if(!HasFlag(TickFlags::Start) && !HasFlag(TickFlags::Slam))
 			return 0;
 	}
 	return Scoring::goodHitTime;

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="E:\Projects\hello-world\Main\Application.cpp">
@@ -53,25 +53,43 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Main\Audio\Audio.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Audio</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioBase.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Audio</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioOutput.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Audio</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioPlayback.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Audio</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioStream.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Audio</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Main\Audio\DSP.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Audio</Filter>
     </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Main\Audio\Sample.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Main\GUI\GUI.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\GUIRenderer.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Box.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Canvas.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Panel.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Label.cpp">
+      <Filter>Source Files\GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -124,31 +142,40 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Main\Audio\Audio.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Audio</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioBase.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Audio</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioEffects.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Audio</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioOutput.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Audio</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioPlayback.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Audio</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioStream.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Audio</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Main\Audio\Audio_Impl.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Audio</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Main\Audio\DSP.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Audio</Filter>
     </ClInclude>
     <ClInclude Include="E:\Projects\hello-world\Main\Audio\Sample.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\Projects\hello-world\Main\GUI\GUI.hpp">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\GUIRenderer.hpp">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\GUIRenderData.hpp">
+      <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -165,6 +192,18 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{5E153632-3DCC-3CFF-85FD-0B063F9B5F3C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Audio">
+      <UniqueIdentifier>{794E26DA-37B9-37C1-A524-AE34A9CCACD8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI">
+      <UniqueIdentifier>{B2BE3713-3EF9-321F-A902-4198CAA2456E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Audio">
+      <UniqueIdentifier>{15CA10BB-B5D1-3D3C-8F66-607583F40A67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI">
+      <UniqueIdentifier>{8B00D9A1-AA8C-3C86-A63B-97A307482F6D}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

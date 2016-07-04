@@ -30,6 +30,7 @@ namespace Graphics
 		friend class MeshRes;
 		friend class Shader_Impl;
 		friend class Framebuffer_Impl;
+		friend class RenderQueue;
 
 	public:
 		OpenGL();

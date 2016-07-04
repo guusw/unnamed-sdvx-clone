@@ -1,9 +1,21 @@
 # Main Project
 
 # Find files used for project
-file(GLOB Main_src "*.cpp" "*.hpp" "Audio/*.cpp" "Audio/*.hpp" "Resource.rc")
+file(GLOB Main_src "*.cpp" "*.hpp"  "Resource.rc" 
+	"Audio/*.cpp" "Audio/*.hpp"
+	"GUI/*.cpp" "GUI/*.hpp")
 
-include_directories(Audio .)
+# Project filters
+file(GLOB Audio_hdr "Audio/*.hpp")
+file(GLOB Audio_src "Audio/*.cpp")
+source_group("Header Files\\Audio" FILES ${Audio_hdr})
+source_group("Source Files\\Audio" FILES ${Audio_src})
+file(GLOB GUI_hdr "GUI/*.hpp")
+file(GLOB GUI_src "GUI/*.cpp")
+source_group("Header Files\\GUI" FILES ${GUI_hdr})
+source_group("Source Files\\GUI" FILES ${GUI_src})
+
+include_directories(Audio GUI .)
 add_executable(Main ${Main_src})
 set_output_postfixes(Main)
 

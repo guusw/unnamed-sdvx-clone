@@ -19,14 +19,18 @@ namespace Graphics
 	class SimpleDrawCall : public RenderQueueItem
 	{
 	public:
+		SimpleDrawCall();
 		// The mesh to draw
 		Mesh mesh;
 		// Material to use
 		Material mat;
 		MaterialParameterSet params;
 		// The world transform
-		Transform worldTransform;
+		Transform worldTransform; 
+		// Scissor rectangle
+		Rect scissorRect;
 	};
+
 	// Command for points/lines with size/width parameter
 	class PointDrawCall : public RenderQueueItem
 	{
@@ -58,6 +62,8 @@ namespace Graphics
 		void Clear();
 		void Draw(Transform worldTransform, Mesh m, Material mat, const MaterialParameterSet& params = MaterialParameterSet());
 		void Draw(Transform worldTransform, Ref<class TextRes> text, Material mat, const MaterialParameterSet& params = MaterialParameterSet());
+		void DrawScissored(Rect scissor, Transform worldTransform, Mesh m, Material mat, const MaterialParameterSet& params = MaterialParameterSet());
+		void DrawScissored(Rect scissor, Transform worldTransform, Ref<class TextRes> text, Material mat, const MaterialParameterSet& params = MaterialParameterSet());
 
 		// Draw for lines/points with point size parameter
 		void DrawPoints(Mesh m, Material mat, const MaterialParameterSet& params, float pointSize);

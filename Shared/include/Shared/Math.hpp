@@ -6,6 +6,7 @@ namespace Math
 {
 	// Floating point PI constant
 	extern const float pi;
+	extern const float e;
 	extern const float degToRad;
 	extern const float radToDeg;
 

@@ -1,6 +1,8 @@
 #pragma once
 #include <assert.h>
 
+template<typename T> class RefCounted;
+
 /*
 	Basic shared pointer class
 	the object should be constructed once explicitly with a pointer to the object to manage
@@ -12,7 +14,7 @@ class Ref
 protected:
 	T* m_data;
 	int32_t* m_refCount;
-	void Dec()
+	void m_Dec()
 	{
 		if(m_refCount)
 		{
@@ -44,11 +46,10 @@ protected:
 			}
 		}
 	}
-	void Inc()
+	void m_Inc()
 	{
 		if(m_refCount)
 		{
-			assert(m_refCount[0] != 0);
 			if(m_refCount[0] >= 0)
 			{
 				m_refCount[0]++;
@@ -59,31 +60,33 @@ protected:
 			}
 		}
 	}
+	void m_AssignCounter();
+	int32* m_CreateNewCounter();
 
-	
 public:
-	// Weak pointer construction
 	explicit Ref(T* data, int32_t* refCount)
 		: m_data(data), m_refCount(refCount)
 	{
-		Inc();
+		m_Inc();
 	}
 
 	inline Ref() { m_data = nullptr; m_refCount = nullptr; }
 	explicit inline Ref(T* obj)
 	{
 		m_data = obj;
-		m_refCount = new int32_t(1);
+		m_refCount = m_CreateNewCounter();
+		m_refCount[0]++;
+		m_AssignCounter();
 	}
 	inline ~Ref()
 	{
-		Dec();
+		m_Dec();
 	}
 	inline Ref(const Ref& other)
 	{
 		m_data = other.m_data;
 		m_refCount = other.m_refCount;
-		Inc();
+		m_Inc();
 	}
 	inline Ref(Ref&& other)
 	{
@@ -93,15 +96,15 @@ public:
 	}
 	inline Ref& operator=(const Ref& other)
 	{
-		Dec();
+		m_Dec();
 		m_data = other.m_data;
 		m_refCount = other.m_refCount;
-		Inc();
+		m_Inc();
 		return *this;
 	}
 	inline Ref& operator=(Ref&& other)
 	{
-		Dec();
+		m_Dec();
 		m_data = other.m_data;
 		m_refCount = other.m_refCount;
 		other.m_refCount = nullptr;
@@ -161,13 +164,13 @@ public:
 	{
 		assert(IsValid());
 		assert(m_refCount[0] > 0);
-		delete m_data;
 		m_refCount[0] = -m_refCount[0] + 1;
 		m_refCount = nullptr;
+		delete m_data;
 	}
 	inline void Release()
 	{
-		Dec();
+		m_Dec();
 		m_refCount = nullptr;
 	}
 
@@ -187,4 +190,79 @@ namespace Utility
 	{
 		return Ref<T>(obj);
 	}
+}
+
+/*
+	Base class for objects that allows them to create a shared pointer from themselves
+	WARNING: Only use on objects allocated with "new"
+	Repeatedly calling MakeShared will return the same shared pointer
+*/
+template<typename T>
+class RefCounted
+{
+protected:
+	int32* m_refCount = (int32*)0;
+public:
+#if _DEBUG
+	~RefCounted()
+	{
+		// Should never happen, object will always 
+		assert(!m_refCount || m_refCount[0] <= 0);
+	}
+#endif
+	int32 GetRefCount() const
+	{
+		return (m_refCount) ? m_refCount[0] : 0;
+	}
+	// Can be used for objects allocated with new to get a reference counted handle to this object
+	Ref<T> MakeShared()
+	{
+		return Ref<T>((T*)this, _GetRefCounter());
+	}
+	// Internal use, assigns the reference counter when constructing a Ref object without calling RefCounted::MakeShared
+	void _AssignRefCounter(int32* counter)
+	{
+		assert(m_refCount == nullptr || m_refCount == counter);
+		m_refCount = counter;
+	}
+	int32* _GetRefCounter()
+	{
+		if(!m_refCount)
+			m_refCount = new int32(0);
+		return m_refCount;
+	}
+};
+
+
+// Possibly assign reference counter in RefCounted object
+template<typename T, bool> struct RefCounterHelper
+{
+	static void Assign(T* obj, int32* counter)
+	{
+	}
+	static int32* CreateCounter(T* obj)
+	{
+		return new int32(0);
+	}
+};
+template<typename T> struct RefCounterHelper<T, true>
+{
+	static void Assign(T* obj, int32* counter)
+	{
+		obj->_AssignRefCounter(counter);
+	}
+	static int32* CreateCounter(T* obj)
+	{
+		return obj->_GetRefCounter();
+	}
+};
+template<typename T> void Ref<T>::m_AssignCounter()
+{
+	assert(m_data);
+	RefCounterHelper<T, std::is_base_of<RefCounted<T>, T>::value>::Assign((T*)m_data, m_refCount);
+}
+template<typename T> int32* Ref<T>::m_CreateNewCounter()
+{
+	assert(m_data);
+	return RefCounterHelper<T, std::is_base_of<RefCounted<T>, T>::value>::CreateCounter((T*)m_data);
 }

@@ -11,8 +11,8 @@ template<typename T>
 class MarginBase
 {
 public:
-	MarginBase() 
-		: left(0), right(0), top(0), bottom(0) {};
+	MarginBase(T all = 0) 
+		: left(all), right(all), top(all), bottom(all) {};
 	MarginBase(T x, T y) 
 		: left(x), right(x), top(y), bottom(y) {};
 	MarginBase(T left, T top, T right, T bottom) 
