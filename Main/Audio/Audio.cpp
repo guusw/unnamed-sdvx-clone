@@ -12,9 +12,9 @@ Audio_Impl impl;
 void Audio_Impl::AudioThread()
 {
 	double f = 0.0;
-	int32 sleepDuration = Math::Max(1, (int32)output->GetBufferLength() - 40);
 	while(runAudioThread)
 	{
+		int32 sleepDuration = 1;
 		float* data;
 		uint32 numSamples;
 		if(output->Begin(data, numSamples))

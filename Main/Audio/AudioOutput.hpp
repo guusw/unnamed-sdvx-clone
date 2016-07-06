@@ -5,7 +5,7 @@ struct tWAVEFORMATEX;
 /*
 	Low level audio output
 */
-class AudioOutput
+class AudioOutput : public Unique
 {
 public:
 	AudioOutput();
@@ -27,18 +27,5 @@ public:
 	double GetBufferLength() const;
 
 private:
-	AudioOutput& operator=(const AudioOutput&) = delete;
-	AudioOutput(const AudioOutput&) = delete;
-
-	//HWAVEOUT m_handle = nullptr;
-	/// TODO: Remove windows specific parts from header, add pimpl
-	struct IAudioClient* m_audioClient = nullptr;
-	struct IAudioRenderClient* m_audioRenderClient = nullptr;
-	struct IMMDevice* m_device = nullptr;
-	tWAVEFORMATEX* m_format;
-
-	// The output wave buffer
-	uint32_t m_numBufferFrames;
-
-	double m_bufferLength;
+	class AudioOutput_Impl* m_impl;
 };
