@@ -20,7 +20,7 @@ public:
 	static bool IsDirectory(const String& path);
 	static bool FileExists(const String& path);
 	// Converts a path to a standard format with all duplicate slashes removed and set to the platform default '\' on windows
-	static String Canonical(const String& path);
+	static String Normalize(const String& path);
 	static String Absolute(const String& path);
 	static bool IsAbsolute(const String& path);
 	// Removes the last directory or filename ('/' seperated)

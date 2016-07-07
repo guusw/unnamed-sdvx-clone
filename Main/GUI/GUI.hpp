@@ -36,7 +36,7 @@ enum class FillMode
 {
 	None = 0,
 	// Stretches the element, may result in incorrect image ratio
-	Stretch = 0,
+	Stretch,
 	// Fills the entire space with the content, may crop the element
 	Fill,
 	// Take the smallest size to fit the element, leaves black bars if it doesn't fit completely

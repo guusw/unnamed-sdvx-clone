@@ -73,23 +73,32 @@
     <ClCompile Include="E:\Projects\hello-world\Main\Audio\Sample.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Main\GUI\Box.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\Projects\hello-world\Main\GUI\Canvas.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
     <ClCompile Include="E:\Projects\hello-world\Main\GUI\GUI.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="GUI\GUIRenderer.cpp">
+    <ClCompile Include="E:\Projects\hello-world\Main\GUI\GUIRenderer.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="GUI\Box.cpp">
+    <ClCompile Include="E:\Projects\hello-world\Main\GUI\Label.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="GUI\Canvas.cpp">
+    <ClCompile Include="E:\Projects\hello-world\Main\GUI\Panel.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="GUI\Panel.cpp">
-      <Filter>Source Files\GUI</Filter>
+    <ClCompile Include="E:\Projects\hello-world\Main\sqlite3.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GUI\Label.cpp">
-      <Filter>Source Files\GUI</Filter>
+    <ClCompile Include="MapDatabase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Database.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -171,11 +180,17 @@
     <ClInclude Include="E:\Projects\hello-world\Main\GUI\GUI.hpp">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="GUI\GUIRenderer.hpp">
+    <ClInclude Include="E:\Projects\hello-world\Main\GUI\GUIRenderData.hpp">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="GUI\GUIRenderData.hpp">
+    <ClInclude Include="E:\Projects\hello-world\Main\GUI\GUIRenderer.hpp">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="MapDatabase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Database.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

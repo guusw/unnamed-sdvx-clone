@@ -306,8 +306,8 @@ bool Application::LaunchMap(const String& mapPath)
 	}
 
 	// Acquire map base path
-	String pathCanonical = Path::Canonical(actualMapPath);
-	String mapBasePath = Path::RemoveLast(pathCanonical);
+	String pathNormalized = Path::Normalize(actualMapPath);
+	String mapBasePath = Path::RemoveLast(pathNormalized);
 
 	g_game = Game::Create(m_currentMap, mapBasePath);
 	if(!g_game)

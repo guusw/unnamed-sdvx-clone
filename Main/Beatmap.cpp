@@ -15,15 +15,15 @@ Beatmap::~Beatmap()
 		delete z;
 }
 
-bool Beatmap::Load(BinaryStream& input)
+bool Beatmap::Load(BinaryStream& input, bool metadataOnly)
 {
 	ProfilerScope $("Load Beatmap");
 
-	if(!m_ProcessKShootMap(input)) // Load KSH format first
+	if(!m_ProcessKShootMap(input, metadataOnly)) // Load KSH format first
 	{
 		// Load binary map format
 		input.Seek(0);
-		if(!m_Serialize(input))
+		if(!m_Serialize(input, metadataOnly))
 			return false;
 	}
 
@@ -32,7 +32,7 @@ bool Beatmap::Load(BinaryStream& input)
 bool Beatmap::Save(BinaryStream& output)
 {
 	ProfilerScope $("Save Beatmap");
-	return m_Serialize(output);
+	return m_Serialize(output, false);
 }
 
 const BeatmapSettings& Beatmap::GetMapSettings()
@@ -134,7 +134,7 @@ BinaryStream& operator<<(BinaryStream& stream, BeatmapSettings& settings)
 	stream << settings.jacketPath;
 	return stream;
 }
-bool Beatmap::m_Serialize(BinaryStream& stream)
+bool Beatmap::m_Serialize(BinaryStream& stream, bool metadataOnly)
 {
 	static const uint32 c_magic = *(uint32*)"FXMM";
 	uint32 magic = c_magic;
@@ -231,4 +231,26 @@ TrackRollBehaviour operator|(const TrackRollBehaviour& l, const TrackRollBehavio
 TrackRollBehaviour operator&(const TrackRollBehaviour& l, const TrackRollBehaviour& r)
 {
 	return (TrackRollBehaviour)((uint8)l & (uint8)r);
+}
+
+bool BeatmapSettings::StaticSerialize(BinaryStream& stream, BeatmapSettings*& settings)
+{
+	if(stream.IsReading())
+		settings = new BeatmapSettings();
+	stream << settings->title;
+	stream << settings->artist;
+	stream << settings->effector;
+	stream << settings->tags;
+	stream << settings->bpm;
+	stream << settings->offset;
+	stream << settings->audioFX;
+	stream << settings->audioNoFX;
+	stream << settings->audioFX;
+	stream << settings->jacketPath;
+	stream << settings->previewOffset;
+	stream << settings->previewDuration;
+	stream << settings->slamVolume;
+	stream << settings->laserEffectMix;
+	stream << (uint8&)settings->laserEffectType;
+	return true;
 }

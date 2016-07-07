@@ -4,14 +4,16 @@
 /* Global settings stored in a beatmap */
 struct BeatmapSettings
 {
+	static bool StaticSerialize(BinaryStream& stream, BeatmapSettings*& settings);
+
 	// Basic song meta data
-	WString title;
-	WString artist;
-	WString effector;
-	WString illustrator;
-	WString tags;
+	String title;
+	String artist;
+	String effector;
+	String illustrator;
+	String tags;
 	// Reported BPM range by the map
-	WString bpm;
+	String bpm;
 	// Offset in ms for the map to start
 	MapTime offset;
 	// Both audio tracks specified for the map / if any is set
@@ -19,6 +21,11 @@ struct BeatmapSettings
 	String audioFX;
 	// Path to the jacket image
 	String jacketPath;
+
+	// Preview offset
+	MapTime previewOffset;
+	// Preview duration
+	MapTime previewDuration;
 
 	// Initial audio settings
 	float slamVolume = 1.0f;
@@ -34,7 +41,7 @@ class Beatmap
 {
 public:
 	virtual ~Beatmap();
-	bool Load(BinaryStream& input);
+	bool Load(BinaryStream& input, bool metadataOnly = false);
 	// Saves the map as it's own format
 	bool Save(BinaryStream& output);
 
@@ -55,8 +62,8 @@ public:
 	const Vector<ZoomControlPoint*>& GetZoomControlPoints() const;
 
 private:
-	bool m_ProcessKShootMap(BinaryStream& input);
-	bool m_Serialize(BinaryStream& stream);
+	bool m_ProcessKShootMap(BinaryStream& input, bool metadataOnly);
+	bool m_Serialize(BinaryStream& stream, bool metadataOnly);
 
 	Vector<TimingPoint*> m_timingPoints;
 	Vector<ObjectState*> m_objectStates;

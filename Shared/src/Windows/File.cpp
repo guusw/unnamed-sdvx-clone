@@ -27,7 +27,8 @@ File::~File()
 bool File::OpenRead(const String& path)
 {
 	Close();
-	HANDLE h = CreateFileA(*path,
+	WString wstringPath = Utility::ConvertToUnicode(path);
+	HANDLE h = CreateFileW(*wstringPath,
 		GENERIC_READ, // Desired Access
 		FILE_SHARE_READ,
 		nullptr,
@@ -44,8 +45,9 @@ bool File::OpenRead(const String& path)
 }
 bool File::OpenWrite(const String& path, bool append /*= false*/)
 {
-	Close();
-	HANDLE h = CreateFileA(*path,
+	Close(); 
+	WString wstringPath = Utility::ConvertToUnicode(path);
+	HANDLE h = CreateFileW(*wstringPath,
 		GENERIC_WRITE, // Desired Access
 		FILE_SHARE_READ,
 		nullptr,
@@ -140,7 +142,9 @@ uint64 File::GetLastWriteTime() const
 
 uint64 File::GetLastWriteTime(const String& path)
 {
-	HANDLE h = CreateFileA(*path, GENERIC_READ, FILE_SHARE_WRITE, 0, OPEN_ALWAYS, 0, 0);
+	WString wstringPath = Utility::ConvertToUnicode(path);
+	HANDLE h = CreateFileW(*wstringPath,
+		GENERIC_READ, FILE_SHARE_WRITE, 0, OPEN_ALWAYS, 0, 0);
 	if(h == INVALID_HANDLE_VALUE)
 		return -1;
 

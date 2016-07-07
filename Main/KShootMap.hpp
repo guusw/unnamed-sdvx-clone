@@ -59,7 +59,7 @@ public:
 public:
 	KShootMap();
 	~KShootMap();
-	bool Init(BinaryStream& input);
+	bool Init(BinaryStream& input, bool metadataOnly);
 	bool GetBlock(const KShootTime& time, KShootBlock*& tickOut);
 	bool GetTick(const KShootTime& time, KShootTick*& tickOut);
 	float TimeToFloat(const KShootTime& time) const;

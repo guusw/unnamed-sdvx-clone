@@ -46,7 +46,7 @@ bool Path::FileExists(const String& path)
 {
 	return PathFileExistsA(*path) == TRUE;
 }
-String Path::Canonical(const String& path)
+String Path::Normalize(const String& path)
 {
 	char out[MAX_PATH];
 	PathCanonicalizeA(out, *path);

@@ -70,7 +70,7 @@ KShootMap::~KShootMap()
 {
 
 }
-bool KShootMap::Init(BinaryStream& input)
+bool KShootMap::Init(BinaryStream& input, bool metadataOnly)
 {
 	ProfilerScope $("Load KShootMap");
 
@@ -89,17 +89,23 @@ bool KShootMap::Init(BinaryStream& input)
 	// Parse Header
 	while(TextStream::ReadLine(input, line, lineEnding))
 	{
+		line.Trim();
 		lineNumber++;
 		if(line == c_sep)
 		{
 			break;
 		}
 		String k, v;
+		if(line.empty())
+			continue;
 		if(!line.Split("=", &k, &v))
 			return false;
 		WString str = Utility::ConvertToUnicode(v);
 		settings.FindOrAdd(k) = v;
 	}
+
+	if(metadataOnly)
+		return true;
 
 	// Line by line parser
 	KShootBlock block;

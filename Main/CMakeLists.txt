@@ -4,6 +4,7 @@
 file(GLOB Main_src "*.cpp" "*.hpp"  "Resource.rc" 
 	"Audio/*.cpp" "Audio/*.hpp"
 	"GUI/*.cpp" "GUI/*.hpp")
+file(GLOB C_src "*.c")
 
 # Project filters
 file(GLOB Audio_hdr "Audio/*.hpp")
@@ -16,12 +17,13 @@ source_group("Header Files\\GUI" FILES ${GUI_hdr})
 source_group("Source Files\\GUI" FILES ${GUI_src})
 
 include_directories(Audio GUI .)
-add_executable(Main ${Main_src})
+add_executable(Main ${Main_src} ${C_src})
 set_output_postfixes(Main)
 
 # Compiler stuff
 enable_cpp11()
 enable_precompiled_headers(${Main_src} src/stdafx.cpp)	
+precompiled_header_exclude(${C_src})
 
 # Target subsystem on windows
 if(MSVC)

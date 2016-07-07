@@ -48,6 +48,8 @@ MemoryWriter::MemoryWriter(Buffer& buffer) : MemoryStreamBase(buffer, false)
 }
 size_t MemoryWriter::Serialize(void* data, size_t len)
 {
+	if(len == 0)
+		return 0;
 	assert(m_buffer);
 	size_t newSize = std::max(m_buffer->size(), m_cursor + len);
 	// Reserve space for new data

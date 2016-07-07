@@ -80,7 +80,10 @@ void Canvas::Slot::Render(GUIRenderData rd)
 	Vector2 size;
 	if(GetDesiredSize(rd, size))
 	{
-		rd.area = ApplyFill(size, rd.area);
+		FillMode actualFillMode = fillMode;
+		if(actualFillMode == FillMode::None)
+			actualFillMode = FillMode::Stretch;
+		rd.area = ApplyFill(actualFillMode, size, rd.area);
 	}
 
 #if _DEBUG

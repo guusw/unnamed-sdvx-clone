@@ -32,10 +32,10 @@ struct TempLaserState
 	// Previous segment
 	LaserObjectState* last = nullptr;
 };
-bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
+bool Beatmap::m_ProcessKShootMap(BinaryStream& input, bool metadataOnly)
 {
 	KShootMap kshootMap;
-	if(!kshootMap.Init(input))
+	if(!kshootMap.Init(input, metadataOnly))
 		return false;
 
 	auto ParseFilterType = [](const String& str)
@@ -64,22 +64,25 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 	for(auto& s : kshootMap.settings)
 	{
 		if(s.first == "title")
-			m_settings.title = Utility::ConvertToUnicode(s.second);
+			m_settings.title = s.second;
 		else if(s.first == "artist")
-			m_settings.artist = Utility::ConvertToUnicode(s.second);
+			m_settings.artist = s.second;
 		else if(s.first == "effect")
-			m_settings.effector = Utility::ConvertToUnicode(s.second);
+			m_settings.effector = s.second;
 		else if(s.first == "illustrator")
-			m_settings.illustrator = Utility::ConvertToUnicode(s.second);
+			m_settings.illustrator = s.second;
 		else if(s.first == "t")
-			m_settings.bpm = Utility::ConvertToUnicode(s.second);
+			m_settings.bpm = s.second;
 		else if(s.first == "jacket")
 			m_settings.jacketPath = s.second;
 		else if(s.first == "m")
 		{
 			if(s.second.find(';') != -1)
 			{
-				s.second.Split(";", &m_settings.audioNoFX, &m_settings.audioFX);
+				String audioFX, audioNoFX;
+				s.second.Split(";", &audioNoFX, &audioFX);
+				m_settings.audioFX = audioFX;
+				m_settings.audioNoFX = audioNoFX;
 			}
 			else
 			{
@@ -103,6 +106,9 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input)
 			m_settings.slamVolume = (float)atol(*s.second) / 100.0f;
 		}
 	}
+
+	if(metadataOnly)
+		return true;
 
 	// Temporary map for timing points
 	Map<MapTime, TimingPoint*> timingPointMap;

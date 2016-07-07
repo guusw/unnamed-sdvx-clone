@@ -131,7 +131,7 @@ namespace Graphics
 
 		bool Init(ShaderType type, const String& name)
 		{
-			m_sourcePath = Path::Canonical(name);
+			m_sourcePath = Path::Normalize(name);
 			m_type = type;
 			return LoadProgram(m_prog);
 		}
