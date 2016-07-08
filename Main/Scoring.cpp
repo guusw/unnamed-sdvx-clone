@@ -795,8 +795,8 @@ uint32 Scoring::CalculateMaxScore() const
 uint32 Scoring::CalculateCurrentScore() const
 {
 	// Final Score = Score * 0.9 + Gauge * 0.1
-	return (uint32)((double)currentHitScore / (double)totalMaxScore * 9000000 +
-		currentGauge * 1000000.0);
+	return (uint32)((double)currentHitScore / (double)totalMaxScore * 900000 +
+		currentGauge * 100000.0);
 }
 
 MapTime ScoreTick::GetHitWindow() const

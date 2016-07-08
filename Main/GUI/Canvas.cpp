@@ -60,36 +60,13 @@ void Canvas::Slot::Render(GUIRenderData rd)
 {
 	rd.isSizeFixed = !autoSize;
 
-	Vector2 usedSize = size;
-	if(autoSize)
-	{
-		bool gotSize = GetDesiredSize(rd, usedSize);
-	}
+	// Apply anchor and offset to get the canvas rectangle
+	Rect base = anchor.Apply(rd.area);
+	base.pos += offset.pos;
+	base.size += offset.size;
+	rd.guiRenderer->SetScissorRect(base);
 
-	Vector2 alignmentOffset = -alignment * usedSize;
-	Vector2 anchorOffset = anchor * rd.area.size;
-	Rect targetRect = Rect(rd.area.pos + pos + alignmentOffset + anchorOffset, usedSize);
-	
-	// Apply padding
-	Rect scissorRect = rd.area = padding.Apply(targetRect);
-
-	// Scissor Rectangle
-	rd.guiRenderer->SetScissorRect(scissorRect);
-
-	// Apply filling
-	Vector2 size;
-	if(GetDesiredSize(rd, size))
-	{
-		FillMode actualFillMode = fillMode;
-		if(actualFillMode == FillMode::None)
-			actualFillMode = FillMode::Stretch;
-		rd.area = ApplyFill(actualFillMode, size, rd.area);
-	}
-
-#if _DEBUG
-	rd.guiRenderer->ClearScissorRect();
-	rd.guiRenderer->RenderRect(*rd.rq, rd.area, Color::Magenta.WithAlpha(0.1f));
-#endif
+	rd.area = base;
 
 	element->Render(rd);
 }

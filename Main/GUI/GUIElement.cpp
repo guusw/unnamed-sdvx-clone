@@ -23,28 +23,15 @@ void GUISlotBase::Render(GUIRenderData rd)
 	// Scissor Rectangle
 	rd.guiRenderer->SetScissorRect(scissorRect);
 
-	// Apply filling
-	Vector2 size;
-	if(GetDesiredSize(rd,size))
-	{
-		rd.area = ApplyFill(size, rd.area);
-	}
-
 	element->Render(rd);
 }
 bool GUISlotBase::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
 {
 	return element->GetDesiredSize(rd, sizeOut);
 }
-Rect GUISlotBase::ApplyFill(const Vector2& inSize, const Rect& rect)
-{
-	return ApplyFill(fillMode, inSize, rect);
-}
 Rect GUISlotBase::ApplyFill(FillMode fillMode, const Vector2& inSize, const Rect& rect)
 {
-	if(fillMode == FillMode::None)
-		return Rect(rect.pos, inSize);
-	else if(fillMode == FillMode::Stretch)
+	if(fillMode == FillMode::Stretch)
 		return rect;
 	else if(fillMode == FillMode::Fit)
 	{
@@ -53,23 +40,23 @@ Rect GUISlotBase::ApplyFill(FillMode fillMode, const Vector2& inSize, const Rect
 		float scale = 1.0f;
 		if(rx > ry)
 		{
-			if(rx > 1.0f)
 			{
 				scale = 1.0f / rx;
 			}
 		}
 		else // ry is largest
 		{
-			if(ry > 1.0f)
 			{
 				scale = 1.0f / ry;
 			}
 		}
 
 		Rect ret = rect;
-		if(scale < 1.0f)
 		{
-			ret.size = inSize * scale;
+			Vector2 newSize = inSize * scale;
+			Vector2 rem = rect.size - newSize;
+			ret.pos += rem * 0.5f;
+			ret.size = newSize;
 		}
 		return ret;
 	}
@@ -88,15 +75,24 @@ Rect GUISlotBase::ApplyFill(FillMode fillMode, const Vector2& inSize, const Rect
 		}
 
 		Rect ret = rect;
-		if(scale > 1.0f)
 		{
 			Vector2 newSize = inSize * scale;
 			Vector2 rem = rect.size - newSize;
-			//ret.pos += rem * 0.5f;
+			ret.pos += rem * 0.5f;
 			ret.size = newSize;
 		}
 		return ret;
 	}
+}
+Rect GUISlotBase::ApplyAlignment(const Vector2& alignment, const Rect& rect, const Rect& parent)
+{
+	Vector2 remaining = parent.size - rect.size;
+	//remaining.x = Math::Max<float>(0, remaining.x);
+	//remaining.y = Math::Max<float>(0, remaining.y);
+	remaining.x = remaining.x;
+	remaining.y = remaining.y;
+
+	return Rect(parent.pos + remaining * alignment, rect.size);
 }
 
 void GUISlotBase::SetZOrder(int32 zorder)
