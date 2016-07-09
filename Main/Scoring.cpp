@@ -105,7 +105,7 @@ float Scoring::m_GetLaserOutputRaw()
 	float val = 0.0f;
 	for(int32 i = 0; i < 2; i++)
 	{
-		if(IsLaserHeld(i) && m_currentLaserSegments[i])
+		if(IsLaserHeld(i, true) && m_currentLaserSegments[i])
 		{
 			float actual = laserTargetPositions[i];
 			// Undo laser extension
@@ -155,7 +155,7 @@ HitStat* Scoring::m_AddOrUpdateHitStat(ObjectState* object)
 		// Get tick count
 		Vector<MapTime> ticks;
 		m_CalculateHoldTicks(hold, ticks);
-		stat->holdMax = ticks.size();
+		stat->holdMax = (uint32)ticks.size();
 
 		return stat;
 	}
@@ -172,7 +172,7 @@ HitStat* Scoring::m_AddOrUpdateHitStat(ObjectState* object)
 		// Get tick count
 		Vector<ScoreTick> ticks;
 		m_CalculateLaserTicks(rootLaser, ticks);
-		stat->holdMax = ticks.size();
+		stat->holdMax = (uint32)ticks.size();
 
 		return stat;
 	}
@@ -205,9 +205,17 @@ bool Scoring::IsObjectHeld(uint32 index) const
 	assert(index < 8);
 	return m_holdObjects[index] != nullptr;
 }
-bool Scoring::IsLaserHeld(uint32 laserIndex) const
+bool Scoring::IsLaserHeld(uint32 laserIndex, bool includeSlams) const
 {
-	return IsObjectHeld(laserIndex + 6);
+	if(includeSlams)
+		return IsObjectHeld(laserIndex + 6);
+
+	if(m_holdObjects[laserIndex+6])
+	{
+		// Check for slams
+		return (((LaserObjectState*)m_holdObjects[laserIndex + 6])->flags & LaserObjectState::flag_Instant) == 0;
+	}
+	return false;
 }
 
 bool Scoring::IsLaserIdle(uint32 index) const
@@ -773,7 +781,7 @@ uint32 Scoring::CalculateMaxScore() const
 		{
 			Vector<MapTime> holdTicks;
 			m_CalculateHoldTicks((HoldObjectState*)obj, holdTicks);
-			maxScore += (uint32)ScoreHitRating::Perfect * holdTicks.size();
+			maxScore += (uint32)ScoreHitRating::Perfect * (uint32)holdTicks.size();
 		}
 		else if(obj->type == ObjectType::Laser)
 		{
@@ -784,7 +792,7 @@ uint32 Scoring::CalculateMaxScore() const
 			{
 				Vector<ScoreTick> laserTicks;
 				m_CalculateLaserTicks((LaserObjectState*)obj, laserTicks);
-				maxScore += (uint32)ScoreHitRating::Perfect * laserTicks.size();
+				maxScore += (uint32)ScoreHitRating::Perfect * (uint32)laserTicks.size();
 				processedLasers.Add(laserRoot);
 			}
 		}
