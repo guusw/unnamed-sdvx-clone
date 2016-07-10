@@ -26,13 +26,13 @@ bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 		Logf("Audio file for beatmap does not exists at: \"%s\"", Logger::Error, audioPath);
 		return false;
 	}
-	m_music = g_audio->CreateStream(audioPath);
-	m_music->SetVolume(1.0f);
+	m_music = g_audio->CreateStream(audioPath, true);
 	if(!m_music)
-	{
+	{	
 		Logf("Failed to load any audio for beatmap \"%s\"", Logger::Error, audioPath);
 		return false;
 	}
+	m_music->SetVolume(1.0f);
 
 	// Load FX track
 	audioPath = mapPath + "\\" + mapSettings.audioFX;
@@ -46,7 +46,7 @@ bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 		}
 		else
 		{
-			m_fxtrack = g_audio->CreateStream(audioPath);
+			m_fxtrack = g_audio->CreateStream(audioPath, true);
 			if(m_fxtrack)
 			{
 				// Initially mute normal track if fx is enabled

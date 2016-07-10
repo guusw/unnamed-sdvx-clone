@@ -18,7 +18,8 @@ public:
 	void SetGlobalVolume(float vol);
 
 	// Opens a stream at path
-	AudioStream CreateStream(const String& path);
+	//	settings preload loads the whole file into memory before playing
+	AudioStream CreateStream(const String& path, bool preload = false);
 	// Open a wav file at path
 	Sample CreateSample(const String& path);
 

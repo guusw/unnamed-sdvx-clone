@@ -1,144 +1,144 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\CustomWindowStyle.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\CustomWindowStyle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Font.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\Font.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Framebuffer.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\Framebuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Image.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\Image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\ImageLoader.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\ImageLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Material.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\Material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Mesh.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\MeshGenerators.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\MeshGenerators.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\ParticleSystem.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\ParticleSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\RenderQueue.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\RenderQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\ResourceManagers.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\ResourceManagers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Shader.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\SpriteMap.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\SpriteMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Texture.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\VertexFormat.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\VertexFormat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\stdafx.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\glew.c">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\glew.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Windows\OpenGL.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\Windows\OpenGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Graphics\src\Windows\Window.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Graphics\src\Windows\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\CustomWindowStyle.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\CustomWindowStyle.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Font.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\Font.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Framebuffer.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\Framebuffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\GL.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\GL.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Image.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\Image.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ImageLoader.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\ImageLoader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Keys.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\Keys.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Material.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\Material.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Mesh.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\Mesh.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\MeshGenerators.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\MeshGenerators.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\OpenGL.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\OpenGL.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ParticleEmitter.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\ParticleEmitter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ParticleParameter.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\ParticleParameter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ParticleParameters.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\ParticleParameters.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ParticleSystem.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\ParticleSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\RenderQueue.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\RenderQueue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\RenderState.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\RenderState.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ResourceManagers.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\ResourceManagers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\ResourceTypes.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\ResourceTypes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Shader.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\Shader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Texture.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\Texture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\VertexFormat.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\VertexFormat.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Graphics\include\Graphics\Window.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Graphics\include\Graphics\Window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\Projects\hello-world\Graphics\CMakeLists.txt" />
+    <CustomBuild Include="C:\Projects\sdvx-clone\Graphics\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{2D439907-4FB9-3B26-960D-49EC1B0F87A8}</UniqueIdentifier>
+      <UniqueIdentifier>{4E2E32B2-1850-331C-908A-1617039565C2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{5E153632-3DCC-3CFF-85FD-0B063F9B5F3C}</UniqueIdentifier>
+      <UniqueIdentifier>{1150D1D3-FC10-3535-BEE9-56BAC5338753}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

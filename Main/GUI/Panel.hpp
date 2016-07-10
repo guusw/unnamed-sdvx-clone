@@ -25,6 +25,9 @@ public:
 	// Image fill mode
 	FillMode imageFillMode = FillMode::Stretch;
 
+	// Alignment of image when it's not stretcher or doesn't fite
+	Vector2 imageAlignment = Vector2(0.5f, 0.5f);
+
 	Color color = Color::White;
 	Texture texture;
 

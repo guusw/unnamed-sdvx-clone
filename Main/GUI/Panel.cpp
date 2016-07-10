@@ -12,10 +12,16 @@ Panel::~Panel()
 }
 void Panel::Render(GUIRenderData rd)
 {
+	m_TickAnimations(rd.deltaTime);
+
+	if(visibility != Visibility::Visible)
+		return;
+
 	Rect imageSize = rd.area;
 	if(texture)
 	{
 		imageSize = GUISlotBase::ApplyFill(imageFillMode, texture->GetSize(), rd.area);
+		imageSize = GUISlotBase::ApplyAlignment(imageAlignment, imageSize, rd.area);
 	}
 	rd.guiRenderer->RenderRect(*rd.rq, imageSize, color, texture);
 
@@ -26,10 +32,19 @@ void Panel::Render(GUIRenderData rd)
 }
 bool Panel::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
 {
+	if(visibility == Visibility::Collapsed)
+		return false;
+
 	if(!texture)
 		return false;
 
 	sizeOut = texture->GetSize();
+	if(imageFillMode == FillMode::Fill || imageFillMode == FillMode::Fit)
+	{
+		Rect fill = GUISlotBase::ApplyFill(imageFillMode, sizeOut, rd.area);
+		sizeOut = fill.size;
+	}
+
 	return true;
 }
 

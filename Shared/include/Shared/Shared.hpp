@@ -22,6 +22,9 @@
 // Text layer above binary streams
 #include "TextStream.hpp"
 
+// Config
+#include "Config.hpp"
+
 // Reference counting
 #include "Ref.hpp"
 

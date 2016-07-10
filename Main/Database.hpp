@@ -11,6 +11,7 @@ public:
 	bool Step();
 	bool StepRow();
 	void Rewind();
+	void Finish();
 	int32 IntColumn(int32 index = 0) const;
 	int64 Int64Column(int32 index = 0) const;
 	String StringColumn(int32 index = 0) const;
@@ -43,6 +44,7 @@ public:
 	bool Open(const String& path);
 	DBStatement Query(const String& queryString);
 	bool Exec(const String& queryString);
+	bool ExecDirect(const String& queryString);
 
 	struct sqlite3* db = nullptr;
 };

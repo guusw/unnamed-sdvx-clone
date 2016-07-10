@@ -61,6 +61,8 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input, bool metadataOnly)
 	};
 
 	// Process map settings
+	m_settings.previewOffset = 0;
+	m_settings.previewDuration = 0;
 	for(auto& s : kshootMap.settings)
 	{
 		if(s.first == "title")
@@ -81,6 +83,9 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input, bool metadataOnly)
 			{
 				String audioFX, audioNoFX;
 				s.second.Split(";", &audioNoFX, &audioFX);
+				size_t splitMore = audioFX.find(';');
+				if(splitMore != -1)
+					audioFX = audioFX.substr(0, splitMore);
 				m_settings.audioFX = audioFX;
 				m_settings.audioNoFX = audioNoFX;
 			}
@@ -104,6 +109,34 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input, bool metadataOnly)
 		else if(s.first == "chokkakuvol")
 		{
 			m_settings.slamVolume = (float)atol(*s.second) / 100.0f;
+		}
+		else if(s.first == "level")
+		{
+			m_settings.level = atoi(*s.second);
+		}
+		else if(s.first == "difficulty")
+		{
+			m_settings.difficulty = 0;
+			if(s.second == "challenge")
+			{
+				m_settings.difficulty = 1;
+			}
+			else if(s.second == "extended")
+			{
+				m_settings.difficulty = 2;
+			}
+			else if(s.second == "infinite")
+			{
+				m_settings.difficulty = 3;
+			}
+		}
+		else if(s.first == "po")
+		{
+			m_settings.previewOffset = atoi(*s.second);
+		}
+		else if(s.first == "plength")
+		{
+			m_settings.previewDuration = atoi(*s.second);
 		}
 	}
 

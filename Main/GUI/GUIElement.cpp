@@ -4,16 +4,54 @@
 
 void GUIElementBase::Render(GUIRenderData rd)
 {
+	m_TickAnimations(rd.deltaTime);
 }
 bool GUIElementBase::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
 {
 	return false;
+}
+bool GUIElementBase::AddAnimation(Ref<IGUIAnimation> anim, bool removeOld)
+{
+	void* target = anim->GetTarget();
+	if(m_animationMap.Contains(target))
+	{
+		if(!removeOld)
+			return false;
+		m_animationMap.erase(target);
+	}
+
+	m_animationMap.Add(target, anim);
+	return true;
+}
+void GUIElementBase::m_OnRemovedFromParent()
+{
+	slot = nullptr;
 }
 void GUIElementBase::m_AddedToSlot(GUISlotBase* slot)
 {
 }
 void GUIElementBase::m_OnZOrderChanged(GUISlotBase* slot)
 {
+}
+void GUIElementBase::m_TickAnimations(float deltaTime)
+{
+	for(auto it = m_animationMap.begin(); it != m_animationMap.end();)
+	{
+		bool done = !it->second->Update(deltaTime);
+		if(done)
+		{
+			it = m_animationMap.erase(it);
+			continue;
+		}
+		it++;
+	}
+}
+GUISlotBase::~GUISlotBase()
+{
+	if(element)
+	{
+		element->m_OnRemovedFromParent();
+	}
 }
 void GUISlotBase::Render(GUIRenderData rd)
 {
@@ -27,11 +65,21 @@ void GUISlotBase::Render(GUIRenderData rd)
 }
 bool GUISlotBase::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
 {
-	return element->GetDesiredSize(rd, sizeOut);
+	if(element->GetDesiredSize(rd, sizeOut))
+	{
+		sizeOut.x += padding.Width();
+		sizeOut.y += padding.Height();
+		return true;
+	}
+	return false;
 }
 Rect GUISlotBase::ApplyFill(FillMode fillMode, const Vector2& inSize, const Rect& rect)
 {
-	if(fillMode == FillMode::Stretch)
+	if(fillMode == FillMode::None)
+	{
+		return Rect(rect.pos, inSize);
+	}
+	else if(fillMode == FillMode::Stretch)
 		return rect;
 	else if(fillMode == FillMode::Fit)
 	{
@@ -54,8 +102,6 @@ Rect GUISlotBase::ApplyFill(FillMode fillMode, const Vector2& inSize, const Rect
 		Rect ret = rect;
 		{
 			Vector2 newSize = inSize * scale;
-			Vector2 rem = rect.size - newSize;
-			ret.pos += rem * 0.5f;
 			ret.size = newSize;
 		}
 		return ret;
@@ -77,8 +123,6 @@ Rect GUISlotBase::ApplyFill(FillMode fillMode, const Vector2& inSize, const Rect
 		Rect ret = rect;
 		{
 			Vector2 newSize = inSize * scale;
-			Vector2 rem = rect.size - newSize;
-			ret.pos += rem * 0.5f;
 			ret.size = newSize;
 		}
 		return ret;

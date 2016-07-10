@@ -96,18 +96,18 @@ void GUIRenderer::RenderText(RenderQueue& rq, Text& text, const Vector2& positio
 
 void GUIRenderer::RenderRect(RenderQueue& rq, const Rect& rect, const Color& color /*= Color(1.0f)*/, Texture texture /*= Texture()*/)
 {
-	Transform textTransform;
-	textTransform *= Transform::Translation(rect.pos);
-	textTransform *= Transform::Scale(Vector3(rect.size.x, rect.size.y, 1.0f));
+	Transform transform;
+	transform *= Transform::Translation(rect.pos);
+	transform *= Transform::Scale(Vector3(rect.size.x, rect.size.y, 1.0f));
 	MaterialParameterSet params;
 	params.SetParameter("color", color);
 	if(texture)
 	{
 		params.SetParameter("mainTex", texture);
-		rq.DrawScissored(m_scissorRect, textTransform, guiQuad, textureMaterial, params);
+		rq.DrawScissored(m_scissorRect, transform, guiQuad, textureMaterial, params);
 	}
 	else
 	{
-		rq.DrawScissored(m_scissorRect, textTransform, guiQuad, colorMaterial, params);
+		rq.DrawScissored(m_scissorRect, transform, guiQuad, colorMaterial, params);
 	}
 }

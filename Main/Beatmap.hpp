@@ -22,6 +22,12 @@ struct BeatmapSettings
 	// Path to the jacket image
 	String jacketPath;
 
+	// Level, as indicated by map creator
+	uint8 level;
+
+	// Difficulty, as indicated by map creator
+	uint8 difficulty;
+
 	// Preview offset
 	MapTime previewOffset;
 	// Preview duration
@@ -31,7 +37,6 @@ struct BeatmapSettings
 	float slamVolume = 1.0f;
 	float laserEffectMix = 1.0f;
 	LaserEffectType laserEffectType = LaserEffectType::PeakingFilter;
-
 };
 
 /*

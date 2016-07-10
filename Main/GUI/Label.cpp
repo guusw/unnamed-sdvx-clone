@@ -6,14 +6,26 @@
 
 void Label::Render(GUIRenderData rd)
 {
+	m_TickAnimations(rd.deltaTime);
+
+	if(visibility != Visibility::Visible)
+		return;
+
 	if(m_dirty)
 		m_UpdateText(rd.guiRenderer);
 
 	rd.area.pos = Vector2i(rd.area.pos);
+
+	/// DEBUG label draw area
+	//rd.guiRenderer->RenderRect(*rd.rq, rd.area, Color(1, 1, 1, 0.1f));
+
 	rd.guiRenderer->RenderText(*rd.rq, m_text, rd.area.pos, color);
 }
 bool Label::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
 {
+	if(visibility == Visibility::Collapsed)
+		return false;
+
 	if(m_dirty)
 		m_UpdateText(rd.guiRenderer);
 

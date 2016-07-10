@@ -9,8 +9,7 @@ class Canvas : public GUIElementBase
 public:
 	~Canvas();
 	void Render(GUIRenderData rd) override;
-	void Add(GUIElement element);
-	void Remove(GUIElement element);
+	virtual bool GetDesiredSize(GUIRenderData rd, Vector2& sizeOut) override;
 
 	class Slot : public GUISlotBase
 	{
@@ -24,7 +23,8 @@ public:
 		Rect offset;
 
 		// if set to true, the size of the child element will be used instead
-		bool autoSize = false;
+		bool autoSizeX = false;
+		bool autoSizeY = false;
 
 		// Alignment of the element in the parent.
 		//	a value of (0,0) places the widget starting from the top-left corner extending to bottom-right
@@ -32,6 +32,9 @@ public:
 		Vector2 alignment;
 	};
 
+	class Canvas::Slot* Add(GUIElement element);
+	void Remove(GUIElement element);
+	void Clear();
 	const Vector<Canvas::Slot*>& GetChildren();
 
 protected:

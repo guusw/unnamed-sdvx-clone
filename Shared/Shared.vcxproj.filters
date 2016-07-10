@@ -1,168 +1,168 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\Bezier.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Bezier.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\BinaryStream.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\BinaryStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\Buffer.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\Color.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Color.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\Config.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\FileStream.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\FileStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\Log.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\Math.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\MemoryStream.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\MemoryStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\Path.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Path.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\Random.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Random.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\String.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\String.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\TextStream.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\TextStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\Transform.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\Variant.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Variant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\VectorMath.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\VectorMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\stdafx.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\Windows\File.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Windows\File.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Shared\src\Windows\Path.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Windows\Path.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\BinaryStream.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\BinaryStream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Buffer.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Buffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Color.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Color.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Config.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Config.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Delegate.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Delegate.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\File.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\File.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\FileStream.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\FileStream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\List.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\List.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Log.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Log.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Map.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Map.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Margin.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Margin.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Math.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Math.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\MemoryStream.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\MemoryStream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Path.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Path.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Random.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Random.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Rect.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Rect.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Ref.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Ref.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\ResourceManager.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\ResourceManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Set.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Set.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Shared.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Shared.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\String.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\String.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\TextStream.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\TextStream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Timer.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Timer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Transform.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Transform.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\TypeInfo.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\TypeInfo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Types.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Types.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Unique.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Unique.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Utility.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Utility.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Variant.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Variant.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\Vector.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\Vector.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Shared\include\Shared\VectorMath.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Shared\include\Shared\VectorMath.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\Projects\hello-world\Shared\CMakeLists.txt" />
+    <CustomBuild Include="C:\Projects\sdvx-clone\Shared\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{2D439907-4FB9-3B26-960D-49EC1B0F87A8}</UniqueIdentifier>
+      <UniqueIdentifier>{4E2E32B2-1850-331C-908A-1617039565C2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{5E153632-3DCC-3CFF-85FD-0B063F9B5F3C}</UniqueIdentifier>
+      <UniqueIdentifier>{1150D1D3-FC10-3535-BEE9-56BAC5338753}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

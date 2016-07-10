@@ -13,6 +13,11 @@ LayoutBox::~LayoutBox()
 }
 void LayoutBox::Render(GUIRenderData rd)
 {
+	m_TickAnimations(rd.deltaTime);
+
+	if(visibility != Visibility::Visible)
+		return;
+
 	Rect sourceRect = rd.area;
 	Vector<float> elementSizes = CalculateSizes(rd);
 
@@ -39,6 +44,9 @@ void LayoutBox::Render(GUIRenderData rd)
 }
 bool LayoutBox::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
 {
+	if(visibility == Visibility::Collapsed)
+		return false;
+
 	sizeOut = Vector2(0, 0);
 	bool set = false;
 	for(auto it = m_children.begin(); it != m_children.end(); it++)
@@ -46,23 +54,33 @@ bool LayoutBox::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
 		Vector2 elemSize;
 		if((*it)->GetDesiredSize(rd,elemSize))
 		{
-			sizeOut.y += elemSize.y;
-			sizeOut.x = Math::Max(sizeOut.x, elemSize.x);
+			if(layoutDirection == Vertical)
+			{
+				sizeOut.y += elemSize.y;
+				sizeOut.x = Math::Max(sizeOut.x, elemSize.x);
+			}
+			else
+			{
+				sizeOut.x += elemSize.x;
+				sizeOut.y = Math::Max(sizeOut.y, elemSize.y);
+			}
 			set = true;
 		}
 	}
 	return set;
 }
-void LayoutBox::Add(GUIElement element)
+LayoutBox::Slot* LayoutBox::Add(GUIElement element)
 {
 	bool found = false;
 	for(auto it = m_children.begin(); it != m_children.end(); it++)
 	{
 		if((*it)->element == element)
-			return; // Already exists
+			return *it; // Already exists
 	}
 
-	m_children.AddUnique(CreateSlot<LayoutBox::Slot>(element));
+	Slot* slot = CreateSlot<LayoutBox::Slot>(element);
+	m_children.AddUnique(slot);
+	return slot;
 }
 void LayoutBox::Remove(GUIElement element)
 {
@@ -110,8 +128,6 @@ Vector<float> LayoutBox::CalculateSizes(const GUIRenderData& rd) const
 		fixedSize *= fixedScale;
 	}
 
-	assert(fixedSize + fillSpace <= maxSize);
-
 	// Reciprocal of fill count
 	float fillMult = 1.0f / fillCount;
 
@@ -140,4 +156,12 @@ Vector<float> LayoutBox::CalculateSizes(const GUIRenderData& rd) const
 const Vector<LayoutBox::Slot*>& LayoutBox::GetChildren()
 {
 	return m_children;
+}
+void LayoutBox::Clear()
+{
+	for(auto s : m_children)
+	{
+		delete s;
+	}
+	m_children.clear();
 }

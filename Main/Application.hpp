@@ -7,20 +7,31 @@ extern float g_aspectRatio;
 extern Vector2i g_resolution;
 extern class Application* g_application;
 extern class Game* g_game;
+extern class Config g_mainConfig;
 
 class Application
 {
 public:
 	Application();
 	~Application();
+
 	// Runs the application
 	int32 Run();
 
+	// Tries to launch a new game window for specified map
+	//	doesn't work if a game is already in progress
+	//	window gets added using AddTickable if this function succeeds
 	bool LaunchMap(const String& mapPath);
-	void Shutdown();
-
+	// Shuts down the game window and removes it using RemoveTickable
 	void CleanupGame();
 	void CleanupMap();
+	void Shutdown();
+
+	void AddTickable(class IApplicationTickable* tickable);
+	void RemoveTickable(class IApplicationTickable* tickable);
+
+	// Current running map path (full file path)
+	String GetCurrentMapPath();
 
 	// Retrieves application command line parameters
 	const Vector<String>& GetAppCommandLine() const;
@@ -37,6 +48,12 @@ public:
 	Transform GetGUIProjection() const;
 
 private:
+	bool m_LoadConfig();
+	void m_LoadDefaultConfig();
+	void m_SaveConfig();
+
+	bool m_Init();
+	void m_MainLoop();
 	void m_Cleanup();
 	void m_OnKeyPressed(Key key);
 	void m_OnKeyReleased(Key key);

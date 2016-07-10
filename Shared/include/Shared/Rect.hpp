@@ -11,7 +11,8 @@ public:
 	typedef VectorMath::VectorBase<T, 2> VectorType;
 	VectorType pos;
 	VectorType size;
-	RectangleBase() = default;
+	// Give all 4 sides of the rectangle
+	RectangleBase(T all = 0) : RectangleBase(all, all, all, all) {}
 	RectangleBase(T left, T top, T right, T bottom)
 	{
 		pos = VectorType(left, top);

@@ -75,7 +75,7 @@ public:
 	//	Buttons[0,5], Lasers[6,7]
 	bool IsObjectHeld(uint32 index) const;
 	// Check if a laser is currently held
-	bool IsLaserHeld(uint32 laserIndex, bool includeSlams = false) const;
+	bool IsLaserHeld(uint32 laserIndex, bool includeSlams = true) const;
 
 	// Checks if a laser is currently not used or needed soon
 	bool IsLaserIdle(uint32 index) const;

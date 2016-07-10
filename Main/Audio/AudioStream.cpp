@@ -12,7 +12,13 @@ class AudioStreamOGG_Impl : public AudioStreamRes
 	Audio* m_audio;
 	File m_file;
 	Buffer m_data;
-	MemoryReader m_reader;
+	MemoryReader m_memoryReader;
+	FileReader m_fileReader;
+	bool m_preloaded = false;
+	BinaryStream& Reader()
+	{
+		return m_preloaded ? (BinaryStream&)m_memoryReader : (BinaryStream&)m_fileReader;
+	}
 
 	mutex m_lock;
 	OggVorbis_File m_ovf = { 0 };
@@ -50,13 +56,23 @@ public:
 	{
 		Deregister();
 	}
-	bool Init(Audio* audio, const String& path)
+	bool Init(Audio* audio, const String& path, bool preload)
 	{
 		if(!m_file.OpenRead(path))
 			return false;
-		m_data.resize(m_file.GetSize());
-		m_file.Read(m_data.data(), m_data.size());
-		m_reader = MemoryReader(m_data);
+
+		if(preload)
+		{
+			m_data.resize(m_file.GetSize());
+			m_file.Read(m_data.data(), m_data.size());
+			m_memoryReader = MemoryReader(m_data);
+			m_preloaded = preload;
+		}
+		else
+		{
+			m_fileReader = FileReader(m_file);
+			m_preloaded = false;
+		}
 		
 		int32 r = ov_open_callbacks(this, &m_ovf, 0, 0, callbacks);
 		if(r != 0)
@@ -249,30 +265,30 @@ public:
 private:
 	static size_t m_Read(void* ptr, size_t size, size_t nmemb, AudioStreamOGG_Impl* self)
 	{
-		return self->m_reader.Serialize(ptr, nmemb*size);
+		return self->Reader().Serialize(ptr, nmemb*size);
 	}
 	static int m_Seek(AudioStreamOGG_Impl* self, int64 offset, int whence)
 	{
 		if(whence == SEEK_SET)
-			self->m_reader.Seek((size_t)offset);
+			self->Reader().Seek((size_t)offset);
 		else if(whence == SEEK_CUR)
-			self->m_reader.Skip((size_t)offset);
+			self->Reader().Skip((size_t)offset);
 		else if(whence == SEEK_END)
-			self->m_reader.SeekReverse((size_t)offset);
+			self->Reader().SeekReverse((size_t)offset);
 		else
 			assert(false);
 		return 0;
 	}
 	static long m_Tell(AudioStreamOGG_Impl* self)
 	{
-		return (long)self->m_reader.Tell();
+		return (long)self->Reader().Tell();
 	}
 };
 
-AudioStream AudioStreamRes::Create(Audio* audio, const String& path)
+Ref<AudioStreamRes> AudioStreamRes::Create(class Audio* audio, const String& path, bool preload)
 {
 	AudioStreamOGG_Impl* impl = new AudioStreamOGG_Impl();
-	if(!impl->Init(audio, path))
+	if(!impl->Init(audio, path, preload))
 	{
 		delete impl;
 		return AudioStream();

@@ -11,7 +11,7 @@ class Config
 {
 	Map<String, Variant> m_entries;
 public:
-	void Load(BinaryStream& stream, bool binary = false);
+	bool Load(BinaryStream& stream, bool binary = false);
 	void Save(BinaryStream& stream, bool binary = false);
 
 	Variant* Get(const String& key);

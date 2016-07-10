@@ -81,7 +81,7 @@ void Audio_Impl::AudioThread()
 
 			delete[] tempData;
 		}
-		Sleep(sleepDuration);
+		Sleep(0);
 	}
 }
 void Audio_Impl::Start()
@@ -175,9 +175,9 @@ class Audio_Impl* Audio::GetImpl()
 	return &impl;
 }
 
-AudioStream Audio::CreateStream(const String& path)
+AudioStream Audio::CreateStream(const String& path, bool preload)
 {
-	return AudioStreamRes::Create(this, path);
+	return AudioStreamRes::Create(this, path, preload);
 }
 Sample Audio::CreateSample(const String& path)
 {

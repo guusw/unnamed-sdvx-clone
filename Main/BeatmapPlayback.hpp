@@ -2,7 +2,7 @@
 #include "Beatmap.hpp"
 
 /*
-Manages the iteration over beatmaps
+	Manages the iteration over beatmaps
 */
 class BeatmapPlayback
 {

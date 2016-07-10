@@ -105,7 +105,7 @@ float Scoring::m_GetLaserOutputRaw()
 	float val = 0.0f;
 	for(int32 i = 0; i < 2; i++)
 	{
-		if(IsLaserHeld(i, true) && m_currentLaserSegments[i])
+		if(IsLaserHeld(i) && m_currentLaserSegments[i])
 		{
 			float actual = laserTargetPositions[i];
 			// Undo laser extension

@@ -1,224 +1,257 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="E:\Projects\hello-world\Main\Application.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Background.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Background.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Beatmap.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Beatmap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\BeatmapFromKSH.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\BeatmapFromKSH.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\BeatmapPlayback.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\BeatmapPlayback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Camera.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Game.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Database.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\HitStat.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Input.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\HitStat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\KShootMap.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\LaserTrackBuilder.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\KShootMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Main.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\LaserTrackBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Scoring.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Test.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\MapDatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Track.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Scoring.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\TrackEffects.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\stdafx.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Track.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Audio\Audio.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\TrackEffects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Audio\Audio.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioBase.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Audio\AudioBase.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioOutput.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Audio\AudioOutput.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioPlayback.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Audio\AudioPlayback.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Audio\AudioStream.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Audio\AudioStream.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Audio\DSP.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Audio\DSP.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\Audio\Sample.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\Audio\Sample.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\GUI\Box.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\GUI\Anchor.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\GUI\Canvas.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\GUI\Canvas.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\GUI\GUI.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\GUI\GUIElement.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\GUI\GUIRenderer.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\GUI\GUIRenderer.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\GUI\Label.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\GUI\Label.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\GUI\Panel.cpp">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\GUI\LayoutBox.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="E:\Projects\hello-world\Main\sqlite3.c">
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\GUI\Panel.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\sqlite3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MapDatabase.cpp">
+    <ClCompile Include="SongSelect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Database.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="GUI\SongSelectItem.cpp">
+      <Filter>Source Files\GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\Projects\hello-world\Main\Application.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Application.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\ApplicationTickable.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\ApplicationTickable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Background.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Background.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Beatmap.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Beatmap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\BeatmapObjects.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\BeatmapObjects.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\BeatmapPlayback.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\BeatmapPlayback.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Camera.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Game.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\HitStat.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Game.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Input.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\HitStat.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\KShootMap.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Input.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\LaserTrackBuilder.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\KShootMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Profiling.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\LaserTrackBuilder.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Scoring.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\MapDatabase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Test.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Profiling.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Track.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Scoring.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\Audio.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Test.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Track.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Audio\Audio.hpp">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioBase.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Audio\AudioBase.hpp">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioEffects.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Audio\AudioEffects.hpp">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioOutput.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Audio\AudioOutput.hpp">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioPlayback.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Audio\AudioPlayback.hpp">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\AudioStream.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Audio\AudioStream.hpp">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\Audio_Impl.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Audio\Audio_Impl.hpp">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\DSP.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Audio\DSP.hpp">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\Audio\Sample.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\Audio\Sample.hpp">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\GUI\GUI.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\Anchor.hpp">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\GUI\GUIRenderData.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\Canvas.hpp">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="E:\Projects\hello-world\Main\GUI\GUIRenderer.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\GUI.hpp">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="MapDatabase.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\GUIElement.hpp">
+      <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="Database.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\GUIRenderData.hpp">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\GUIRenderer.hpp">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\Label.hpp">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\LayoutBox.hpp">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\Panel.hpp">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\SongSelectItem.hpp">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="SongSelect.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\Projects\hello-world\Main\CMakeLists.txt" />
+    <CustomBuild Include="C:\Projects\sdvx-clone\Main\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="E:\Projects\hello-world\Main\Resource.rc">
+    <ResourceCompile Include="C:\Projects\sdvx-clone\Main\Resource.rc">
       <Filter>Source Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{2D439907-4FB9-3B26-960D-49EC1B0F87A8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{5E153632-3DCC-3CFF-85FD-0B063F9B5F3C}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Audio">
-      <UniqueIdentifier>{794E26DA-37B9-37C1-A524-AE34A9CCACD8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\GUI">
-      <UniqueIdentifier>{B2BE3713-3EF9-321F-A902-4198CAA2456E}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Audio">
-      <UniqueIdentifier>{15CA10BB-B5D1-3D3C-8F66-607583F40A67}</UniqueIdentifier>
+      <UniqueIdentifier>{33A119EC-4390-383F-8671-3B7C56747B6E}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\GUI">
-      <UniqueIdentifier>{8B00D9A1-AA8C-3C86-A63B-97A307482F6D}</UniqueIdentifier>
+      <UniqueIdentifier>{AD98EBB5-4B19-3309-BD8E-F5A6D5F6ECCC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Audio">
+      <UniqueIdentifier>{A9CB4E1E-E84D-35DB-878E-76811569B1E9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI">
+      <UniqueIdentifier>{268ECD98-AFD9-345D-8960-C0D7A3ABFBB9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4E2E32B2-1850-331C-908A-1617039565C2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{1150D1D3-FC10-3535-BEE9-56BAC5338753}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

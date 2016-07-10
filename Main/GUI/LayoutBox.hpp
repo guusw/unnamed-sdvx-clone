@@ -10,8 +10,6 @@ public:
 	~LayoutBox();
 	void Render(GUIRenderData rd) override;
 	virtual bool GetDesiredSize(GUIRenderData rd, Vector2& sizeOut) override;
-	void Add(GUIElement element);
-	void Remove(GUIElement element);
 
 	// Calculates child element sizes based on the current settings
 	Vector<float> CalculateSizes(const GUIRenderData& rd) const;
@@ -33,8 +31,12 @@ public:
 	{
 	public:
 		// Should fill all possible space? or just take up the wanted amount of space
-		bool fill = true;
+		bool fill = false;
 	};
+
+	Slot* Add(GUIElement element);
+	void Remove(GUIElement element);
+	void Clear();
 
 	const Vector<LayoutBox::Slot*>& GetChildren();
 private:

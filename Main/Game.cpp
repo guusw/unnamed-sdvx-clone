@@ -10,6 +10,7 @@
 #include "Background.hpp"
 #include "AudioPlayback.hpp"
 #include "Input.hpp"
+#include "SongSelect.hpp"
 
 class Game_Impl : public Game
 {
@@ -64,7 +65,6 @@ class Game_Impl : public Game
 	Ref<ParticleEmitter> m_laserFollowEmitters[2];
 	Ref<ParticleEmitter> m_holdEmitters[6];
 public:
-
 	~Game_Impl()
 	{
 		if(m_track)
@@ -680,7 +680,7 @@ public:
 
 		/// #Scoring
 		// Update music filter states
-		m_audioPlayback.SetLaserFilterInput(m_scoring.GetLaserOutput(), m_scoring.IsLaserHeld(0) || m_scoring.IsLaserHeld(1));
+		m_audioPlayback.SetLaserFilterInput(m_scoring.GetLaserOutput(), m_scoring.IsLaserHeld(0, false) || m_scoring.IsLaserHeld(1, false));
 		m_audioPlayback.Tick(m_playback, deltaTime);
 
 		// Link FX track to combo counter for now
@@ -730,6 +730,18 @@ public:
 		else if(key == Key::PageUp)
 		{
 			m_audioPlayback.Advance(5000);
+		}
+		else if(key == Key::Escape)
+		{
+			g_application->CleanupGame();
+		}
+		else if(key == Key::F5) // Restart map
+		{
+			g_application->CleanupGame();
+			if(!g_application->LaunchMap(g_application->GetCurrentMapPath()))
+			{
+				g_application->Shutdown();
+			}
 		}
 	}
 

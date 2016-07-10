@@ -48,5 +48,5 @@ public:
 	Vector<DSP*> DSPs;
 	class Audio_Impl* audio = nullptr;
 private:
-	float m_volume;
+	float m_volume = 1.0f;
 };

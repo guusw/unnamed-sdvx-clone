@@ -5,7 +5,7 @@
 DBStatement::DBStatement(const String& statement, Database* db) : m_db(*db)
 {
 	m_queryResult = 0;
-	m_compileResult = sqlite3_prepare(m_db.db, *statement, statement.size()+1, &m_stmt, nullptr);
+	m_compileResult = sqlite3_prepare(m_db.db, *statement, (int)statement.size()+1, &m_stmt, nullptr);
 	if(m_compileResult != SQLITE_OK)
 	{
 		Logf("Failed to compile statement:\n%s\n-> %s", Logger::Error, statement, sqlite3_errmsg(m_db.db));
@@ -20,11 +20,7 @@ DBStatement::DBStatement(DBStatement&& other) : m_db(other.m_db)
 }
 DBStatement::~DBStatement()
 {
-	if(m_stmt)
-	{
-		sqlite3_finalize(m_stmt);
-		m_stmt = nullptr;
-	}
+	Finish();
 }
 bool DBStatement::Step()
 {
@@ -51,6 +47,14 @@ bool DBStatement::StepRow()
 void DBStatement::Rewind()
 {
 	sqlite3_reset(m_stmt);
+}
+void DBStatement::Finish()
+{
+	if(m_stmt)
+	{
+		sqlite3_finalize(m_stmt);
+		m_stmt = nullptr;
+	}
 }
 int32 DBStatement::IntColumn(int32 index) const
 {
@@ -146,4 +150,15 @@ bool Database::Exec(const String& queryString)
 	if(!stmt)
 		return false;
 	return stmt.Step();
+}
+
+bool Database::ExecDirect(const String& queryString)
+{
+	char* err;
+	if(sqlite3_exec(db, *queryString, nullptr, nullptr, &err) != SQLITE_OK)
+	{
+		Logf("sqlite3_exec failed -> %s", Logger::Error, err);
+		return false;
+	}
+	return true;
 }

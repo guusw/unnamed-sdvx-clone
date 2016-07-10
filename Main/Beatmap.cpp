@@ -126,12 +126,26 @@ BinaryStream& operator<<(BinaryStream& stream, BeatmapSettings& settings)
 	stream << settings.title;
 	stream << settings.artist;
 	stream << settings.effector;
+	stream << settings.illustrator;
 	stream << settings.tags;
+
 	stream << settings.bpm;
 	stream << settings.offset;
+
 	stream << settings.audioNoFX;
 	stream << settings.audioFX;
+
 	stream << settings.jacketPath;
+
+	stream << settings.level;
+	stream << settings.difficulty;
+
+	stream << settings.previewOffset;
+	stream << settings.previewDuration;
+
+	stream << settings.slamVolume;
+	stream << settings.laserEffectMix;
+	stream << (uint8&)settings.laserEffectType;
 	return stream;
 }
 bool Beatmap::m_Serialize(BinaryStream& stream, bool metadataOnly)
@@ -237,20 +251,6 @@ bool BeatmapSettings::StaticSerialize(BinaryStream& stream, BeatmapSettings*& se
 {
 	if(stream.IsReading())
 		settings = new BeatmapSettings();
-	stream << settings->title;
-	stream << settings->artist;
-	stream << settings->effector;
-	stream << settings->tags;
-	stream << settings->bpm;
-	stream << settings->offset;
-	stream << settings->audioFX;
-	stream << settings->audioNoFX;
-	stream << settings->audioFX;
-	stream << settings->jacketPath;
-	stream << settings->previewOffset;
-	stream << settings->previewDuration;
-	stream << settings->slamVolume;
-	stream << settings->laserEffectMix;
-	stream << (uint8&)settings->laserEffectType;
+	stream << *settings;
 	return true;
 }

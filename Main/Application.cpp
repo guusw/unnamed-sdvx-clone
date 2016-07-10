@@ -3,11 +3,13 @@
 #include "Beatmap.hpp"
 #include "Game.hpp"
 #include "Test.hpp"
+#include "SongSelect.hpp"
 #include "Audio.hpp"
 #include <Graphics/Window.hpp>
 #include <Graphics/ResourceManagers.hpp>
 #include "Profiling.hpp"
 
+Config g_mainConfig;
 OpenGL* g_gl = nullptr;
 Window* g_gameWindow = nullptr;
 Application* g_application = nullptr;
@@ -15,9 +17,9 @@ Application* g_application = nullptr;
 Game* g_game = nullptr;
 
 Vector<IApplicationTickable*> g_tickables;
+Vector<IApplicationTickable*> g_removalQueue;
 
-// Use rotated 16:9 as aspect ratio
-float g_aspectRatio = 1.0f /(16.0f / 9.0f);
+float g_aspectRatio = (16.0f / 9.0f);
 static float g_screenHeight = 1000.0f;
 Vector2i g_resolution;
 
@@ -35,101 +37,8 @@ Application::~Application()
 }
 int32 Application::Run()
 {
-	{
-		ProfilerScope $("Application Setup");
-
-		// Split up command line parameters
-		String cmdLine = Utility::ConvertToUTF8(GetCommandLine());
-		m_commandLine = Path::SplitCommandLine(cmdLine);
-		assert(m_commandLine.size() >= 1);
-
-		m_allowMapConversion = false;
-		bool debugMute = false;
-		bool startFullscreen = false;
-		uint32 fullscreenMonitor = -1;
-		for(auto& cl : m_commandLine)
-		{
-			String k, v;
-			if(cl.Split("=", &k, &v))
-			{
-				if(k == "-monitor")
-				{
-					fullscreenMonitor = atol(*v);
-				}
-			}
-			else
-			{
-				if(cl == "-convertmaps")
-				{
-					m_allowMapConversion = true;
-				}
-				else if(cl == "-mute")
-				{
-					debugMute = true;
-				}
-				else if(cl == "-fullscreen")
-				{
-					startFullscreen = true;
-				}
-			}
-		}
-
-		// Create the game window
-		g_resolution = Vector2i{ (int32)(g_screenHeight * g_aspectRatio), (int32)g_screenHeight };
-		g_gameWindow = new Window(g_resolution);
-		g_gameWindow->Show();
-		m_OnWindowResized(g_resolution);
-		g_gameWindow->OnKeyPressed.Add(this, &Application::m_OnKeyPressed);
-		g_gameWindow->OnKeyReleased.Add(this, &Application::m_OnKeyReleased);
-		g_gameWindow->OnResized.Add(this, &Application::m_OnWindowResized);
-
-		if(startFullscreen)
-			g_gameWindow->SwitchFullscreen(fullscreenMonitor);
-
-		// Set render state variables
-		m_renderStateBase.aspectRatio = g_aspectRatio;
-		m_renderStateBase.viewportSize = g_resolution;
-		m_renderStateBase.time = 0.0f;
-
-		{
-			ProfilerScope $1("Audio Init");
-
-			// Init audio
-			new Audio();
-			if(!g_audio->Init(*g_gameWindow))
-			{
-				Log("Audio initialization failed", Logger::Error);
-				delete g_audio;
-				return 1;
-			}
-
-			// Debug Mute?
-			// Test tracks may get annoying when continuosly debugging ;)
-			if(debugMute)
-			{
-				g_audio->SetGlobalVolume(0.0f);
-			}
-		}
-
-		{
-			ProfilerScope $1("GL Init");
-
-			// Create graphics context
-			g_gl = new OpenGL();
-			if(!g_gl->Init(*g_gameWindow))
-			{
-				Log("Failed to create OpenGL context", Logger::Error);
-				return 1;
-			}
-		}
-
-		// Setup the game by processing the command line
-		if(m_commandLine.size() < 2)
-		{
-			Log("No map path specified", Logger::Error);
-			return 1;
-		}
-	}
+	if(!m_Init())
+		return 1;
 
 	if(m_commandLine.Contains("-test")) 
 	{
@@ -138,14 +47,153 @@ int32 Application::Run()
 	}
 	else
 	{
-		// Play the map
-		if(!LaunchMap(m_commandLine[1]))
+		bool mapLaunched = false;
+		// Play the map specified in the command line
+		if(m_commandLine.size() > 1)
 		{
-			Logf("LaunchMap(%s) failed", Logger::Error, m_commandLine[1]);
-			return 1;
+			if(!LaunchMap(m_commandLine[1]))
+			{
+				Logf("LaunchMap(%s) failed", Logger::Error, m_commandLine[1]);
+			}
+			else
+			{
+				mapLaunched = true;
+			}
+		}
+
+		if(!mapLaunched)
+		{
+			// Start regular game, goto song select
+			g_tickables.Add(SongSelect::Create());
 		}
 	}
 
+	m_MainLoop();
+
+	return 0;
+}
+
+bool Application::m_LoadConfig()
+{
+	File configFile;
+	if(configFile.OpenRead("Main.cfg"))
+	{
+		FileReader reader(configFile);
+		if(g_mainConfig.Load(reader))
+			return true;
+	}
+	return false;
+}
+void Application::m_LoadDefaultConfig()
+{
+	g_mainConfig.Clear();
+	g_mainConfig.Add("songfolder", Variant::Create("songs"));
+}
+void Application::m_SaveConfig()
+{
+	File configFile;
+	if(configFile.OpenWrite("Main.cfg"))
+	{
+		FileWriter writer(configFile);
+		g_mainConfig.Save(writer);
+	}
+}
+
+bool Application::m_Init()
+{
+	ProfilerScope $("Application Setup");
+
+	// Split up command line parameters
+	String cmdLine = Utility::ConvertToUTF8(GetCommandLine());
+	m_commandLine = Path::SplitCommandLine(cmdLine);
+	assert(m_commandLine.size() >= 1);
+
+	if(!m_LoadConfig())
+		m_LoadDefaultConfig();
+
+	m_allowMapConversion = false;
+	bool debugMute = false;
+	bool startFullscreen = false;
+	uint32 fullscreenMonitor = -1;
+	for(auto& cl : m_commandLine)
+	{
+		String k, v;
+		if(cl.Split("=", &k, &v))
+		{
+			if(k == "-monitor")
+			{
+				fullscreenMonitor = atol(*v);
+			}
+		}
+		else
+		{
+			if(cl == "-convertmaps")
+			{
+				m_allowMapConversion = true;
+			}
+			else if(cl == "-mute")
+			{
+				debugMute = true;
+			}
+			else if(cl == "-fullscreen")
+			{
+				startFullscreen = true;
+			}
+		}
+	}
+
+	// Create the game window
+	g_resolution = Vector2i{ (int32)(g_screenHeight * g_aspectRatio), (int32)g_screenHeight };
+	g_gameWindow = new Window(g_resolution);
+	g_gameWindow->Show();
+	m_OnWindowResized(g_resolution);
+	g_gameWindow->OnKeyPressed.Add(this, &Application::m_OnKeyPressed);
+	g_gameWindow->OnKeyReleased.Add(this, &Application::m_OnKeyReleased);
+	g_gameWindow->OnResized.Add(this, &Application::m_OnWindowResized);
+
+	if(startFullscreen)
+		g_gameWindow->SwitchFullscreen(fullscreenMonitor);
+
+	// Set render state variables
+	m_renderStateBase.aspectRatio = g_aspectRatio;
+	m_renderStateBase.viewportSize = g_resolution;
+	m_renderStateBase.time = 0.0f;
+
+	{
+		ProfilerScope $1("Audio Init");
+
+		// Init audio
+		new Audio();
+		if(!g_audio->Init(*g_gameWindow))
+		{
+			Log("Audio initialization failed", Logger::Error);
+			delete g_audio;
+			return 1;
+		}
+
+		// Debug Mute?
+		// Test tracks may get annoying when continously debugging ;)
+		if(debugMute)
+		{
+			g_audio->SetGlobalVolume(0.0f);
+		}
+	}
+
+	{
+		ProfilerScope $1("GL Init");
+
+		// Create graphics context
+		g_gl = new OpenGL();
+		if(!g_gl->Init(*g_gameWindow))
+		{
+			Log("Failed to create OpenGL context", Logger::Error);
+			return false;
+		}
+	}
+	return true;
+}
+void Application::m_MainLoop()
+{
 	Timer appTimer;
 	m_lastRenderTime = 0.0f;
 	m_lastUpdateTime = 0.0f;
@@ -153,22 +201,49 @@ int32 Application::Run()
 	{
 		static const float maxDeltaTime = (1.0f / 30.0f);
 
-
 		// Gameplay loop
 		/// TODO: Add timing management
 		for(uint32 i = 0; i < 1; i++)
 		{
 			// Input update
 			if(!g_gameWindow->Update())
-				return 0;
+				return;
 			float currentTime = appTimer.SecondsAsFloat();
 			float deltaTime = Math::Min(currentTime - m_lastUpdateTime, maxDeltaTime);
 			m_lastUpdateTime = currentTime;
 
+			// Remove remove-queued tickables
+			bool removed = false;
+			for(auto it = g_tickables.begin(); it != g_tickables.end();)
+			{
+				if(g_removalQueue.Contains(*it))
+				{
+					delete *it;
+					if(*it == g_game)
+					{
+						// Game removed
+						g_game = nullptr;
+					}
+					it = g_tickables.erase(it);
+					removed = true;
+					continue;
+				}
+				it++;
+			}
+			g_removalQueue.clear();
+
 			if(!g_tickables.empty())
 			{
 				IApplicationTickable* tickable = g_tickables.back();
+				if(removed)
+					tickable->OnRestore();
 				tickable->Tick(deltaTime);
+			}
+			else
+			{
+				// Shutdown when all menus are gone
+				Logf("No more application windows, shutting down", Logger::Warning);
+				Shutdown();
 			}
 		}
 
@@ -198,8 +273,6 @@ int32 Application::Run()
 			ResourceManagers::TickAll();
 		}
 	}
-
-	return 0;
 }
 void Application::m_Cleanup()
 {
@@ -229,6 +302,9 @@ void Application::m_Cleanup()
 		delete g_gameWindow;
 		g_gameWindow = nullptr;
 	}
+
+	// Finally, save config
+	m_SaveConfig();
 }
 
 // Try load map helper
@@ -291,7 +367,10 @@ bool Application::LaunchMap(const String& mapPath)
 	
 	// Check failure of above loading attempts
 	if(!m_currentMap)
+	{
+		Logf("Failed to load map", Logger::Warning);
 		return false;
+	}
 
 	// Loaded successfully
 	m_lastMapPath = actualMapPath;
@@ -313,15 +392,10 @@ bool Application::LaunchMap(const String& mapPath)
 	if(!g_game)
 		return false;
 
-	g_tickables.Add(g_game);
+	AddTickable(g_game);
 
 	return true;
 }
-void Application::Shutdown()
-{
-	g_gameWindow->Close();
-}
-
 void Application::CleanupMap()
 {
 	if(m_currentMap)
@@ -334,11 +408,33 @@ void Application::CleanupGame()
 {
 	if(g_game)
 	{
-		g_tickables.Remove(g_game);
-		delete g_game;
+		RemoveTickable(g_game);
 		g_game = nullptr;
 	}
 	CleanupMap();
+}
+void Application::Shutdown()
+{
+	g_gameWindow->Close();
+}
+
+void Application::AddTickable(class IApplicationTickable* tickable)
+{
+	if(!g_tickables.empty())
+		g_tickables.back()->OnSuspend();
+	g_tickables.Add(tickable);
+}
+void Application::RemoveTickable(IApplicationTickable* tickable)
+{
+	if(g_tickables.Contains(tickable))
+	{
+		g_removalQueue.AddUnique(tickable);
+	}
+}
+
+String Application::GetCurrentMapPath()
+{
+	return m_lastMapPath;
 }
 
 const Vector<String>& Application::GetAppCommandLine() const
@@ -354,7 +450,6 @@ Texture Application::LoadTexture(const String& name)
 	String path = String("textures/") + name;
 	Image img = ImageRes::Create(path);
 	Texture ret = TextureRes::Create(g_gl, img);
-	assert(ret);
 	return ret;
 }
 Material Application::LoadMaterial(const String& name)
@@ -386,25 +481,18 @@ Transform Application::GetGUIProjection() const
 }
 void Application::m_OnKeyPressed(Key key)
 {
-	if(g_game)
+	for(auto it = g_tickables.rbegin(); it != g_tickables.rend();)
 	{
-		g_game->OnKeyPressed(key);
-	}
-	if(key == Key::Escape)
-	{
-		Shutdown();
-	}
-	if(key == Key::F5) // Restart map
-	{
-		CleanupGame();
-		LaunchMap(m_lastMapPath);
+		(*it)->OnKeyPressed(key);
+		break;
 	}
 }
 void Application::m_OnKeyReleased(Key key)
 {
-	if(g_game)
+	for(auto it = g_tickables.rbegin(); it != g_tickables.rend();)
 	{
-		g_game->OnKeyReleased(key);
+		(*it)->OnKeyReleased(key);
+		break;
 	}
 }
 void Application::m_OnWindowResized(const Vector2i& newSize)

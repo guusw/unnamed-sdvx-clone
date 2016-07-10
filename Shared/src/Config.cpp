@@ -3,7 +3,7 @@
 #include "TextStream.hpp"
 #include <sstream>
 
-void Config::Load(BinaryStream& stream, bool binary /*= false*/)
+bool Config::Load(BinaryStream& stream, bool binary /*= false*/)
 {
 	Clear();
 	if(binary)
@@ -47,6 +47,8 @@ void Config::Load(BinaryStream& stream, bool binary /*= false*/)
 			}
 		}
 	}
+
+	return true;
 }
 void Config::Save(BinaryStream& stream, bool binary /*= false*/)
 {
@@ -58,7 +60,10 @@ void Config::Save(BinaryStream& stream, bool binary /*= false*/)
 	{
 		for(auto& p : m_entries)
 		{
-			String line = p.first + " = " + p.second.ToString();
+			String v = p.second.ToString();
+			if(p.second.GetType() == VariantType::String)
+				v = "\"" + v + "\"";
+			String line = p.first + " = " + v;
 			TextStream::WriteLine(stream, line);
 		}
 	}

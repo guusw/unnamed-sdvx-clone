@@ -8,7 +8,7 @@
 class AudioStreamRes : public AudioBase
 {
 public:
-	static Ref<AudioStreamRes> Create(class Audio* audio, const String& path);
+	static Ref<AudioStreamRes> Create(class Audio* audio, const String& path, bool preload);
 	virtual ~AudioStreamRes() = default;
 public:
 	// Starts playback of the stream or continues a paused stream
