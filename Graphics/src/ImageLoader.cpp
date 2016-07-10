@@ -16,45 +16,71 @@ namespace Graphics
 		{
 		}
 	public:
+
+		// error handling
+		struct jpegErrorMgr : public jpeg_error_mgr
+		{
+			jmp_buf jmpBuf;
+		};
+		static void jpegErrorExit(jpeg_common_struct* cinfo)
+		{
+			longjmp(((jpegErrorMgr*)cinfo->err)->jmpBuf, 1);
+		}
+		static void jpegErrorReset(jpeg_common_struct* cinfo)
+		{
+			__nop();
+		}
+
 		bool LoadJPEG(ImageRes* pImage, Buffer& in)
 		{
+
 			/* This struct contains the JPEG decompression parameters and pointers to
 			* working space (which is allocated as needed by the JPEG library).
 			*/
 			jpeg_decompress_struct cinfo;
-			jpeg_error_mgr jerr;
-			cinfo.err = jpeg_std_error(&jerr);
+			jpegErrorMgr jerr = {};
+			jerr.reset_error_mgr = &jpegErrorReset;
+			jerr.error_exit = &jpegErrorExit;
+			cinfo.err = &jerr;
 
-			jpeg_create_decompress(&cinfo);
-			jpeg_mem_src(&cinfo, in.data(), (uint32)in.size());
-			jpeg_read_header(&cinfo, TRUE);
-			jpeg_start_decompress(&cinfo);
-			int row_stride = cinfo.output_width * cinfo.output_components;
-			JSAMPARRAY sample = (*cinfo.mem->alloc_sarray)
-				((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, 1);
-
-			Vector2i size = Vector2i(cinfo.output_width, cinfo.output_height);
-			pImage->SetSize(size);
-			Colori* pBits = pImage->GetBits();
-
-			size_t pixelSize = cinfo.out_color_components;
-			cinfo.out_color_space = JCS_RGB;
-
-			while(cinfo.output_scanline < cinfo.output_height)
+			// Return point for long jump
+			if(setjmp(jerr.jmpBuf) == 0)
 			{
-				jpeg_read_scanlines(&cinfo, sample, 1);
-				for(size_t i = 0; i < cinfo.output_width; i++)
+				jpeg_create_decompress(&cinfo);
+				jpeg_mem_src(&cinfo, in.data(), (uint32)in.size());
+				int res = jpeg_read_header(&cinfo, TRUE);
+
+				jpeg_start_decompress(&cinfo);
+				int row_stride = cinfo.output_width * cinfo.output_components;
+				JSAMPARRAY sample = (*cinfo.mem->alloc_sarray)
+					((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, 1);
+
+				Vector2i size = Vector2i(cinfo.output_width, cinfo.output_height);
+				pImage->SetSize(size);
+				Colori* pBits = pImage->GetBits();
+
+				size_t pixelSize = cinfo.out_color_components;
+				cinfo.out_color_space = JCS_RGB;
+
+				while(cinfo.output_scanline < cinfo.output_height)
 				{
-					memcpy(pBits + i, sample[0] + i * pixelSize, pixelSize);
-					pBits[i].w = 0xFF;
+					jpeg_read_scanlines(&cinfo, sample, 1);
+					for(size_t i = 0; i < cinfo.output_width; i++)
+					{
+						memcpy(pBits + i, sample[0] + i * pixelSize, pixelSize);
+						pBits[i].w = 0xFF;
+					}
+
+					pBits += size.x;
 				}
 
-				pBits += size.x;
+				jpeg_finish_decompress(&cinfo);
+				jpeg_destroy_decompress(&cinfo);
+				return true;
 			}
-
-			jpeg_finish_decompress(&cinfo);
-			jpeg_destroy_decompress(&cinfo);
-			return 1;
+			
+			// If we get here, the loading of the jpeg failed
+			return false;
 		}
 		bool LoadPNG(ImageRes* pImage, Buffer& in)
 		{
@@ -92,6 +118,7 @@ namespace Graphics
 			if(b.size() < 4)
 				return false;
 
+			// Check for PNG based on first 4 bytes
 			if(*(uint32*)b.data() == (uint32&)"‰PNG")
 				return LoadPNG(pImage, b);
 			else // jay-PEG ?
