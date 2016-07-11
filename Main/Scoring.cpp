@@ -3,8 +3,8 @@
 #include "BeatmapPlayback.hpp"
 #include <math.h>
 
-const MapTime Scoring::goodHitTime = 60;
-const MapTime Scoring::perfectHitTime = 30;
+const MapTime Scoring::goodHitTime = 80;
+const MapTime Scoring::perfectHitTime = 40;
 const float Scoring::idleLaserSpeed = 0.5f;
 
 Scoring::Scoring()

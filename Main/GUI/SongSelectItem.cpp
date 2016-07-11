@@ -167,6 +167,7 @@ void SongSelectItem::SetMap(struct MapIndex* map)
 
 	// Add all difficulty icons
 	m_diffSelect->Clear();
+	m_diffSelectors.clear();
 	for(auto d : map->difficulties)
 	{
 		SongDifficultyFrame* frame = new SongDifficultyFrame(m_style, d);

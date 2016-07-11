@@ -37,7 +37,7 @@ class AudioStreamOGG_Impl : public AudioStreamRes
 	uint32 m_currentBufferSize = 0;
 	uint32 m_remainingBufferData = 0;
 
-	uint64 m_samplePos = 0;
+	int64 m_samplePos = 0;
 
 	// Resampling values
 	uint64 m_sampleStep = 0;
@@ -133,14 +133,14 @@ public:
 	{
 		return (uint64)(s * (double)m_info->rate);
 	}
-	double SamplesToSeconds(uint64 s) const
+	double SamplesToSeconds(int64 s) const
 	{
 		return (double)s / (double)m_info->rate;
 	}
 	double GetPositionSeconds() const
 	{
 		double samplePosTime = SamplesToSeconds(m_samplePos);
-		if(m_paused)
+		if(m_paused || m_samplePos < 0)
 			return samplePosTime;
 		else
 		{
@@ -159,11 +159,11 @@ public:
 	{
 		m_lock.lock();
 		m_remainingBufferData = 0;
-		ov_pcm_seek(&m_ovf, SecondsToSamples((double)pos / 1000.0));
+		m_samplePos = SecondsToSamples((double)pos / 1000.0);
+		ov_pcm_seek(&m_ovf, m_samplePos);
 		m_lock.unlock();
 	}
 	
-	uint32 m_outSamples = 0;
 	virtual void Process(float* out, uint32 numSamples) override
 	{
 		if(!m_playing || m_paused)
@@ -180,18 +180,26 @@ public:
 				uint32 readOffset = 0; // Offset from the start to read from
 				for(uint32 i = 0; outCount < numSamples && readOffset < m_remainingBufferData; i++)
 				{
-					out[outCount * 2] = m_readBuffer[0][idxStart + readOffset];
-					out[outCount * 2 + 1] = m_readBuffer[1][idxStart + readOffset];
+					if(m_samplePos < 0)
+					{
+						out[outCount * 2] = 0.0f;
+						out[outCount * 2 + 1] = 0.0f;
+					}
+					else
+					{
+						out[outCount * 2] = m_readBuffer[0][idxStart + readOffset];
+						out[outCount * 2 + 1] = m_readBuffer[1][idxStart + readOffset];
+					}
 					outCount++;
-
-					m_outSamples++;
 
 					// Increment source sample with resampling
 					m_sampleStep += m_sampleStepIncrement;
 					while(m_sampleStep >= fp_sampleStep)
 					{
-						readOffset++;
 						m_sampleStep -= fp_sampleStep;
+						if(m_samplePos >= 0)
+							readOffset++;
+						m_samplePos++;
 					}
 				}
 				m_remainingBufferData -= readOffset;
@@ -230,14 +238,16 @@ public:
 		}
 
 		// Store timing info
-		m_samplePos = (uint32)ov_pcm_tell(&m_ovf) - m_remainingBufferData;
-		double r = (double)m_samplePos / (double)m_outSamples;
-		double timingDelta = GetPositionSeconds() - SamplesToSeconds(m_samplePos);
-
-		// This is to stabilize the running timer with the actual audio stream, the delta is added for 50% as an offset to this timer 
-		if(abs(timingDelta) > 0.002)
+		if(m_samplePos > 0)
 		{
-			ResyncTiming(timingDelta);
+			m_samplePos = (uint32)ov_pcm_tell(&m_ovf) - m_remainingBufferData;
+			double timingDelta = GetPositionSeconds() - SamplesToSeconds(m_samplePos);
+
+			// This is to stabilize the running timer with the actual audio stream, the delta is added for 50% as an offset to this timer 
+			if(abs(timingDelta) > 0.002)
+			{
+				ResyncTiming(timingDelta);
+			}
 		}
 
 		m_lock.unlock();

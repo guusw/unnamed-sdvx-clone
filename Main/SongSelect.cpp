@@ -176,6 +176,11 @@ public:
 			auto it = m_guiElements.find(m);
 			if(it != m_guiElements.end())
 			{
+				// Clear selection if a removed item was selected
+				if(m_currentSelection == it->second)
+					m_currentSelection.Release();
+
+				// Remove this item from the canvas that displays the items
 				m_canvas->Remove(it->second.As<GUIElementBase>());
 				m_guiElements.erase(it);
 			}
@@ -326,7 +331,21 @@ public:
 				return;
 			it = m_maps.begin();
 		}
-		std::advance(it, offset);
+		for(uint32 i = 0; i < (uint32)abs(offset); i++)
+		{
+			auto itn = it;
+			if(offset < 0)
+			{
+				if(itn == m_maps.begin())
+					break;
+				itn--;
+			}
+			else
+				itn++;
+			if(itn == m_maps.end())
+				break;
+			it = itn;
+		}
 		if(it != m_maps.end())
 		{
 			SelectMap(it->first);

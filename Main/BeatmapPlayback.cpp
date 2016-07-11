@@ -5,7 +5,7 @@
 BeatmapPlayback::BeatmapPlayback(Beatmap& beatmap) : m_beatmap(&beatmap)
 {
 }
-bool BeatmapPlayback::Reset()
+bool BeatmapPlayback::Reset(MapTime startTime)
 {
 	m_timingPoints = m_beatmap->GetLinearTimingPoints();
 	m_objects = m_beatmap->GetLinearObjects();
@@ -15,12 +15,13 @@ bool BeatmapPlayback::Reset()
 	if(m_timingPoints.size() == 0)
 		return false;
 
-	m_playbackTime = 0;
+	m_playbackTime = startTime;
 	m_currentObj = &m_objects.front();
 	m_currentTiming = &m_timingPoints.front();
 	m_currentZoomPoint = m_zoomPoints.empty() ? nullptr : &m_zoomPoints.front();
 		
 	m_barTime = 0;
+	m_initialEffectStateSent = false;
 	return true;
 }
 
@@ -34,17 +35,18 @@ void BeatmapPlayback::Update(MapTime newTime)
 		return;
 	}
 
-	// Fire initial effect changes
-	if(m_playbackTime == 0)
+	// Fire initial effect changes (only once)
+	if(!m_initialEffectStateSent)
 	{
 		const BeatmapSettings& settings = m_beatmap->GetMapSettings();
 		OnEventChanged.Call(EventKey::LaserEffectMix, settings.laserEffectMix);
 		OnEventChanged.Call(EventKey::LaserEffectType, settings.laserEffectType);
 		OnEventChanged.Call(EventKey::SlamVolume, settings.slamVolume);
+		m_initialEffectStateSent = true;
 	}
 
 	// Count bars
-	uint32 beatID = 0;
+	int32 beatID = 0;
 	uint32 nBeats = CountBeats(m_playbackTime - delta, delta, beatID);
 	const TimingPoint& tp = GetCurrentTimingPoint();
 	double effectiveTime = ((double)newTime - tp.time); // Time with offset applied
@@ -246,14 +248,14 @@ const TimingPoint* BeatmapPlayback::GetTimingPointAt(MapTime time) const
 	return *const_cast<BeatmapPlayback*>(this)->m_SelectTimingPoint(time);
 }
 
-uint32 BeatmapPlayback::CountBeats(MapTime start, MapTime range, uint32& startIndex, uint32 multiplier) const
+uint32 BeatmapPlayback::CountBeats(MapTime start, MapTime range, int32& startIndex, uint32 multiplier /*= 1*/) const
 {
 	const TimingPoint& tp = GetCurrentTimingPoint();
 	int64 delta = (int64)start - (int64)tp.time;
 	int64 beatStart = (int64)floor((double)delta / (tp.beatDuration/ multiplier));
 	int64 beatEnd = (int64)floor((double)(delta + range) / (tp.beatDuration/ multiplier));
-	startIndex = (uint32)beatStart + 1;
-	return (uint32)(beatEnd - beatStart);
+	startIndex = (int32)beatStart + 1;
+	return (uint32)Math::Max<int64>(beatEnd - beatStart, 0);
 }
 MapTime BeatmapPlayback::BarDistanceToDuration(float distance)
 {

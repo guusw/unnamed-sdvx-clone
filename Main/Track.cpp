@@ -179,7 +179,7 @@ void Track::Tick(class BeatmapPlayback& playback, float deltaTime)
 
 	// Set Object glow
 	MapTime currentTime = playback.GetLastTime();
-	uint32 startBeat = 0;
+	int32 startBeat = 0;
 	uint32 numBeats = playback.CountBeats(m_lastMapTime, currentTime - m_lastMapTime, startBeat, 4);
 	m_lastMapTime = currentTime;
 	if(numBeats > 0)

@@ -13,7 +13,7 @@ public:
 	// Resets the playback of the map
 	// Must be called before any other function is called on this object
 	// returns false if the map contains no objects or timing or otherwise invalid
-	bool Reset();
+	bool Reset(MapTime startTime = 0);
 
 	// Updates the time of the playback
 	// checks all items that have been triggered between last time and this time
@@ -43,7 +43,7 @@ public:
 	// Returns the starting index of the passed beats in 'startIndex'
 	// Additionally the time signature is multiplied by multiplier
 	//	with a multiplier of 2 a 4/4 signature would tick twice as fast
-	uint32 CountBeats(MapTime start, MapTime range, uint32& startIndex, uint32 multiplier = 1) const;
+	uint32 CountBeats(MapTime start, MapTime range, int32& startIndex, uint32 multiplier = 1) const;
 
 	// Bar calculations using the current timing point
 	// A single bar is the duration of the amount of beats in the current time signature.
@@ -101,6 +101,7 @@ private:
 	Vector<TimingPoint*> m_timingPoints;
 	Vector<ObjectState*> m_objects;
 	Vector<ZoomControlPoint*> m_zoomPoints;
+	bool m_initialEffectStateSent = false;
 
 	TimingPoint** m_currentTiming = nullptr;
 	ObjectState** m_currentObj = nullptr;

@@ -602,12 +602,27 @@ public:
 	}
 	bool InitGameplay()
 	{
+		// Select the correct first object to set the intial playback position
+		// if it starts before a certain time frame, the song starts at a negative time (lead-in)
+		ObjectState *const* firstObj = &m_beatmap->GetLinearObjects().front();
+		while((*firstObj)->type == ObjectType::Event && firstObj != &m_beatmap->GetLinearObjects().back())
+		{
+			firstObj++;
+		}
+		MapTime firstObjectTime = (*firstObj)->time;
+		if(firstObjectTime < 1000)
+		{
+			// Set start time
+			m_lastMapTime = firstObjectTime - 1000;
+			m_audioPlayback.SetPosition(m_lastMapTime);
+		}
+
 		// Playback and timing
 		m_playback = BeatmapPlayback(*m_beatmap);
 		m_playback.OnEventChanged.Add(this, &Game_Impl::OnEventChanged);
 		m_playback.OnFXBegin.Add(this, &Game_Impl::OnFXBegin);
 		m_playback.OnFXEnd.Add(this, &Game_Impl::OnFXEnd);
-		if(!m_playback.Reset()) // Initialize
+		if(!m_playback.Reset(m_lastMapTime)) // Initialize
 			return false;
 
 		m_playback.hittableObjectTreshold = Scoring::goodHitTime;
@@ -653,16 +668,12 @@ public:
 		// Update beatmap playback
 		MapTime playbackPositionMs = m_audioPlayback.GetPosition();
 
-		// Apply offset correction and clamp to 0->
-		if(playbackPositionMs < g_audio->audioLatency)
-			playbackPositionMs = 0;
-		else
-			playbackPositionMs -= (MapTime)g_audio->audioLatency;
-		if(playbackPositionMs > 0)
-			m_playback.Update(playbackPositionMs);
+		// Apply offset correction
+		playbackPositionMs -= (MapTime)g_audio->audioLatency;
+		m_playback.Update(playbackPositionMs);
 
 		MapTime delta = playbackPositionMs - m_lastMapTime;
-		uint32 beatStart = 0;
+		int32 beatStart = 0;
 		uint32 numBeats = m_playback.CountBeats(m_lastMapTime, delta, beatStart, 1);
 		if(numBeats > 0)
 		{
