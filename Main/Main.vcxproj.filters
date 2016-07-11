@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="C:\Projects\sdvx-clone\Main\Application.cpp">
@@ -44,6 +44,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Projects\sdvx-clone\Main\Scoring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\SongSelect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Projects\sdvx-clone\Main\Test.cpp">
@@ -100,14 +103,11 @@
     <ClCompile Include="C:\Projects\sdvx-clone\Main\GUI\Panel.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\GUI\SongSelectItem.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Projects\sdvx-clone\Main\sqlite3.c">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SongSelect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GUI\SongSelectItem.cpp">
-      <Filter>Source Files\GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -157,6 +157,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Projects\sdvx-clone\Main\Scoring.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\SongSelect.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Projects\sdvx-clone\Main\Test.hpp">
@@ -219,11 +222,8 @@
     <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\Panel.hpp">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="GUI\SongSelectItem.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\SongSelectItem.hpp">
       <Filter>Header Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="SongSelect.hpp">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -235,12 +235,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Header Files\Audio">
-      <UniqueIdentifier>{33A119EC-4390-383F-8671-3B7C56747B6E}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\GUI">
-      <UniqueIdentifier>{AD98EBB5-4B19-3309-BD8E-F5A6D5F6ECCC}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Audio">
       <UniqueIdentifier>{A9CB4E1E-E84D-35DB-878E-76811569B1E9}</UniqueIdentifier>
     </Filter>
@@ -252,6 +246,12 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{1150D1D3-FC10-3535-BEE9-56BAC5338753}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Audio">
+      <UniqueIdentifier>{33A119EC-4390-383F-8671-3B7C56747B6E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI">
+      <UniqueIdentifier>{AD98EBB5-4B19-3309-BD8E-F5A6D5F6ECCC}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

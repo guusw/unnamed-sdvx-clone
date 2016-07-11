@@ -181,6 +181,38 @@ public:
 		return std::move(changes);
 	}
 	
+	Map<int32, MapIndex*> FindMaps(const String& searchString)
+	{
+		WString test = Utility::ConvertToUnicode(searchString);
+		String stmt = "SELECT rowid FROM Maps WHERE";
+
+		//search.spl
+		Vector<String> terms = searchString.Explode(" ");
+		int32 i = 0;
+		for(auto term : terms)
+		{
+			if(i > 0)
+				stmt += " AND";
+			stmt += " (artist GLOB \"*" + term + "*\" OR title GLOB \"*" + term + "*\" OR tags GLOB \"*" + term + "*\")";
+			i++;
+		}
+
+		Map<int32, MapIndex*> res;
+		DBStatement search = m_database.Query(stmt);
+		while(search.StepRow())
+		{
+			int32 id = search.IntColumn(0);
+			MapIndex** map = m_maps.Find(id);
+			if(map)
+			{
+				res.Add(id, *map);
+			}
+		}
+
+
+		return res;
+	}
+
 	// Processes pending database changes
 	void Update()
 	{
@@ -640,6 +672,10 @@ void MapDatabase::StartSearching()
 void MapDatabase::StopSearching()
 {
 	m_impl->StopSearching();
+}
+Map<int32, MapIndex*> MapDatabase::FindMaps(const String& search)
+{
+	return m_impl->FindMaps(search);
 }
 MapIndex* MapDatabase::GetMap(int32 idx)
 {

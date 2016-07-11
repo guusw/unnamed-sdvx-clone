@@ -44,6 +44,9 @@ public:
 
 	// Grab all the maps, with their id's
 	Map<int32, MapIndex*> GetMaps();
+	// Finds maps using the search query provided
+	// search artist/title/tags for maps for any space separated terms
+	Map<int32, MapIndex*> FindMaps(const String& search);
 	MapIndex* GetMap(int32 idx);
 
 	void AddSearchPath(const String& path);

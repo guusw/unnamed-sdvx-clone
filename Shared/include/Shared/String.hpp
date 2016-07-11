@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "Shared/Utility.hpp"
+#include "Shared/Vector.hpp"
 
 /*
 	String class, extends std::string
@@ -32,6 +33,7 @@ public:
 	const T* operator*() const;
 	bool Split(const StringBase& delim, StringBase* l, StringBase* r) const;
 	bool SplitLast(const StringBase& delim, StringBase* l, StringBase* r) const;
+	Vector<StringBase> Explode(const StringBase& delim) const;
 	void TrimFront(T c);
 	void TrimBack(T c);
 	void Trim(T c = ' ');
@@ -154,6 +156,25 @@ bool StringBase<T>::SplitLast(const StringBase& delim, StringBase* l, StringBase
 	}
 
 	return true;
+}
+template<typename T>
+Vector<StringBase<T>> StringBase<T>::Explode(const StringBase& delim) const
+{
+	String a, b;
+	Vector<StringBase> res;
+	if(!Split(delim, &a, &b))
+	{
+		res.Add(*this);
+		return res;
+	}
+
+	do 
+	{
+		res.Add(a);
+	} while(b.Split(delim, &a, &b));
+	res.Add(b);
+
+	return res;
 }
 template<typename T>
 void StringBase<T>::TrimFront(T c)
