@@ -241,17 +241,17 @@
     <Filter Include="Source Files\GUI">
       <UniqueIdentifier>{268ECD98-AFD9-345D-8960-C0D7A3ABFBB9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4E2E32B2-1850-331C-908A-1617039565C2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{1150D1D3-FC10-3535-BEE9-56BAC5338753}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Audio">
       <UniqueIdentifier>{33A119EC-4390-383F-8671-3B7C56747B6E}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\GUI">
       <UniqueIdentifier>{AD98EBB5-4B19-3309-BD8E-F5A6D5F6ECCC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4E2E32B2-1850-331C-908A-1617039565C2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{1150D1D3-FC10-3535-BEE9-56BAC5338753}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

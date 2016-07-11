@@ -30,6 +30,18 @@ namespace Graphics
 		{
 			__nop();
 		}
+		static void jpegEmitMessage(jpeg_common_struct* cinfo, int msgLvl)
+		{
+			__nop();
+		}
+		static void jpegOutputMessage(jpeg_common_struct* cinfo)
+		{
+			__nop();
+		}
+		static void jpegFormatMessage(jpeg_common_struct* cinfo, char * buffer)
+		{
+			__nop();
+		}
 
 		bool LoadJPEG(ImageRes* pImage, Buffer& in)
 		{
@@ -41,6 +53,9 @@ namespace Graphics
 			jpegErrorMgr jerr = {};
 			jerr.reset_error_mgr = &jpegErrorReset;
 			jerr.error_exit = &jpegErrorExit;
+			jerr.emit_message = &jpegEmitMessage;
+			jerr.format_message = &jpegFormatMessage;
+			jerr.output_message = &jpegOutputMessage;
 			cinfo.err = &jerr;
 
 			// Return point for long jump
