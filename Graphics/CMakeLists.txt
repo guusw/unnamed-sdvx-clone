@@ -5,10 +5,16 @@ file(GLOB Graphics_src "src/*.cpp" "src/glew.c" "include/Graphics/*.hpp")
 
 # Platform specific source files
 if(WIN32)
-	file(GLOB Graphics_src ${Graphics_src} "src/Windows/*.cpp")
+	include_directories("src/Windows")
+	file(GLOB Platform_src "src/Windows/*.cpp" "src/Windows/*.hpp")
+	# Platform specific source group
+	source_group("Source Files\\Windows" FILES ${Platform_src})
 else(WIN32)
-	file(GLOB Graphics_src ${Graphics_src} "src/Linux/*.cpp")
+include_directories("src/Linux")
+	file(GLOB Platform_src "src/Linux/*.cpp")
 endif(WIN32)
+
+file(GLOB Graphics_src ${Graphics_src} ${Platform_src})
 
 include_directories(include include/Graphics src
 	include/Graphics/glew 
