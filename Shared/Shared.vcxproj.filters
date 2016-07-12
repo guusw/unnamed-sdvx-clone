@@ -53,10 +53,10 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Windows\File.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="C:\Projects\sdvx-clone\Shared\src\Windows\Path.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -158,6 +158,9 @@
     <CustomBuild Include="C:\Projects\sdvx-clone\Shared\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Filter Include="Source Files\Windows">
+      <UniqueIdentifier>{ECB39691-21EE-3039-9F57-AC1799105849}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4E2E32B2-1850-331C-908A-1617039565C2}</UniqueIdentifier>
     </Filter>

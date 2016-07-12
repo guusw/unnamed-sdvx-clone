@@ -293,7 +293,7 @@ set_option(VIDEO_VIVANTE       "Use Vivante EGL video driver" ${UNIX_SYS})
 # TODO: We should (should we?) respect cmake's ${BUILD_SHARED_LIBS} flag here
 # The options below are for compatibility to configure's default behaviour.
 set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
-set(SDL_STATIC ON CACHE BOOL "Build a static version of the library")
+set(SDL_STATIC OFF CACHE BOOL "Build a static version of the library")
 
 # General source files
 file(GLOB SOURCE_FILES
@@ -1140,7 +1140,7 @@ elseif(WINDOWS)
     list(APPEND EXTRA_LIBS mingw32)
     list(APPEND EXTRA_LDFLAGS "-mwindows")
     set(SDL_CFLAGS "${SDL_CFLAGS} -Dmain=SDL_main")
-    list(APPEND SDL_LIBS "-lmingw32" "-lSDL2main" "-mwindows")
+    list(APPEND SDL_LIBS "-lmingw32" "-mwindows")
   endif()
 elseif(APPLE)
   # TODO: rework this for proper MacOS X, iOS and Darwin support
@@ -1446,9 +1446,6 @@ endif()
 # Ensure that the extra cflags are used at compile time
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 
-# Always build SDLmain
-add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
-set(_INSTALL_LIBS "SDL2main")
 
 if(SDL_SHARED)
   add_library(SDL2 SHARED ${SOURCE_FILES})

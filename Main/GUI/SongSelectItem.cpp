@@ -208,9 +208,9 @@ void SongSelectItem::SetSelectedDifficulty(int32 selectedIndex)
 {
 	if(selectedIndex < 0)
 		return;
-	if(selectedIndex < m_diffSelectors.size())
+	if(selectedIndex < (int32)m_diffSelectors.size())
 	{
-		if(m_selectedDifficulty < m_diffSelectors.size())
+		if(m_selectedDifficulty < (int32)m_diffSelectors.size())
 		{
 			m_diffSelectors[m_selectedDifficulty]->SetSelected(false);
 		}

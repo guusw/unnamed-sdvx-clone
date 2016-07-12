@@ -81,8 +81,6 @@ if(MSVC)
 	set_target_properties(freetype PROPERTIES FOLDER "Third Party")
 	# SDL
 	set_target_properties(SDL2 PROPERTIES FOLDER "Third Party")
-	set_target_properties(SDL2main PROPERTIES FOLDER "Third Party")
-	set_target_properties(SDL2-static PROPERTIES FOLDER "Third Party")
 	
 	set_target_properties(Shared PROPERTIES FOLDER Libraries)
 	set_target_properties(Graphics PROPERTIES FOLDER Libraries)
