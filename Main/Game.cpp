@@ -91,9 +91,6 @@ public:
 	{
 		ProfilerScope $("Init Game");
 
-		// Disable framerate limiting
-		g_application->SetFrameLimiter(-1);
-
 		assert(map);
 		m_mapPath = mapPath;
 		m_beatmap = map;
@@ -428,8 +425,8 @@ public:
 		Vector2 textPos = Vector2(jrect.pos.x, jrect.Bottom() + 10.0f);
 		textPos.y += RenderText(guiRq, bms.title, textPos).y;
 		textPos.y += RenderText(guiRq, bms.artist, textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("UpdateTime: %.2f ms", g_application->GetUpdateFPS()), textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("RenderTime: %.2f ms", g_application->GetRenderFPS()), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("UpdateTime: %.2f FPS", g_application->GetUpdateFPS()), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("RenderTime: %.2f FPS", g_application->GetRenderFPS()), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Audio Offset: %d ms", g_audio->audioLatency), textPos).y;
 
 		float currentBPM = (float)(60000.0 / tp.beatDuration);
@@ -667,7 +664,10 @@ public:
 			if(g_application->GetAppCommandLine().Contains("-autoskip"))
 			{
 				SkipIntro();
-			}
+			}	
+
+			// Disable framerate limiting while playing
+			g_application->SetFrameLimiter(-1);
 		}
 
 		const BeatmapSettings& beatmapSettings = m_beatmap->GetMapSettings();

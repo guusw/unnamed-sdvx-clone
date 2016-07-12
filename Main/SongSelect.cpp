@@ -316,7 +316,7 @@ public:
 
 		// Clamp diff selection
 		int32 selectDiff = m_currentlySelectedDiff;
-		if(m_currentlySelectedDiff >= map->difficulties.size())
+		if(m_currentlySelectedDiff >= (int32)map->difficulties.size())
 		{
 			selectDiff = (int32)map->difficulties.size() - 1;
 		}

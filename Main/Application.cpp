@@ -233,7 +233,7 @@ void Application::m_MainLoop()
 			// Calculate actual deltatime for timing calculations
 			currentTime = appTimer.SecondsAsFloat();
 			float actualDeltaTime = currentTime - m_lastUpdateTime;
-			g_avgUpdateDelta = g_avgUpdateDelta * 0.5f + actualDeltaTime * 0.5f; // Calculate avg
+			g_avgUpdateDelta = g_avgUpdateDelta * 0.99f + actualDeltaTime * 0.01f; // Calculate avg
 			m_lastUpdateTime = currentTime;
 
 			// Fixed DeltaTime
@@ -278,7 +278,6 @@ void Application::m_MainLoop()
 		// Render loop
 		currentTime = appTimer.SecondsAsFloat();
 		float timeSinceRender = currentTime - m_lastRenderTime;
-		g_avgRenderDelta = g_avgRenderDelta * 0.9f + timeSinceRender * 0.1f; // Calculate avg
 		if(timeSinceRender > g_targetRenderTime)
 		{
 			// Also update window in render loop
@@ -288,7 +287,7 @@ void Application::m_MainLoop()
 			// Calculate actual deltatime for timing calculations
 			currentTime = appTimer.SecondsAsFloat();
 			float actualDeltaTime = currentTime - m_lastRenderTime;
-			g_avgRenderDelta = g_avgRenderDelta * 0.5f + actualDeltaTime * 0.5f; // Calculate avg
+			g_avgRenderDelta = g_avgRenderDelta * 0.99f + actualDeltaTime * 0.01f; // Calculate avg
 
 			// Fixed DeltaTime
 			float deltaTime = g_targetRenderTime;
@@ -453,7 +452,6 @@ void Application::CleanupGame()
 		RemoveTickable(g_game);
 		g_game = nullptr;
 	}
-	CleanupMap();
 }
 void Application::Shutdown()
 {
