@@ -1,5 +1,4 @@
 #pragma once
-#include <Graphics/CustomWindowStyle.hpp>
 #include <Graphics/Keys.hpp>
 
 namespace Graphics
@@ -10,6 +9,14 @@ namespace Graphics
 		Windowed, Borderless
 	};
 
+	// Text input data
+	struct TextComposition
+	{
+		WString composition;
+		int32 cursor;
+		int32 selectionLength;
+	};
+
 	/*
 		Simple window class that manages window messages, window style and input
 		Renamed from Window to DesktopWindow to avoid conflicts with libX11 on Linux
@@ -17,7 +24,7 @@ namespace Graphics
 	class Window : Unique
 	{
 	public:
-		Window(Vector2i size = Vector2i(800, 600), const CustomWindowStyle& customStyle = CustomWindowStyle::Default);
+		Window(Vector2i size = Vector2i(800, 600));
 		~Window();
 		// Show the window
 		void Show();
@@ -45,26 +52,24 @@ namespace Graphics
 		Vector2i GetWindowSize() const;
 		// Set window client area size
 		void SetWindowSize(const Vector2i& size);
-		void SwitchFullscreen(uint32 monitorID = -1);
-
-		// WINDOWS ONLY
-		/// TODO: Replace mask with platform-agnostic defines
-		// Sets certain bits of the window style
-		void SetStyles(uint32 mask);
-		// Unsets styles from the window style
-		void UnsetStyles(uint32 mask);
-		// Checks the given bits in the window style and returns the AND'ed result
-		uint32 HasStyle(uint32 mask);
+		void SwitchFullscreen(uint32 monitorID = -1); 
 		
 		// Checks if a key is pressed
-		void IsKeyPressed(Key key) const;
+		bool IsKeyPressed(Key key) const;
+
+		ModifierKeys GetModifierKeys() const;
+
+		// Start allowing text input
+		void StartTextInput();
+		// Stop allowing text input
+		void StopTextInput();
+		// Used to get current IME working data
+		const TextComposition& GetTextComposition() const;
 
 		Delegate<Key> OnKeyPressed;
 		Delegate<Key> OnKeyReleased;
-#ifdef _WIN32
-		// Delegate called for window messages
-		Delegate<HWND, UINT, WPARAM, LPARAM> OnWindowMessage;
-#endif
+		Delegate<const WString&> OnTextInput;
+		Delegate<const TextComposition&> OnTextComposition;
 		Delegate<const Vector2i&> OnResized;
 
 	private:

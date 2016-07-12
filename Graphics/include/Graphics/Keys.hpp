@@ -2,6 +2,16 @@
 
 namespace Graphics
 {
+	enum class ModifierKeys : uint8 
+	{
+		None = 0,
+		Alt = 1,
+		Ctrl = 2,
+		Shift = 4
+	};
+	ModifierKeys operator&(ModifierKeys l, ModifierKeys r);
+	ModifierKeys operator|(ModifierKeys l, ModifierKeys r);
+
 	enum class Key : uint8
 	{
 		None = 0,

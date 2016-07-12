@@ -3,8 +3,8 @@
 #include "BeatmapPlayback.hpp"
 #include <math.h>
 
-const MapTime Scoring::goodHitTime = 80;
-const MapTime Scoring::perfectHitTime = 40;
+const MapTime Scoring::goodHitTime = 75;
+const MapTime Scoring::perfectHitTime = 35;
 const float Scoring::idleLaserSpeed = 0.5f;
 
 Scoring::Scoring()
@@ -827,6 +827,7 @@ ScoreHitRating ScoreTick::GetHitRating(MapTime currentTime) const
 }
 ScoreHitRating ScoreTick::GetHitRatingFromDelta(MapTime delta) const
 {
+	delta = abs(delta);
 	if(HasFlag(TickFlags::Button))
 	{
 		// Button hit judgeing

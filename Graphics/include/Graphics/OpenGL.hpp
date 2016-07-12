@@ -16,12 +16,7 @@ namespace Graphics
 	{
 		class ShaderRes* m_activeShaders[3] = { 0 };
 		uint32 m_mainProgramPipeline;
-#ifdef _WIN32
-		HDC m_deviceContext = 0;
-		HGLRC m_renderContext = 0;
-#else
-		GLXContext m_renderContext = 0;
-#endif
+		class OpenGL_Impl* m_impl;
 		Window* m_window;
 		class FramebufferRes* m_boundFramebuffer;
 

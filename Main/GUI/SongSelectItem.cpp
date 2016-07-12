@@ -162,8 +162,8 @@ bool SongSelectItem::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
 void SongSelectItem::SetMap(struct MapIndex* map)
 {
 	const BeatmapSettings& settings = map->difficulties[0]->settings;
-	m_title->SetText(Utility::ConvertToUnicode(settings.title));
-	m_artist->SetText(Utility::ConvertToUnicode(settings.artist));
+	m_title->SetText(Utility::ConvertToWString(settings.title));
+	m_artist->SetText(Utility::ConvertToWString(settings.artist));
 
 	// Add all difficulty icons
 	m_diffSelect->Clear();

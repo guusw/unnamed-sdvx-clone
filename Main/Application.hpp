@@ -39,11 +39,16 @@ public:
 	// Gets a basic template for a render state, with all the application variables initialized
 	RenderState GetRenderStateBase() const;
 
+	// Sets FPS limit, <= 0 for unlimited
+	void SetFrameLimiter(int32 fpsCap);
+
 	Texture LoadTexture(const String& name);
 	Material LoadMaterial(const String& name);
 	Sample LoadSample(const String& name);
 
 	float GetAppTime() const { return m_lastUpdateTime; }
+	float GetUpdateFPS() const;
+	float GetRenderFPS() const;
 
 	Transform GetGUIProjection() const;
 

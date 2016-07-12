@@ -69,7 +69,7 @@ Vector2i GUIRenderer::GetTextSize(const WString& str, uint32 fontSize /*= 16*/)
 }
 Vector2i GUIRenderer::GetTextSize(const String& str, uint32 fontSize /*= 16*/)
 {
-	return GetTextSize(Utility::ConvertToUnicode(str), fontSize);
+	return GetTextSize(Utility::ConvertToWString(str), fontSize);
 }
 Vector2i GUIRenderer::RenderText(RenderQueue& rq, const WString& str, const Vector2& position, const Color& color /*= Color(1.0f)*/, uint32 fontSize /*= 16*/)
 {
@@ -83,7 +83,7 @@ Vector2i GUIRenderer::RenderText(RenderQueue& rq, const WString& str, const Vect
 }
 Vector2i GUIRenderer::RenderText(RenderQueue& rq, const String& str, const Vector2& position, const Color& color /*= Color(1.0f)*/, uint32 fontSize /*= 16*/)
 {
-	return RenderText(rq, Utility::ConvertToUnicode(str), position, color, fontSize);
+	return RenderText(rq, Utility::ConvertToWString(str), position, color, fontSize);
 }
 void GUIRenderer::RenderText(RenderQueue& rq, Text& text, const Vector2& position, const Color& color /*= Color(1.0f)*/)
 {

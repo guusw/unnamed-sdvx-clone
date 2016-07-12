@@ -20,7 +20,7 @@ bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 
 	const BeatmapSettings& mapSettings = beatmap.GetMapSettings();
 	String audioPath = mapPath + "\\" + mapSettings.audioNoFX;
-	WString audioPathUnicode = Utility::ConvertToUnicode(audioPath);
+	WString audioPathUnicode = Utility::ConvertToWString(audioPath);
 	if(!Path::FileExists(audioPath))
 	{
 		Logf("Audio file for beatmap does not exists at: \"%s\"", Logger::Error, audioPath);
@@ -36,7 +36,7 @@ bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 
 	// Load FX track
 	audioPath = mapPath + "\\" + mapSettings.audioFX;
-	audioPathUnicode = Utility::ConvertToUnicode(audioPath);
+	audioPathUnicode = Utility::ConvertToWString(audioPath);
 	if(!audioPath.empty())
 	{
 		if(!Path::FileExists(audioPath))

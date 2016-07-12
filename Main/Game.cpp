@@ -72,6 +72,9 @@ public:
 		if(m_background)
 			delete m_background;
 		m_input.Cleanup();
+
+		// Allow frameliming again
+		g_application->SetFrameLimiter(60);
 	}
 
 	// Normal/FX button x placement
@@ -87,6 +90,9 @@ public:
 	virtual bool Init(Beatmap* map, String mapPath) override
 	{
 		ProfilerScope $("Init Game");
+
+		// Disable framerate limiting
+		g_application->SetFrameLimiter(-1);
 
 		assert(map);
 		m_mapPath = mapPath;
@@ -371,7 +377,7 @@ public:
 	// Draws text, returns the size of the drawn text
 	Vector2i RenderText(RenderQueue& rq, const String& str, const Vector2& position, const Color& color = Color(1.0f), uint32 fontSize = 16)
 	{
-		return RenderText(rq, Utility::ConvertToUnicode(str), position, color, fontSize);
+		return RenderText(rq, Utility::ConvertToWString(str), position, color, fontSize);
 	}
 	Vector2i RenderText(RenderQueue& rq, const WString& str, const Vector2& position, const Color& color = Color(1.0f), uint32 fontSize = 16)
 	{
@@ -422,7 +428,8 @@ public:
 		Vector2 textPos = Vector2(jrect.pos.x, jrect.Bottom() + 10.0f);
 		textPos.y += RenderText(guiRq, bms.title, textPos).y;
 		textPos.y += RenderText(guiRq, bms.artist, textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("RenderTime: %.2f ms", DeltaTime * 1000.0f), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("UpdateTime: %.2f ms", g_application->GetUpdateFPS()), textPos).y;
+		textPos.y += RenderText(guiRq, Utility::Sprintf("RenderTime: %.2f ms", g_application->GetRenderFPS()), textPos).y;
 		textPos.y += RenderText(guiRq, Utility::Sprintf("Audio Offset: %d ms", g_audio->audioLatency), textPos).y;
 
 		float currentBPM = (float)(60000.0 / tp.beatDuration);
@@ -733,6 +740,14 @@ public:
 		if(key == Key::Pause)
 		{
 			m_audioPlayback.TogglePause();
+			if(m_audioPlayback.IsPaused())
+			{
+				g_application->SetFrameLimiter(60);
+			}
+			else
+			{
+				g_application->SetFrameLimiter(-1);
+			}
 		}
 		else if(key == Key::Return) // Skip intro
 		{

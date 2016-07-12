@@ -183,7 +183,7 @@ public:
 	
 	Map<int32, MapIndex*> FindMaps(const String& searchString)
 	{
-		WString test = Utility::ConvertToUnicode(searchString);
+		WString test = Utility::ConvertToWString(searchString);
 		String stmt = "SELECT rowid FROM Maps WHERE";
 
 		//search.spl
@@ -521,7 +521,7 @@ private:
 					String searchPath = folderQueue.front();
 					folderQueue.pop_front();
 
-					WString searchPathW = Utility::ConvertToUnicode(searchPath) + L"\\*";
+					WString searchPathW = Utility::ConvertToWString(searchPath) + L"\\*";
 					WIN32_FIND_DATA findDataW;
 					HANDLE searchHandle = FindFirstFile(*searchPathW, &findDataW);
 					if(searchHandle == INVALID_HANDLE_VALUE)

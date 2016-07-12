@@ -36,6 +36,8 @@ precompiled_header_exclude(src/glew.c)
 target_link_libraries(Graphics png)
 target_link_libraries(Graphics jpeg)
 target_link_libraries(Graphics Shared)
+target_link_libraries(Graphics SDL2)
+target_include_directories(Graphics PUBLIC ${SDL2_SOURCE_DIR}/include/)
 if(UNIX)
 	# Find Freetype as a linux package
 	find_package(Freetype REQUIRED)

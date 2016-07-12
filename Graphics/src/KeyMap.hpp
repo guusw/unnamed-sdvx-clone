@@ -9,21 +9,21 @@ namespace Graphics
 		KeyMap()
 		{
 		}
-		void AddMapping(uint16 keyCode, Key key)
+		void AddMapping(uint32 keyCode, Key key)
 		{
 			m_keyMapping.Add(keyCode, key);
 		}
 		// Add a range from keyCodeStart to keyCodeEnd(inclusive)
-		void AddRangeMapping(uint16 keyCodeStart, uint16 keyCodeEnd, Key startKey)
+		void AddRangeMapping(uint32 keyCodeStart, uint32 keyCodeEnd, Key startKey)
 		{
-			uint16 k = (uint16)startKey;
-			for(uint16 i = keyCodeStart; i < keyCodeEnd; i++)
+			uint8 k = (uint8)startKey;
+			for(uint32 i = keyCodeStart; i < keyCodeEnd; i++)
 			{
 				AddMapping(i, (Key)k);
 				k++;
 			}
 		}
-		Key Translate(uint16 keyCode) const
+		Key Translate(uint32 keyCode) const
 		{
 			const Key* k = m_keyMapping.Find(keyCode);
 			if(k)
@@ -31,6 +31,6 @@ namespace Graphics
 			return Key::None;
 		}
 	private:
-		Map<uint16, Key> m_keyMapping;
+		Map<uint32, Key> m_keyMapping;
 	};
 }

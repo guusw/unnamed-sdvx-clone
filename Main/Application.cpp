@@ -16,18 +16,34 @@ Application* g_application = nullptr;
 
 Game* g_game = nullptr;
 
-Vector<IApplicationTickable*> g_tickables;
-Vector<IApplicationTickable*> g_removalQueue;
+// Tickable queue
+static Vector<IApplicationTickable*> g_tickables;
+static Vector<IApplicationTickable*> g_removalQueue;
 
-float g_aspectRatio = (16.0f / 9.0f);
+// Used to set the initial screen size
 static float g_screenHeight = 1000.0f;
+
+// Current screen size
+float g_aspectRatio = (16.0f / 9.0f);
 Vector2i g_resolution;
+
+// Render FPS cap
+static int32 g_fpsCap = 60;
+static float g_targetRenderTime = 0.1f;
+// Update target FPS
+static float g_targetUpdateTime = 1.0f / 240.0f;
+
+static float g_avgUpdateDelta = 0.0f;
+static float g_avgRenderDelta = 0.0f;
 
 Application::Application()
 {
 	// Enforce single instance
 	assert(!g_application);
 	g_application = this;
+
+	// Init FPS cap
+	SetFrameLimiter(g_fpsCap);
 }
 Application::~Application()
 {
@@ -194,23 +210,35 @@ bool Application::m_Init()
 }
 void Application::m_MainLoop()
 {
+	Timer dumpFrameRate;
 	Timer appTimer;
 	m_lastRenderTime = 0.0f;
 	m_lastUpdateTime = 0.0f;
 	while(true)
 	{
-		static const float maxDeltaTime = (1.0f / 30.0f);
-
 		// Gameplay loop
-		/// TODO: Add timing management
-		for(uint32 i = 0; i < 1; i++)
+		float currentTime = appTimer.SecondsAsFloat();
+		float timeSinceUpdate = currentTime - m_lastUpdateTime;
+		if(timeSinceUpdate > 1.0f) // Should only happen when game freezes / Debugger paused
+		{
+			timeSinceUpdate = g_targetUpdateTime;
+			m_lastUpdateTime = currentTime - g_targetUpdateTime;
+		}
+		while(timeSinceUpdate >= g_targetUpdateTime)
 		{
 			// Input update
 			if(!g_gameWindow->Update())
 				return;
-			float currentTime = appTimer.SecondsAsFloat();
-			float deltaTime = Math::Min(currentTime - m_lastUpdateTime, maxDeltaTime);
+
+			// Calculate actual deltatime for timing calculations
+			currentTime = appTimer.SecondsAsFloat();
+			float actualDeltaTime = currentTime - m_lastUpdateTime;
+			g_avgUpdateDelta = g_avgUpdateDelta * 0.5f + actualDeltaTime * 0.5f; // Calculate avg
 			m_lastUpdateTime = currentTime;
+
+			// Fixed DeltaTime
+			float deltaTime = g_targetUpdateTime;
+			timeSinceUpdate -= g_targetUpdateTime;
 
 			// Remove remove-queued tickables
 			bool removed = false;
@@ -247,15 +275,29 @@ void Application::m_MainLoop()
 			}
 		}
 
-		// Set time in render state
-		m_renderStateBase.time = m_lastUpdateTime;
-
 		// Render loop
-		for(uint32 i = 0; i < 1; i++)
+		currentTime = appTimer.SecondsAsFloat();
+		float timeSinceRender = currentTime - m_lastRenderTime;
+		g_avgRenderDelta = g_avgRenderDelta * 0.9f + timeSinceRender * 0.1f; // Calculate avg
+		if(timeSinceRender > g_targetRenderTime)
 		{
-			float currentTime = appTimer.SecondsAsFloat();
-			float deltaTime = Math::Min(currentTime - m_lastRenderTime, maxDeltaTime);
+			// Also update window in render loop
+			if(!g_gameWindow->Update())
+				return;
+
+			// Calculate actual deltatime for timing calculations
+			currentTime = appTimer.SecondsAsFloat();
+			float actualDeltaTime = currentTime - m_lastRenderTime;
+			g_avgRenderDelta = g_avgRenderDelta * 0.5f + actualDeltaTime * 0.5f; // Calculate avg
+
+			// Fixed DeltaTime
+			float deltaTime = g_targetRenderTime;
+			if(g_fpsCap <= 0)
+				deltaTime = actualDeltaTime;
 			m_lastRenderTime = currentTime;
+
+			// Set time in render state
+			m_renderStateBase.time = currentTime;
 
 			// Not minimized / Valid resolution
 			if(g_resolution.x > 0 && g_resolution.y > 0)
@@ -445,6 +487,17 @@ RenderState Application::GetRenderStateBase() const
 {
 	return m_renderStateBase;
 }
+
+void Application::SetFrameLimiter(int32 fpsCap)
+{
+	g_fpsCap = fpsCap;
+	if(fpsCap <= 0)
+		g_targetRenderTime = 0.0f;
+	else
+		g_targetRenderTime = 1.0f / (float)fpsCap;
+	Logf("FPS cap set to %d", Logger::Info, fpsCap);
+}
+
 Texture Application::LoadTexture(const String& name)
 {
 	String path = String("textures/") + name;
@@ -475,12 +528,33 @@ Sample Application::LoadSample(const String& name)
 	assert(ret);
 	return ret;
 }
+
+float Application::GetUpdateFPS() const
+{
+	return 1.0f / g_avgUpdateDelta;
+}
+float Application::GetRenderFPS() const
+{
+	return 1.0f / g_avgRenderDelta;
+}
+
 Transform Application::GetGUIProjection() const
 {
 	return ProjectionMatrix::CreateOrthographic(0.0f, (float)g_resolution.x, (float)g_resolution.y, 0.0f, 0.0f, 100.0f);
 }
 void Application::m_OnKeyPressed(Key key)
 {
+	// Fullscreen toggle
+	if(key == Key::Return)
+	{
+		if((g_gameWindow->GetModifierKeys() & ModifierKeys::Alt) == ModifierKeys::Alt)
+		{
+			g_gameWindow->SwitchFullscreen();
+			return;
+		}
+	}
+
+	// Pass key to application
 	for(auto it = g_tickables.rbegin(); it != g_tickables.rend();)
 	{
 		(*it)->OnKeyPressed(key);

@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "OpenGL.hpp"
 #include <Graphics/ResourceManagers.hpp>
+#ifdef _MSC_VER
 #pragma comment(lib, "opengl32.lib")
+#endif
 
 #include "Mesh.hpp"
 #include "Texture.hpp"
@@ -10,16 +12,24 @@
 #include "Material.hpp"
 #include "Framebuffer.hpp"
 #include "ParticleSystem.hpp"
+#include "Window.hpp"
+#include "SDL_syswm.h"
 
 namespace Graphics
 {
+	class OpenGL_Impl
+	{
+	public:
+		SDL_GLContext context;
+	};
+
 	OpenGL::OpenGL()
 	{
-
+		m_impl = new OpenGL_Impl();
 	}
 	OpenGL::~OpenGL()
 	{
-		if(m_renderContext)
+		if(m_impl->context)
 		{
 			// Cleanup resource managers
 			ResourceManagers::DestroyResourceManager<ResourceType::Mesh>();
@@ -35,11 +45,10 @@ namespace Graphics
 				glDeleteProgramPipelines(1, &m_mainProgramPipeline);
 			}
 
-			//ResourceManagers::DestroyAll();
-			wglMakeCurrent(m_deviceContext, 0);
-			wglDeleteContext(m_renderContext);
-			m_renderContext = 0;
+			SDL_GL_DeleteContext(m_impl->context);
+			m_impl->context = nullptr;
 		}
+		delete m_impl;
 	}
 	void OpenGL::InitResourceManagers()
 	{
@@ -53,65 +62,15 @@ namespace Graphics
 	}
 	bool OpenGL::Init(Window& window)
 	{
+		if(m_impl->context)
+			return true; // Already initialized
+
 		m_window = &window;
-		m_deviceContext = GetDC((HWND)m_window->Handle());
+		SDL_Window* sdlWnd = (SDL_Window*)m_window->Handle();
 
-		PIXELFORMATDESCRIPTOR pfd;
-		memset(&pfd, 0, sizeof(pfd));
-		pfd.nSize = sizeof(pfd);
-		pfd.nVersion = 1;
-		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-		pfd.iPixelType = PFD_TYPE_RGBA;
-		pfd.iLayerType = PFD_MAIN_PLANE;
-		pfd.cDepthBits = 0;
-		int nPixelFormat = ChoosePixelFormat(m_deviceContext, &pfd);
-		if(nPixelFormat == 0)
-			return false;
-
-		if(!SetPixelFormat(m_deviceContext, nPixelFormat, &pfd))
-			return false;
-
-		HGLRC intCtx = wglCreateContext(m_deviceContext);
-		if(!intCtx)
-		{
-			Log("Failed to create intermediate OpenGL context", Logger::Error);
-			return false;
-		}
-		if(!wglMakeCurrent(m_deviceContext, intCtx))
-		{
-			Log("Failed to set current context", Logger::Error);
-			return false;
-		}
-
-		wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
-		if(!wglCreateContextAttribsARB)
-		{
-			Log("wglCreateContextAttribsARB not supported", Logger::Error);
-			return false;
-		}
-
-		int attribs[] =
-		{
-			//WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-	#ifdef _DEBUG
-				WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB,
-	#endif
-				WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-				0, 0
-		};
-
-		m_renderContext = wglCreateContextAttribsARB(m_deviceContext, 0, attribs);
-		if(!m_renderContext)
-		{
-			Log("Failed to create OpenGL 4 core context", Logger::Error);
-		}
-
-		// Set current context and reaquire function pointeres using glew
-		wglMakeCurrent(m_deviceContext, m_renderContext);
+		// Create a context
+		m_impl->context = SDL_GL_CreateContext(sdlWnd);
 		glewInit();
-
-		// Delete intermediate context
-		wglDeleteContext(intCtx);
 
 		//#define LIST_OGL_EXTENSIONS
 #ifdef LIST_OGL_EXTENSIONS
@@ -129,7 +88,9 @@ namespace Graphics
 		glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 0, 0, GL_FALSE);
 #endif
 
-		wglSwapIntervalEXT(0);
+		// Disable VSync
+		//	Framerate is to be limited by the application manually
+		SDL_GL_SetSwapInterval(0);
 
 		InitResourceManagers();
 
@@ -171,7 +132,8 @@ namespace Graphics
 	void OpenGL::SwapBuffers()
 	{
 		glFlush();
-		::SwapBuffers(m_deviceContext);
+		SDL_Window* sdlWnd = (SDL_Window*)m_window->Handle();
+		SDL_GL_SwapWindow(sdlWnd);
 	}
 
 	void APIENTRY GLDebugProc(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)

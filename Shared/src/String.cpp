@@ -33,7 +33,7 @@ namespace Utility
 		return res;
 #endif
 	}
-	WString ConvertToUnicode(const String& ansiString)
+	WString ConvertToWString(const String& ansiString)
 	{
 #ifdef _WIN32
 		WString res;

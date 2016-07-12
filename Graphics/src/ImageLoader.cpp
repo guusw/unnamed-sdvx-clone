@@ -2,6 +2,8 @@
 #include "ImageLoader.hpp"
 #include "Image.hpp"
 #include "png.h"
+// HAVE_STDDEF_H redefinition
+#pragma warning(disable:4005)
 #include "jpeglib.h"
 
 namespace Graphics

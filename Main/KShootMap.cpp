@@ -100,7 +100,7 @@ bool KShootMap::Init(BinaryStream& input, bool metadataOnly)
 			continue;
 		if(!line.Split("=", &k, &v))
 			return false;
-		WString str = Utility::ConvertToUnicode(v);
+		WString str = Utility::ConvertToWString(v);
 		settings.FindOrAdd(k) = v;
 	}
 
