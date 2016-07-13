@@ -1,9 +1,11 @@
 #include "stdafx.h"
+#include "AudioOutput.hpp"
+
+#ifndef AUDIO_SDL
 #include "Audioclient.h"
 #include "Mmdeviceapi.h"
 #include "comdef.h"
 #include "Functiondiscoverykeys_devpkey.h"
-#include "AudioOutput.hpp"
 
 #define REFTIME_NS (100)
 #define REFTIMES_PER_MICROSEC (1000/REFTIME_NS)
@@ -335,3 +337,4 @@ double AudioOutput::GetBufferLength() const
 {
 	return m_impl->m_bufferLength;
 }
+#endif

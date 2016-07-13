@@ -1,6 +1,7 @@
 #pragma once
 
-struct tWAVEFORMATEX;
+// This define is used to switch between the SDL or WASAPI audio implementation
+//#define AUDIO_SDL
 
 /*
 	Low level audio output

@@ -25,6 +25,10 @@ enable_cpp11()
 enable_precompiled_headers(${Main_src} src/stdafx.cpp)	
 precompiled_header_exclude(${C_src})
 
+if(NOT WIN32)
+	add_definitions(-DAUDIO_SDL)
+endif(NOT WIN32)
+
 # Target subsystem on windows
 if(MSVC)
    set_target_properties(Main PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
@@ -39,3 +43,5 @@ target_link_libraries(Main ogg)
 target_link_libraries(Main vorbis)
 target_link_libraries(Main LZMA)
 target_link_libraries(Main freetype)
+target_link_libraries(Main SDL2)
+target_include_directories(Main PUBLIC ${SDL2_SOURCE_DIR}/include/)

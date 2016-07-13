@@ -5,7 +5,7 @@
 
 namespace Graphics
 {
-	/* SDL Instance singlton */
+	/* SDL Instance singleton */
 	class SDL
 	{
 	protected:
