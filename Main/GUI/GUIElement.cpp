@@ -2,6 +2,13 @@
 #include "GUI.hpp"
 #include "GUIRenderer.hpp"
 
+GUIElementBase::~GUIElementBase()
+{
+	if(m_rendererFocus)
+	{
+		m_rendererFocus->SetInputFocus(nullptr);
+	}
+}
 void GUIElementBase::Render(GUIRenderData rd)
 {
 	m_TickAnimations(rd.deltaTime);
@@ -23,6 +30,12 @@ bool GUIElementBase::AddAnimation(Ref<IGUIAnimation> anim, bool removeOld)
 	m_animationMap.Add(target, anim);
 	return true;
 }
+
+bool GUIElementBase::HasInputFocus() const
+{
+	return m_rendererFocus != nullptr;
+}
+
 void GUIElementBase::m_OnRemovedFromParent()
 {
 	slot = nullptr;
@@ -55,13 +68,15 @@ GUISlotBase::~GUISlotBase()
 }
 void GUISlotBase::Render(GUIRenderData rd)
 {
+	// Scissor Rectangle
+	rd.guiRenderer->PushScissorRect(rd.area);
+
 	// Apply padding
 	Rect scissorRect = rd.area = padding.Apply(rd.area);
 
-	// Scissor Rectangle
-	rd.guiRenderer->SetScissorRect(scissorRect);
-
 	element->Render(rd);
+
+	rd.guiRenderer->PopScissorRect();
 }
 bool GUISlotBase::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
 {

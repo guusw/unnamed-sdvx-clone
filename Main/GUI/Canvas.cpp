@@ -74,6 +74,8 @@ void Canvas::m_SortChildren()
 
 void Canvas::Slot::Render(GUIRenderData rd)
 {
+	rd.guiRenderer->PushScissorRect(rd.area);
+
 	// Apply anchor and offset to get the canvas rectangle
 	rd.area = anchor.Apply(rd.area);
 	
@@ -96,13 +98,13 @@ void Canvas::Slot::Render(GUIRenderData rd)
 
 	rd.area.pos += offset.pos;
 	rd.area.size += offset.size;
-	rd.guiRenderer->SetScissorRect(rd.area);
 
 	// Apply padding
 	rd.area = padding.Apply(rd.area);
 
-
 	element->Render(rd);
+
+	rd.guiRenderer->PopScissorRect();
 }
 
 bool Canvas::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)

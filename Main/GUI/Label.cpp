@@ -38,10 +38,12 @@ bool Label::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
 }
 void Label::SetText(const WString& text)
 {
+	if(m_textString == text)
+		return; // No needless updates
 	m_textString = text;
 	m_dirty = true;
 }
-WString Label::GetText() const
+const WString& Label::GetText() const
 {
 	return m_textString;
 }

@@ -4,9 +4,15 @@
 #include "GUI.hpp"
 #include "Application.hpp"
 
-bool GUIRenderer::Init(class OpenGL* gl)
+GUIRenderer::~GUIRenderer()
 {
-	ClearScissorRect();
+	SetInputFocus(nullptr);
+	SetWindow(nullptr);
+}
+bool GUIRenderer::Init(class OpenGL* gl, class Window* window)
+{
+	// Verify if scissor rectangle state was correctly restored
+	assert(m_scissorRectangles.empty());
 
 	assert(gl);
 	m_gl = gl;
@@ -23,6 +29,9 @@ bool GUIRenderer::Init(class OpenGL* gl)
 	colorMaterial->opaque = false;
 
 	guiQuad = MeshGenerators::Quad(g_gl, Vector2(0, 0), Vector2(1, 1));
+
+	// Initial window assignment
+	SetWindow(window);
 
 	return true;
 }
@@ -42,6 +51,10 @@ void GUIRenderer::Render(float deltaTime, Rect viewportSize, Ref<class GUIElemen
 	grd.transform = Transform();
 
 	rootElement->Render(grd);
+
+	// Clear text input after processing
+	m_ResetTextInput();
+
 	/// NOTE: GUI is the other way around
 	glCullFace(GL_FRONT);
 
@@ -53,15 +66,89 @@ void GUIRenderer::Render(float deltaTime, Rect viewportSize, Ref<class GUIElemen
 	m_renderQueue = nullptr;
 }
 
-void GUIRenderer::SetScissorRect(const Rect& scissor)
+void GUIRenderer::SetWindow(Window* window)
 {
-	m_scissorRect = scissor;
-}
-void GUIRenderer::ClearScissorRect()
-{
-	m_scissorRect = Rect(Vector2(), Vector2(-1));
+	if(m_window)
+	{
+		m_window->OnKeyRepeat.RemoveAll(this);
+		m_window->OnTextInput.RemoveAll(this);
+		m_window->OnTextComposition.RemoveAll(this);
+		m_window = nullptr;
+	}
+
+	m_window = window;
+
+	if(m_window)
+	{
+		m_window->OnKeyRepeat.Add(this, &GUIRenderer::m_OnKeyRepeat);
+		m_window->OnTextInput.Add(this, &GUIRenderer::m_OnTextInput);
+		m_window->OnTextComposition.Add(this, &GUIRenderer::m_OnTextComposition);
+	}
 }
 
+Window* GUIRenderer::GetWindow() const
+{
+	return m_window;
+}
+
+void GUIRenderer::PushScissorRect(const Rect& scissor)
+{
+	if(!m_scissorRectangles.empty())
+	{
+		m_scissorRect = m_scissorRectangles.back().Clamp(scissor);
+	}
+	else
+	{
+		m_scissorRect = scissor;
+	}
+	m_scissorRectangles.Add(m_scissorRect);
+}
+void GUIRenderer::PopScissorRect()
+{
+	m_scissorRectangles.pop_back();
+	if(m_scissorRectangles.empty())
+	{
+		m_scissorRect = Rect(Vector2(), Vector2(-1));
+	}
+	else
+	{
+		m_scissorRect = m_scissorRectangles.back();
+	}
+}
+
+void GUIRenderer::SetInputFocus(GUIElementBase* element)
+{
+	if(m_textInput.elementFocus)
+	{
+		if(m_textInput.elementFocus == element)
+			return; // Already focused
+		m_textInput.elementFocus->m_rendererFocus = nullptr;
+	}
+
+	m_textInput.elementFocus = element;
+	if(m_window)
+	{
+		// Start/Stop allowing ime text input
+		if(element)
+		{
+			element->m_rendererFocus = this;
+			m_window->StartTextInput();
+		}
+		else
+		{
+			m_window->StopTextInput();
+		}
+	}
+}
+GUIElementBase* GUIRenderer::GetInputFocus() const
+{
+	return m_textInput.elementFocus;
+}
+
+const GUITextInput& GUIRenderer::GetTextInput() const
+{
+	return m_textInput;
+}
 Vector2i GUIRenderer::GetTextSize(const WString& str, uint32 fontSize /*= 16*/)
 {
 	Text text = font->CreateText(str, fontSize);
@@ -110,4 +197,52 @@ void GUIRenderer::RenderRect(RenderQueue& rq, const Rect& rect, const Color& col
 	{
 		rq.DrawScissored(m_scissorRect, transform, guiQuad, colorMaterial, params);
 	}
+}
+
+void GUIRenderer::m_OnTextInput(const WString& input)
+{
+	m_textInput.input += input;
+}
+void GUIRenderer::m_OnTextComposition(const TextComposition& input)
+{
+	m_textInput.composition = input.composition;
+}
+void GUIRenderer::m_OnKeyRepeat(Key key)
+{
+	if(key == Key::Backspace)
+	{
+		if(m_textInput.input.empty())
+			m_textInput.backspaceCount++; // Send backspace
+		else
+		{
+			auto it = m_textInput.input.end(); // Modify input string instead
+			--it;
+			m_textInput.input.erase(it);
+		}
+	}
+}
+
+void GUIRenderer::m_ResetTextInput()
+{
+	m_textInput.backspaceCount = 0;
+	m_textInput.input.clear();
+}
+
+WString GUITextInput::Apply(const WString& in) const
+{
+	WString res = in + input;
+	auto it = res.end();
+	for(uint32 i = 0; i < backspaceCount; i++)
+	{
+		if(res.empty())
+			break;
+		--it;
+		it = res.erase(it);
+	}
+	return res;
+}
+
+bool GUITextInput::HasChanges() const
+{
+	return input.size() != backspaceCount;
 }

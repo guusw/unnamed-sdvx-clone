@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="C:\Projects\sdvx-clone\Main\Application.cpp">
@@ -112,6 +112,7 @@
     <ClCompile Include="C:\Projects\sdvx-clone\Main\sqlite3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\TextInputField.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\Projects\sdvx-clone\Main\Application.hpp">
@@ -226,6 +227,9 @@
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
     <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\SongSelectItem.hpp">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\TextInputField.hpp">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>

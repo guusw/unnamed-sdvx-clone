@@ -10,7 +10,6 @@ using std::thread;
 using std::mutex;
 using namespace std;
 
-
 class MapDatabase_Impl
 {
 public:
@@ -62,7 +61,7 @@ public:
 	List<Event> m_pendingChanges;
 	mutex m_pendingChangesLock;
 
-	static const int32 m_version = 6;
+	static const int32 m_version = 8;
 
 public:
 	MapDatabase_Impl(MapDatabase& outer) : m_outer(outer)
@@ -193,7 +192,9 @@ public:
 		{
 			if(i > 0)
 				stmt += " AND";
-			stmt += " (artist GLOB \"*" + term + "*\" OR title GLOB \"*" + term + "*\" OR tags GLOB \"*" + term + "*\")";
+			stmt += " (artist LIKE \"%" + term + "%\"" + 
+				" OR title LIKE \"%" + term + "%\"" +
+				" OR tags LIKE \"%" + term + "%\")";
 			i++;
 		}
 

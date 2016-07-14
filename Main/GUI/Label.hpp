@@ -8,7 +8,7 @@ public:
 	bool GetDesiredSize(GUIRenderData rd, Vector2& sizeOut) override;
 
 	// The text displayed
-	WString GetText() const;
+	const WString& GetText() const;
 	void SetText(const WString& text);
 
 	// The size(height) of the displayed text

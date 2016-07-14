@@ -83,13 +83,16 @@ class GUIElementBase : public Unique, public RefCounted<GUIElementBase>
 {
 public:
 	GUIElementBase() = default;
-	virtual ~GUIElementBase() = default;
+	virtual ~GUIElementBase();
 	// Called to draw the GUI element and it's children
 	virtual void Render(GUIRenderData rd);
 	// Calculates the desired size of this element, or false if it does not
 	virtual bool GetDesiredSize(GUIRenderData rd, Vector2& sizeOut);
 	// Add an animation related to this element
 	virtual bool AddAnimation(Ref<IGUIAnimation> anim, bool removeOld = false);
+
+	// If this element should receive keyboard input events or not
+	virtual bool HasInputFocus() const;
 
 	// The slot that contains this element
 	class GUISlotBase* slot = nullptr;
@@ -111,7 +114,12 @@ protected:
 	// Animation mapped to target
 	Map<void*, Ref<IGUIAnimation>> m_animationMap;
 
+	// Set if we got input focus from a renderer
+	// this should then be cleared when this element is destroyed
+	GUIRenderer* m_rendererFocus = nullptr;
+
 	friend class GUISlotBase;
+	friend class GUIRenderer;
 };
 
 // Typedef pointer to GUI element objects

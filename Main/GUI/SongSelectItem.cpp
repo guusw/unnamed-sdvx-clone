@@ -51,7 +51,7 @@ public:
 		static const float scale = 0.1f;
 		area.pos -= area.size * scale * m_fade * 0.5f;
 		area.size += area.size * scale * m_fade;
-		rd.guiRenderer->SetScissorRect(area);
+		rd.guiRenderer->PushScissorRect(area);
 
 		// Custom rendering to combine jacket image and frame
 		Transform transform;
@@ -72,6 +72,8 @@ public:
 		textRect = GUISlotBase::ApplyAlignment(Vector2(0.5f, 0.5f), textRect, textFrameRect);
 		rd.guiRenderer->RenderRect(*rd.rq, textFrameRect, Color::Black.WithAlpha(0.5f));
 		rd.guiRenderer->RenderText(*rd.rq, m_lvlText, textRect.pos, Color::White);
+
+		rd.guiRenderer->PopScissorRect();
 	}
 	virtual bool GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
 	{

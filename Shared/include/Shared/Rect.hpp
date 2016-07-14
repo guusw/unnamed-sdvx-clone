@@ -79,6 +79,16 @@ public:
 		newRect.size += halfDelta * 2;
 		return newRect;
 	}
+
+	// Clamp the parameter to this rectangle
+	RectangleBase Clamp(const RectangleBase& other) const
+	{
+		float top = Math::Max(other.Top(), Top());
+		float bottom = Math::Min(other.Bottom(), Bottom());
+		float left = Math::Max(other.Left(), Left());
+		float right = Math::Min(other.Right(), Right());
+		return Rect(left, top, right, bottom);
+	}
 };
 
 /* 
