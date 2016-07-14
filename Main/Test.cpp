@@ -74,6 +74,7 @@ public:
 		g_gameWindow->StartTextInput();
 		g_gameWindow->OnTextInput.Add(this, &Test_Impl::OnTextInput);
 		g_gameWindow->OnTextComposition.Add(this, &Test_Impl::OnTextComposition);
+		g_gameWindow->OnKeyRepeat.Add(this, &Test_Impl::OnKeyRepeat);
 
 		return true;
 	}
@@ -91,6 +92,9 @@ public:
 		m_imeWindow->SetComposition(comp);
 	}
 	virtual void OnKeyPressed(Key key)
+	{
+	}
+	void OnKeyRepeat(Key key)
 	{
 		if(key == Key::Backspace)
 		{

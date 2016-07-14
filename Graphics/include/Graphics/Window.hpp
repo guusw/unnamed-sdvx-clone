@@ -68,6 +68,8 @@ namespace Graphics
 
 		Delegate<Key> OnKeyPressed;
 		Delegate<Key> OnKeyReleased;
+		// Called for the initial an repeating presses of a key
+		Delegate<Key> OnKeyRepeat;
 		Delegate<const WString&> OnTextInput;
 		Delegate<const TextComposition&> OnTextComposition;
 		Delegate<const Vector2i&> OnResized;

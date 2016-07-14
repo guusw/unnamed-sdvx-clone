@@ -98,7 +98,7 @@ namespace Graphics
 		}
 
 		/* input handling */
-		void HandleKeyEvent(SDL_Keycode code, uint8 newState)
+		void HandleKeyEvent(SDL_Keycode code, uint8 newState, int32 repeat)
 		{
 			SDL_Keymod m = SDL_GetModState();
 			m_modKeys = ModifierKeys::None;
@@ -132,6 +132,10 @@ namespace Graphics
 					outer.OnKeyReleased.Call(keyCode);
 				}
 			}
+			if(currentState == 1)
+			{
+				outer.OnKeyRepeat.Call(keyCode);
+			}
 		}
 
 		/* Window show hide, positioning, etc.*/
@@ -158,11 +162,11 @@ namespace Graphics
 			{
 				if(evt.type == SDL_EventType::SDL_KEYDOWN)
 				{
-					HandleKeyEvent(evt.key.keysym.sym, 1);
+					HandleKeyEvent(evt.key.keysym.sym, 1, evt.key.repeat);
 				}
 				else if(evt.type == SDL_EventType::SDL_KEYUP)
 				{
-					HandleKeyEvent(evt.key.keysym.sym, 0);
+					HandleKeyEvent(evt.key.keysym.sym, 0, 0);
 				}
 				else if(evt.type == SDL_EventType::SDL_QUIT)
 				{
