@@ -158,6 +158,8 @@ public:
 			Remove(g.second.As<GUIElementBase>());
 		}
 		m_guiElements.clear();
+		m_filterSet = false;
+		m_mapFilter.clear();
 		m_maps.clear();
 		m_maps = newList;
 		if(m_maps.size() > 0)
@@ -581,11 +583,13 @@ public:
 	{
 		m_previewPlayer.Pause();
 		m_mapDatabase.StopSearching();
+		m_guiRenderer.SetInputFocus(nullptr);
 	}
 	virtual void OnRestore()
 	{
 		m_previewPlayer.Restore();
 		m_mapDatabase.StartSearching();
+		m_guiRenderer.SetInputFocus(m_searchField.GetData());
 	}
 };
 
