@@ -288,6 +288,7 @@ public:
 		emitter->SetSpawnRate(PPRandomRange<float>(250, 300));
 		emitter->SetStartPosition(PPBox({ 0.5f, 0.1f, 0.0f }));
 		emitter->SetStartSize(PPRandomRange<float>(0.25f, 0.4f));
+		emitter->SetScaleOverTime(PPRange<float>(2.0f, 1.0f));
 		emitter->SetFadeOverTime(PPRangeFadeIn<float>(1.0f, 0.0f, 0.4f));
 		emitter->SetLifetime(PPRandomRange<float>(0.17f, 0.2f));
 		emitter->SetStartDrag(PPConstant<float>(0.0f));
@@ -307,8 +308,9 @@ public:
 		emitter->loops = 0;
 		emitter->duration = 5.0f;
 		emitter->SetSpawnRate(PPRandomRange<float>(50, 100));
-		emitter->SetStartPosition(PPBox({ width * 1.1f, 0.1f, 0.0f }));
+		emitter->SetStartPosition(PPBox({ width * 1.5f, 0.1f, 0.0f }));
 		emitter->SetStartSize(PPRandomRange<float>(0.5f, 0.6f));
+		emitter->SetScaleOverTime(PPRange<float>(1.5f, 1.0f));
 		emitter->SetFadeOverTime(PPRangeFadeIn<float>(1.0f, 0.0f, 0.4f));
 		emitter->SetLifetime(PPRandomRange<float>(0.17f, 0.2f));
 		emitter->SetStartDrag(PPConstant<float>(0.0f));
@@ -613,12 +615,6 @@ public:
 		m_scoring.OnObjectHold.Add(this, &Game_Impl::OnObjectHold);
 		m_scoring.OnObjectReleased.Add(this, &Game_Impl::OnObjectReleased);
 		m_scoring.Reset(); // Initialize
-
-		// Autoplay enabled?
-		if(g_application->GetAppCommandLine().Contains("-autoplay"))
-		{
-			m_scoring.autoplay = true;
-		}
 
 		return true;
 	}

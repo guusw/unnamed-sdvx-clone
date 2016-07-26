@@ -7,6 +7,7 @@
 #include "GUI.hpp"
 #include "GUI/SongSelectItem.hpp"
 #include "MapDatabase.hpp"
+#include "Game.hpp"
 
 #include "Audio.hpp"
 
@@ -547,12 +548,14 @@ public:
 		}
 		else if(key == Key::Return)
 		{
+			bool autoplay = (g_gameWindow->GetModifierKeys() & ModifierKeys::Ctrl) == ModifierKeys::Ctrl;
 			MapIndex* map = m_selectionWheel->GetSelection();
 			if(map)
 			{
 				DifficultyIndex* diff = m_selectionWheel->GetSelectedDifficulty();
 				if(g_application->LaunchMap(diff->path))
 				{
+					g_game->GetScoring().autoplay = autoplay;
 				}
 			}
 		}

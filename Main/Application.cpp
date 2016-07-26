@@ -8,6 +8,7 @@
 #include <Graphics/Window.hpp>
 #include <Graphics/ResourceManagers.hpp>
 #include "Profiling.hpp"
+#include "Scoring.hpp"
 
 Config g_mainConfig;
 OpenGL* g_gl = nullptr;
@@ -73,6 +74,10 @@ int32 Application::Run()
 			}
 			else
 			{
+				if(g_application->GetAppCommandLine().Contains("-autoplay"))
+				{
+					g_game->GetScoring().autoplay = true;
+				}
 				mapLaunched = true;
 			}
 		}

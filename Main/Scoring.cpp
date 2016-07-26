@@ -107,6 +107,10 @@ float Scoring::m_GetLaserOutputRaw()
 	{
 		if(IsLaserHeld(i) && m_currentLaserSegments[i])
 		{
+			// Skip single or end slams
+			if(!m_currentLaserSegments[i]->next && (m_currentLaserSegments[i]->flags & LaserObjectState::flag_Instant) != 0)
+				continue;
+
 			float actual = laserTargetPositions[i];
 			// Undo laser extension
 			if((m_currentLaserSegments[i]->flags & LaserObjectState::flag_Extended) != 0)
