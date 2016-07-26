@@ -12,6 +12,9 @@
 #include "Input.hpp"
 #include "SongSelect.hpp"
 
+#include "GUI.hpp"
+#include "HealthGauge.hpp"
+
 class Game_Impl : public Game
 {
 	String m_mapPath;
@@ -19,6 +22,12 @@ class Game_Impl : public Game
 	bool m_playing = true;
 	bool m_started = false;
 	bool m_paused = false;
+
+	// GUI
+	GUIRenderer m_guiRenderer;
+	// Main Canvas
+	Ref<Canvas> m_canvas;
+	Ref<HealthGauge> m_scoringGauge;
 
 	// Texture of the map jacket image, if available
 	Texture m_jacketTexture;
@@ -352,102 +361,65 @@ public:
 		return emitter;
 	}
 
-	// Draws HUD and debug overlay text
-	Font font;
-	Material fontMaterial;
-	Mesh guiQuad;
-	Material guiTextureMaterial;
-	Material guiColorMaterial;
+	// Initialize HUD elements/layout
 	bool InitHUD()
 	{
-		CheckedLoad(font = FontRes::Create(g_gl, "fonts/segoeui.ttf"));
-		CheckedLoad(fontMaterial = g_application->LoadMaterial("font"));
-		fontMaterial->opaque = false;
-		CheckedLoad(guiTextureMaterial = g_application->LoadMaterial("guiTex"));
-		guiTextureMaterial->opaque = false;
-		CheckedLoad(guiColorMaterial = g_application->LoadMaterial("guiColor"));
-		guiColorMaterial->opaque = false;
-		guiQuad = MeshGenerators::Quad(g_gl, Vector2(0, 0), Vector2(1, 1));
+		if(!m_guiRenderer.Init(g_gl, g_gameWindow))
+			return false;
+
+		m_canvas = Utility::MakeRef(new Canvas());
+		m_scoringGauge = Utility::MakeRef(new HealthGauge());
+		Canvas::Slot* slot = m_canvas->Add(m_scoringGauge.As<GUIElementBase>());
+		slot->anchor = Anchor(0.95f, 0.5f);
+		slot->alignment = Vector2(1.0f, 0.5f);
+		slot->autoSizeX = true;
+		slot->autoSizeY = true;
+
 		return true;
 	}
 	
-	// Draws text, returns the size of the drawn text
-	Vector2i RenderText(RenderQueue& rq, const String& str, const Vector2& position, const Color& color = Color(1.0f), uint32 fontSize = 16)
-	{
-		return RenderText(rq, Utility::ConvertToWString(str), position, color, fontSize);
-	}
-	Vector2i RenderText(RenderQueue& rq, const WString& str, const Vector2& position, const Color& color = Color(1.0f), uint32 fontSize = 16)
-	{
-		Text text = font->CreateText(str, fontSize);
-		Transform textTransform;
-		textTransform *= Transform::Translation(position);
-		MaterialParameterSet params;
-		params.SetParameter("color", color);
-		rq.Draw(textTransform, text, fontMaterial, params);
-		return text->size;
-	}
-	// Draws a rectangle, either with a texture or just a color
-	void RenderRect(RenderQueue& rq, const Rect& rect, const Color& color = Color(1.0f), Texture texture = Texture())
-	{
-		Transform textTransform;
-		textTransform *= Transform::Translation(rect.pos);
-		textTransform *= Transform::Scale(Vector3(rect.size.x, rect.size.y, 1.0f));
-		MaterialParameterSet params;
-		params.SetParameter("color", color);
-		if(texture)
-		{
-			params.SetParameter("mainTex", texture);
-			rq.Draw(textTransform, guiQuad, guiTextureMaterial, params);
-		}
-		else
-		{
-			rq.Draw(textTransform, guiQuad, guiColorMaterial, params);
-		}
-	}
 	// Main GUI/HUD Rendering loop
-	virtual void RenderHUD(float DeltaTime)
+	virtual void RenderHUD(float deltaTime)
 	{
-		RenderState guiRs;
-		guiRs.projectionTransform = g_application->GetGUIProjection();
-		guiRs.aspectRatio = g_aspectRatio;
-		guiRs.viewportSize = g_resolution;
+		// Render main canvas
+		Rect viewport(Vector2(), g_gameWindow->GetWindowSize());
+		m_guiRenderer.Render(deltaTime, viewport, m_canvas.As<GUIElementBase>());
 
-		RenderQueue guiRq(g_gl, guiRs);
-
-		// Draw the jacket image
-		Rect jrect = Rect(Vector2(10.0f), Vector2(100.0f));
-		RenderRect(guiRq, jrect, Color::White);
-		jrect = jrect.Offset(-2.0f);
-		RenderRect(guiRq, jrect, Color::White, m_jacketTexture);
+		// Render debug overlay elements
+		RenderQueue& debugRq = m_guiRenderer.Begin();
+		auto RenderText = [&](const String& text, const Vector2& pos, const Color& color = Color::White)
+		{
+			return m_guiRenderer.RenderText(debugRq, text, pos, color);
+		};
 
 		const BeatmapSettings& bms = m_beatmap->GetMapSettings();
 		const TimingPoint& tp = m_playback.GetCurrentTimingPoint();
-		Vector2 textPos = Vector2(jrect.pos.x, jrect.Bottom() + 10.0f);
-		textPos.y += RenderText(guiRq, bms.title, textPos).y;
-		textPos.y += RenderText(guiRq, bms.artist, textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("UpdateTime: %.2f FPS", g_application->GetUpdateFPS()), textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("RenderTime: %.2f FPS", g_application->GetRenderFPS()), textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("Audio Offset: %d ms", g_audio->audioLatency), textPos).y;
+		Vector2 textPos = Vector2(10, 10);
+		textPos.y += RenderText(bms.title, textPos).y;
+		textPos.y += RenderText(bms.artist, textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("UpdateTime: %.2f FPS", g_application->GetUpdateFPS()), textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("RenderTime: %.2f FPS", g_application->GetRenderFPS()), textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("Audio Offset: %d ms", g_audio->audioLatency), textPos).y;
 
 		float currentBPM = (float)(60000.0 / tp.beatDuration);
-		textPos.y += RenderText(guiRq, Utility::Sprintf("BPM: %.1f", currentBPM), textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("Time Signature: %d/4", tp.numerator), textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("Laser Effect Mix: %f", m_audioPlayback.GetLaserEffectMix()), textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("Laser Filter Input: %f", m_scoring.GetLaserOutput()), textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("BPM: %.1f", currentBPM), textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("Time Signature: %d/4", tp.numerator), textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("Laser Effect Mix: %f", m_audioPlayback.GetLaserEffectMix()), textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("Laser Filter Input: %f", m_scoring.GetLaserOutput()), textPos).y;
 		
-		textPos.y += RenderText(guiRq, Utility::Sprintf("Score: %d (Max: %d)", m_scoring.currentHitScore, m_scoring.totalMaxScore), textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("Actual Score: %d", m_scoring.CalculateCurrentScore()), textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("Score: %d (Max: %d)", m_scoring.currentHitScore, m_scoring.totalMaxScore), textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("Actual Score: %d", m_scoring.CalculateCurrentScore()), textPos).y;
 
-		textPos.y += RenderText(guiRq, Utility::Sprintf("Health Gauge: %f", m_scoring.currentGauge), textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("Health Gauge: %f", m_scoring.currentGauge), textPos).y;
 
-		textPos.y += RenderText(guiRq, Utility::Sprintf("Roll: %f(x%f) %s", 
+		textPos.y += RenderText(Utility::Sprintf("Roll: %f(x%f) %s",
 			m_camera.GetRoll(), m_rollIntensity, m_camera.rollKeep ? "[Keep]" : ""), textPos).y;
 
-		textPos.y += RenderText(guiRq, Utility::Sprintf("Track Zoom Top: %f", m_camera.zoomTop), textPos).y;
-		textPos.y += RenderText(guiRq, Utility::Sprintf("Track Zoom Bottom: %f", m_camera.zoomBottom), textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("Track Zoom Top: %f", m_camera.zoomTop), textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("Track Zoom Bottom: %f", m_camera.zoomBottom), textPos).y;
 
 		if(m_scoring.autoplay)
-			textPos.y += RenderText(guiRq, "Autoplay enabled", textPos, Color::Blue).y;
+			textPos.y += RenderText("Autoplay enabled", textPos, Color::Blue).y;
 
 		// List recent hits and their delay	
 		Vector2 tableStart = textPos;
@@ -480,12 +452,10 @@ public:
 			{
 				text = Utility::Sprintf("Laser [%d] [%d/%d]", obj->laser.index, (*it)->hold, (*it)->holdMax);
 			}
-			textPos.y += RenderText(guiRq, text, textPos, c).y;
+			textPos.y += RenderText(text, textPos, c).y;
 		}
 
-		glCullFace(GL_FRONT); // Flipped culling mode for GUI
-		guiRq.Process();
-		glCullFace(GL_BACK);
+		m_guiRenderer.End();
 	}
 
 	void OnLaserSlamHit(LaserObjectState* object)
@@ -706,6 +676,9 @@ public:
 
 		// Update scoring
 		m_scoring.Tick(deltaTime);
+
+		// Update scoring gauge
+		m_scoringGauge->rate = m_scoring.currentGauge;
 
 		// Get the current timing point
 		m_currentTiming = &m_playback.GetCurrentTimingPoint();

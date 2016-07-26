@@ -40,6 +40,10 @@ public:
 	{
 		return *this = (*this) + other;
 	}
+	MarginBase operator*(const T scale) const
+	{
+		return MarginBase(left * scale, top * scale, right * scale, bottom * scale);
+	}
 
 	// Invert the margin
 	MarginBase operator-() const

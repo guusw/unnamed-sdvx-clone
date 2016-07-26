@@ -109,10 +109,15 @@
     <ClCompile Include="C:\Projects\sdvx-clone\Main\GUI\SongSelectItem.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Projects\sdvx-clone\Main\GUI\TextInputField.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Projects\sdvx-clone\Main\sqlite3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GUI\TextInputField.cpp" />
+    <ClCompile Include="GUI\HealthGauge.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\Projects\sdvx-clone\Main\Application.hpp">
@@ -229,7 +234,10 @@
     <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\SongSelectItem.hpp">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="GUI\TextInputField.hpp">
+    <ClInclude Include="C:\Projects\sdvx-clone\Main\GUI\TextInputField.hpp">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\HealthGauge.hpp">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
@@ -242,17 +250,17 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Header Files\Audio">
-      <UniqueIdentifier>{33A119EC-4390-383F-8671-3B7C56747B6E}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\GUI">
-      <UniqueIdentifier>{AD98EBB5-4B19-3309-BD8E-F5A6D5F6ECCC}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Audio">
       <UniqueIdentifier>{A9CB4E1E-E84D-35DB-878E-76811569B1E9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\GUI">
       <UniqueIdentifier>{268ECD98-AFD9-345D-8960-C0D7A3ABFBB9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Audio">
+      <UniqueIdentifier>{33A119EC-4390-383F-8671-3B7C56747B6E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI">
+      <UniqueIdentifier>{AD98EBB5-4B19-3309-BD8E-F5A6D5F6ECCC}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4E2E32B2-1850-331C-908A-1617039565C2}</UniqueIdentifier>

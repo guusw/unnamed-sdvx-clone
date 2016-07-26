@@ -252,7 +252,9 @@ public:
 			if(srcCollection.empty())
 			{
 				// Remove all elements, empty
+				m_currentSelection.Release();
 				Clear();
+				m_guiElements.clear();
 				return;
 			}
 			it = srcCollection.begin();
@@ -335,7 +337,6 @@ public:
 		return nullptr;
 	}
 
-
 private:
 	const Map<int32, MapIndex*>& m_SourceCollection()
 	{
@@ -363,8 +364,8 @@ private:
 		m_currentSelection = m_guiElements[map];
 		m_currentSelection->SwitchCompact(false);
 
-		if(map && map->id == m_currentlySelectedId)
-			return;
+		//if(map && map->id == m_currentlySelectedId)
+		//	return;
 
 		// Clamp diff selection
 		int32 selectDiff = m_currentlySelectedDiff;
@@ -572,6 +573,9 @@ public:
 			m_dbUpdateTimer.Restart();
 		}
 
+		glClearColor(0, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
+
 		Rect viewport(Vector2(), g_gameWindow->GetWindowSize());
 		m_guiRenderer.Render(deltaTime, viewport, m_canvas.As<GUIElementBase>());
 	}
@@ -590,6 +594,8 @@ public:
 		m_previewPlayer.Restore();
 		m_mapDatabase.StartSearching();
 		m_guiRenderer.SetInputFocus(m_searchField.GetData());
+
+		OnSearchTermChanged(m_searchField->GetText());
 	}
 };
 

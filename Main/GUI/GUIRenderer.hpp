@@ -25,6 +25,11 @@ public:
 	bool Init(class OpenGL* gl, Window* window = nullptr);
 	void Render(float deltaTime, Rect viewportSize, Ref<class GUIElementBase> rootElement);
 
+	// Use to manually start rendering GUI elements
+	RenderQueue& Begin();
+	// Use to manually stop rendering GUI elements
+	void End();
+
 	void SetWindow(Window* window);
 	Window* GetWindow() const;
 

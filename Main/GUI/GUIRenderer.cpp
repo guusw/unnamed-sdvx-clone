@@ -6,14 +6,12 @@
 
 GUIRenderer::~GUIRenderer()
 {
+	assert(!m_renderQueue);
 	SetInputFocus(nullptr);
 	SetWindow(nullptr);
 }
 bool GUIRenderer::Init(class OpenGL* gl, class Window* window)
 {
-	// Verify if scissor rectangle state was correctly restored
-	assert(m_scissorRectangles.empty());
-
 	assert(gl);
 	m_gl = gl;
 
@@ -37,33 +35,57 @@ bool GUIRenderer::Init(class OpenGL* gl, class Window* window)
 }
 void GUIRenderer::Render(float deltaTime, Rect viewportSize, Ref<class GUIElementBase> rootElement)
 {
-	// Render state/queue for the GUI
-	RenderState guiRs = g_application->GetRenderStateBase();
-	guiRs.projectionTransform = g_application->GetGUIProjection();
-	m_renderQueue = new RenderQueue(g_gl, guiRs);
-
+	Begin();
 	// Render GUI
 	GUIRenderData grd;
 	grd.rq = m_renderQueue;
 	grd.guiRenderer = this;
 	grd.deltaTime = deltaTime;
-	grd.area = Rect(Vector2(), g_gameWindow->GetWindowSize());
+	grd.area = viewportSize;
 	grd.transform = Transform();
 
 	rootElement->Render(grd);
 
 	// Clear text input after processing
 	m_ResetTextInput();
+	End();
+}
+
+Graphics::RenderQueue& GUIRenderer::Begin()
+{
+	// Must have not called begin before this / or have called end
+	assert(m_renderQueue == nullptr);
+
+	// Set initial scissor rect to be disabled
+	m_scissorRect = Rect(Vector2(0, 0), Vector2(-1));
+
+	// Render state/queue for the GUI
+	RenderState guiRs = g_application->GetRenderStateBase();
+	guiRs.projectionTransform = g_application->GetGUIProjection();
+	m_renderQueue = new RenderQueue(g_gl, guiRs);
+
+	return *m_renderQueue;
+}
+void GUIRenderer::End()
+{
+	// Must have called Begin
+	assert(m_renderQueue);
+
+	// Render all elements placed in the queue previously
 
 	/// NOTE: GUI is the other way around
 	glCullFace(GL_FRONT);
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0);
-	glClear(GL_COLOR_BUFFER_BIT);
 	m_renderQueue->Process();
+
+	// Verify if scissor rectangle state was correctly restored
+	assert(m_scissorRectangles.empty());
 
 	delete m_renderQueue;
 	m_renderQueue = nullptr;
+
+	// Reset face culling mode
+	glCullFace(GL_BACK);
 }
 
 void GUIRenderer::SetWindow(Window* window)

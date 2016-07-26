@@ -65,6 +65,9 @@ namespace Graphics
 	public:
 		OpenGL* m_gl;
 		Shader m_shaders[3];
+#if _DEBUG
+		String m_debugNames[3];
+#endif
 		uint32 m_pipeline;
 		Map<uint32, BoundParameterList> m_boundParameters;
 		Map<String, uint32> m_mappedParameters;
@@ -338,6 +341,10 @@ namespace Graphics
 		Material_Impl* impl = new Material_Impl(gl);
 		impl->AssignShader(ShaderType::Vertex, ShaderRes::Create(gl, ShaderType::Vertex, vsPath));
 		impl->AssignShader(ShaderType::Fragment, ShaderRes::Create(gl, ShaderType::Fragment, fsPath));
+#if _DEBUG
+		impl->m_debugNames[(size_t)ShaderType::Vertex] = vsPath;
+		impl->m_debugNames[(size_t)ShaderType::Fragment] = fsPath;
+#endif
 
 		if(!impl->m_shaders[(size_t)ShaderType::Vertex])
 		{
