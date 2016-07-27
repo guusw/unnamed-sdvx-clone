@@ -27,15 +27,7 @@ bool Input::GetButton(Button button) const
 
 float Input::GetInputLaserDir(uint32 laserIdx)
 {
-	size_t base = (size_t)Button::LS_0Neg;
-	if(laserIdx == 1)
-	{
-		base = (size_t)Button::LS_1Neg;
-	}
-	float r = 0.0f;
-	r -= 1.0f * m_buttonStates[base];
-	r += 1.0f * m_buttonStates[base + 1];
-	return r;
+	return m_laserStates[laserIdx];
 }
 void Input::m_InitButtonMapping()
 {
@@ -77,6 +69,25 @@ void Input::m_OnButtonInput(Button b, bool pressed)
 		else
 		{
 			OnButtonReleased.Call(b);
+		}
+	}
+
+	static Timer t;
+	if(b >= Button::LS_0Neg)
+	{
+		int32 btnIdx = (int32)b - (int32)Button::LS_0Neg;
+		int32 laserIdx = btnIdx / 2;
+		// Set laser state based uppon the button that was pressed last
+		if(pressed)
+			m_laserStates[laserIdx] = (btnIdx % 2) == 0 ? -1.0f : 1.0f;
+		else // If a button was released check if the other one is still held
+		{
+			if(m_buttonStates[(int32)Button::LS_0Neg + laserIdx * 2])
+				m_laserStates[laserIdx] = -1;
+			else if(m_buttonStates[(int32)Button::LS_0Neg + laserIdx * 2 + 1])
+				m_laserStates[laserIdx] = 1;
+			else
+				m_laserStates[laserIdx] = 0;
 		}
 	}
 }

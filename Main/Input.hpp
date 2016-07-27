@@ -43,6 +43,7 @@ private:
 
 	Map<Key, Button> m_buttonMap;
 	bool m_buttonStates[(size_t)Button::Length];
+	float m_laserStates[2] = { 0.0f };
 
 	Window* m_window = nullptr;
 };

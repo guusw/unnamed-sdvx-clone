@@ -155,6 +155,7 @@ namespace Graphics
 		}
 
 		// Update loop
+		Timer t;
 		bool Update()
 		{
 			SDL_Event evt;
@@ -162,7 +163,11 @@ namespace Graphics
 			{
 				if(evt.type == SDL_EventType::SDL_KEYDOWN)
 				{
-					HandleKeyEvent(evt.key.keysym.sym, 1, evt.key.repeat);
+					if(m_textComposition.composition.empty())
+					{
+						// Ignore key input when composition is being typed
+						HandleKeyEvent(evt.key.keysym.sym, 1, evt.key.repeat);
+					}
 				}
 				else if(evt.type == SDL_EventType::SDL_KEYUP)
 				{

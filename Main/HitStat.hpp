@@ -28,4 +28,6 @@ struct HitStat
 	uint32 hold = 0;
 	// This is the amount of total ticks in this hold sequence
 	uint32 holdMax = 0;
+	// If at least one hold tick has been missed
+	bool hasMissed = false;
 };

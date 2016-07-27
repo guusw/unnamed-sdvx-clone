@@ -22,6 +22,8 @@ class Game_Impl : public Game
 	bool m_playing = true;
 	bool m_started = false;
 	bool m_paused = false;
+	
+	bool m_renderDebugHUD = false;
 
 	// GUI
 	GUIRenderer m_guiRenderer;
@@ -99,6 +101,11 @@ public:
 	virtual bool Init(Beatmap* map, String mapPath) override
 	{
 		ProfilerScope $("Init Game");
+
+		if(g_application->GetAppCommandLine().Contains("-debug"))
+		{
+			m_renderDebugHUD = true;
+		}
 
 		assert(map);
 		m_mapPath = mapPath;
@@ -381,12 +388,8 @@ public:
 	}
 	
 	// Main GUI/HUD Rendering loop
-	virtual void RenderHUD(float deltaTime)
+	virtual void RenderDebugHUD(float deltaTime)
 	{
-		// Render main canvas
-		Rect viewport(Vector2(), g_gameWindow->GetWindowSize());
-		m_guiRenderer.Render(deltaTime, viewport, m_canvas.As<GUIElementBase>());
-
 		// Render debug overlay elements
 		RenderQueue& debugRq = m_guiRenderer.Begin();
 		auto RenderText = [&](const String& text, const Vector2& pos, const Color& color = Color::White)
@@ -408,7 +411,7 @@ public:
 		textPos.y += RenderText(Utility::Sprintf("Time Signature: %d/4", tp.numerator), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Laser Effect Mix: %f", m_audioPlayback.GetLaserEffectMix()), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Laser Filter Input: %f", m_scoring.GetLaserOutput()), textPos).y;
-		
+
 		textPos.y += RenderText(Utility::Sprintf("Score: %d (Max: %d)", m_scoring.currentHitScore, m_scoring.totalMaxScore), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Actual Score: %d", m_scoring.CalculateCurrentScore()), textPos).y;
 
@@ -432,13 +435,15 @@ public:
 			if(hitsShown++ > 16) // Max of 16 entries to display
 				break;
 
-			
+
 			static Color hitColors[] = {
 				Color::Red,
 				Color::Yellow,
 				Color::Green,
 			};
 			Color c = hitColors[(size_t)(*it)->rating];
+			if((*it)->hasMissed && (*it)->hold > 0)
+				c = Color(1, 0.65f, 0);
 			String text;
 
 			MultiObjectState* obj = *(*it)->object;
@@ -458,6 +463,18 @@ public:
 		}
 
 		m_guiRenderer.End();
+	}
+	virtual void RenderHUD(float deltaTime)
+	{
+		// Render main canvas
+		Rect viewport(Vector2(), g_gameWindow->GetWindowSize());
+		m_guiRenderer.Render(deltaTime, viewport, m_canvas.As<GUIElementBase>());
+
+		// Render debug hud if enabled
+		if(m_renderDebugHUD)
+		{
+			RenderDebugHUD(deltaTime);
+		}
 	}
 
 	void OnLaserSlamHit(LaserObjectState* object)

@@ -397,7 +397,8 @@ void Scoring::m_UpdateTicks()
 		{
 			ScoreTick* tick = ticks[i];
 			MapTime delta = currentTime - ticks[i]->time;
-			bool shouldMiss = delta > tick->GetHitWindow();
+			const float hitWindow = tick->GetHitWindow();
+			bool shouldMiss = delta > hitWindow;
 			bool processed = false;
 			if(delta >= 0)
 			{
@@ -524,10 +525,13 @@ void Scoring::m_TickHit(ScoreTick* tick, uint32 index, MapTime delta /*= 0*/)
 	}
 	else if(tick->HasFlag(TickFlags::Laser))
 	{
+		LaserObjectState* object = (LaserObjectState*)tick->object;
 		LaserObjectState* rootObject = ((LaserObjectState*)tick->object)->GetRoot();
 		if(tick->HasFlag(TickFlags::Slam))
 		{
 			OnLaserSlamHit.Call((LaserObjectState*)tick->object);
+			// Set laser pointer position after hitting slam
+			laserPositions[object->index] = object->points[1];
 		}
 		m_SetHoldObject(*rootObject, index);
 		m_AddScore(2);
@@ -540,6 +544,7 @@ void Scoring::m_TickHit(ScoreTick* tick, uint32 index, MapTime delta /*= 0*/)
 void Scoring::m_TickMiss(ScoreTick* tick, uint32 index, MapTime delta)
 {
 	HitStat* stat = m_AddOrUpdateHitStat(tick->object);
+	stat->hasMissed = true;
 	if(tick->HasFlag(TickFlags::Button))
 	{
 		OnButtonMiss.Call((Input::Button)index); 
