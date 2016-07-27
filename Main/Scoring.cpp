@@ -530,6 +530,7 @@ void Scoring::m_TickHit(ScoreTick* tick, uint32 index, MapTime delta /*= 0*/)
 		{
 			OnLaserSlamHit.Call((LaserObjectState*)tick->object);
 			// Set laser pointer position after hitting slam
+			laserTargetPositions[object->index] = object->points[1];
 			laserPositions[object->index] = object->points[1];
 		}
 		m_SetHoldObject(*rootObject, index);
@@ -646,7 +647,7 @@ void Scoring::m_UpdateLasers(float deltaTime)
 		// Check for new laser segments in laser queue
 		for(auto it = m_laserSegmentQueue.begin(); it != m_laserSegmentQueue.end();)
 		{
-			if((*it)->time >= mapTime)
+			if((*it)->time <= mapTime)
 			{
 				// Replace the currently active segment
 				m_currentLaserSegments[(*it)->index] = *it;
