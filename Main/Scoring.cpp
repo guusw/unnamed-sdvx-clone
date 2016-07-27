@@ -397,8 +397,7 @@ void Scoring::m_UpdateTicks()
 		{
 			ScoreTick* tick = ticks[i];
 			MapTime delta = currentTime - ticks[i]->time;
-			const float hitWindow = tick->GetHitWindow();
-			bool shouldMiss = delta > hitWindow;
+			bool shouldMiss = delta > tick->GetHitWindow();
 			bool processed = false;
 			if(delta >= 0)
 			{
