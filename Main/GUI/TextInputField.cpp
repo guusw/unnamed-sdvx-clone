@@ -7,13 +7,13 @@ TextInputField::TextInputField()
 {
 	layoutDirection = LayoutBox::Horizontal;
 
-	text = new Label();
+    text = new Label();
 	Slot* slot = Add(text->MakeShared());
 	slot->fill = false;
 	text->SetText(L"");
 	text->SetFontSize(32);
 
-	composition = new Label();
+    composition = new Label();
 	composition->color = compositionColor;
 	slot = Add(composition->MakeShared());
 	slot->fill = false;

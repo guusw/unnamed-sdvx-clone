@@ -4,8 +4,8 @@
 using std::this_thread::yield;
 
 #ifdef AUDIO_SDL
-#include "SDL.h"
-#include "SDL_audio.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_audio.h>
 
 /* SDL audio instance singleton*/
 class SDLAudio

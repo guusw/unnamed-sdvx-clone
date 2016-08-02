@@ -64,8 +64,8 @@ private:
 	class Panel* m_bg = nullptr;
 	class LayoutBox* m_mainVert = nullptr;
 	class LayoutBox* m_diffSelect = nullptr;
-	class Label* m_title = nullptr;
-	class Label* m_artist = nullptr;
+    class Label* m_title = nullptr;
+    class Label* m_artist = nullptr;
 };
 
 // Song statistics window on the left

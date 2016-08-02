@@ -12,7 +12,7 @@
 
 Config g_mainConfig;
 OpenGL* g_gl = nullptr;
-Window* g_gameWindow = nullptr;
+DesktopWindow* g_gameWindow = nullptr;
 Application* g_application = nullptr;
 
 Game* g_game = nullptr;
@@ -125,7 +125,12 @@ bool Application::m_Init()
 	ProfilerScope $("Application Setup");
 
 	// Split up command line parameters
-	String cmdLine = Utility::ConvertToUTF8(GetCommandLine());
+	// TODO: Linux compatibility
+#ifdef _WIN32
+	String cmdLine = GetCommandLine();
+#else
+	String cmdLine = "";
+#endif
 	m_commandLine = Path::SplitCommandLine(cmdLine);
 	assert(m_commandLine.size() >= 1);
 
@@ -165,7 +170,7 @@ bool Application::m_Init()
 
 	// Create the game window
 	g_resolution = Vector2i{ (int32)(g_screenHeight * g_aspectRatio), (int32)g_screenHeight };
-	g_gameWindow = new Window(g_resolution);
+    g_gameWindow = new DesktopWindow(g_resolution);
 	g_gameWindow->Show();
 	m_OnWindowResized(g_resolution);
 	g_gameWindow->OnKeyPressed.Add(this, &Application::m_OnKeyPressed);

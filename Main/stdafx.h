@@ -5,13 +5,15 @@
 #include <Graphics/GL.hpp>
 
 // Windows Header Files:
+#ifdef _WIN32
 #include <windows.h>
+#include <tchar.h>
+#endif
 
 // C RunTime Header Files
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
-#include <tchar.h>
 #include <cinttypes>
 
 // TODO: reference additional headers your program requires here

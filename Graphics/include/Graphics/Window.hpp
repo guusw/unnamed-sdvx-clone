@@ -21,11 +21,11 @@ namespace Graphics
 		Simple window class that manages window messages, window style and input
 		Renamed from Window to DesktopWindow to avoid conflicts with libX11 on Linux
 	*/
-	class Window : Unique
+    class DesktopWindow : Unique
 	{
 	public:
-		Window(Vector2i size = Vector2i(800, 600));
-		~Window();
+        DesktopWindow(Vector2i size = Vector2i(800, 600));
+        ~DesktopWindow();
 		// Show the window
 		void Show();
 		// Hide the window

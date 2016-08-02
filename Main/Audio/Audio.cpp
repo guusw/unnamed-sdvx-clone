@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <unistd.h>
 #include "Audio.hpp"
 #include <Graphics/Window.hpp>
 #include "AudioStream.hpp"
@@ -81,7 +82,11 @@ void Audio_Impl::AudioThread()
 
 			delete[] tempData;
 		}
+#ifdef _WIN32
 		Sleep(0);
+#else
+		sleep(0);
+#endif
 	}
 }
 void Audio_Impl::Start()
@@ -145,7 +150,7 @@ Audio::~Audio()
 	assert(g_audio == this);
 	g_audio = nullptr;
 }
-bool Audio::Init(class Window& window)
+bool Audio::Init(class DesktopWindow& window)
 {
 	m_window = &window;
 	audioLatency = 0;

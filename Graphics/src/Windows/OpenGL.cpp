@@ -13,7 +13,7 @@
 #include "Framebuffer.hpp"
 #include "ParticleSystem.hpp"
 #include "Window.hpp"
-#include "SDL_syswm.h"
+#include <SDL2/SDL_syswm.h>
 
 namespace Graphics
 {
@@ -35,7 +35,7 @@ namespace Graphics
 			ResourceManagers::DestroyResourceManager<ResourceType::Mesh>();
 			ResourceManagers::DestroyResourceManager<ResourceType::Texture>();
 			ResourceManagers::DestroyResourceManager<ResourceType::Shader>();
-			ResourceManagers::DestroyResourceManager<ResourceType::Font>();
+			ResourceManagers::DestroyResourceManager<ResourceType::GlFont>();
 			ResourceManagers::DestroyResourceManager<ResourceType::Material>();
 			ResourceManagers::DestroyResourceManager<ResourceType::Framebuffer>();
 			ResourceManagers::DestroyResourceManager<ResourceType::ParticleSystem>();
@@ -55,12 +55,12 @@ namespace Graphics
 		ResourceManagers::CreateResourceManager<ResourceType::Mesh>();
 		ResourceManagers::CreateResourceManager<ResourceType::Texture>();
 		ResourceManagers::CreateResourceManager<ResourceType::Shader>();
-		ResourceManagers::CreateResourceManager<ResourceType::Font>();
+		ResourceManagers::CreateResourceManager<ResourceType::GlFont>();
 		ResourceManagers::CreateResourceManager<ResourceType::Material>();
 		ResourceManagers::CreateResourceManager<ResourceType::Framebuffer>();
 		ResourceManagers::CreateResourceManager<ResourceType::ParticleSystem>();
 	}
-	bool OpenGL::Init(Window& window)
+	bool OpenGL::Init(DesktopWindow& window)
 	{
 		if(m_impl->context)
 			return true; // Already initialized
@@ -136,7 +136,11 @@ namespace Graphics
 		SDL_GL_SwapWindow(sdlWnd);
 	}
 
+#ifdef _WIN32
 	void APIENTRY GLDebugProc(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+#else
+	void GLDebugProc(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+#endif
 	{
 #define DEBUG_SEVERITY_HIGH                              0x9146
 #define DEBUG_SEVERITY_MEDIUM                            0x9147

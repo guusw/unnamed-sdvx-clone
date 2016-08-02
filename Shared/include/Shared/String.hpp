@@ -125,7 +125,7 @@ const T* StringBase<T>::operator*() const
 template<typename T>
 bool StringBase<T>::Split(const StringBase& delim, StringBase* l, StringBase* r) const
 {
-	size_t f = find(delim);
+	size_t f = this->find(delim);
 	if(f == -1)
 		return false;
 	StringBase selfCopy = *this;

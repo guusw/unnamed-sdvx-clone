@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Input.hpp"
 
-void Input::Init(Window& wnd)
+void Input::Init(DesktopWindow& wnd)
 {
 	Cleanup();
 	m_window = &wnd;
