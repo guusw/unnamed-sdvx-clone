@@ -327,7 +327,7 @@ public:
 	}
 
 	// Draws HUD and debug overlay text
-	Font font;
+	GlFont font;
 	Material fontMaterial;
 	Mesh guiQuad;
 	Material guiTextureMaterial;

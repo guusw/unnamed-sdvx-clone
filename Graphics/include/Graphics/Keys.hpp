@@ -1,5 +1,10 @@
 #pragma once
 
+// X11/X.h defines this
+#ifdef None
+#undef None
+#endif
+
 namespace Graphics
 {
 	enum class Key : uint8

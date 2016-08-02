@@ -25,7 +25,7 @@ namespace Graphics
 			ResourceManagers::DestroyResourceManager<ResourceType::Mesh>();
 			ResourceManagers::DestroyResourceManager<ResourceType::Texture>();
 			ResourceManagers::DestroyResourceManager<ResourceType::Shader>();
-			ResourceManagers::DestroyResourceManager<ResourceType::Font>();
+            ResourceManagers::DestroyResourceManager<ResourceType::GlFont>();
 			ResourceManagers::DestroyResourceManager<ResourceType::Material>();
 			ResourceManagers::DestroyResourceManager<ResourceType::Framebuffer>();
 			ResourceManagers::DestroyResourceManager<ResourceType::ParticleSystem>();
@@ -46,7 +46,7 @@ namespace Graphics
 		ResourceManagers::CreateResourceManager<ResourceType::Mesh>();
 		ResourceManagers::CreateResourceManager<ResourceType::Texture>();
 		ResourceManagers::CreateResourceManager<ResourceType::Shader>();
-		ResourceManagers::CreateResourceManager<ResourceType::Font>();
+        ResourceManagers::CreateResourceManager<ResourceType::GlFont>();
 		ResourceManagers::CreateResourceManager<ResourceType::Material>();
 		ResourceManagers::CreateResourceManager<ResourceType::Framebuffer>();
 		ResourceManagers::CreateResourceManager<ResourceType::ParticleSystem>();

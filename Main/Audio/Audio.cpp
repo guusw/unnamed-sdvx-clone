@@ -4,6 +4,7 @@
 #include "AudioStream.hpp"
 #include "Audio_Impl.hpp"
 #include "DSP.hpp"
+#include <unistd.h>
 
 Audio* g_audio = nullptr;
 Audio_Impl impl;
@@ -81,7 +82,11 @@ void Audio_Impl::AudioThread()
 
 			delete[] tempData;
 		}
+#ifdef _WIN32
 		Sleep(sleepDuration);
+#else
+		sleep(sleepDuration);
+#endif
 	}
 }
 void Audio_Impl::Start()
@@ -145,7 +150,7 @@ Audio::~Audio()
 	assert(g_audio == this);
 	g_audio = nullptr;
 }
-bool Audio::Init(class Window& window)
+bool Audio::Init(class DesktopWindow& window)
 {
 	m_window = &window;
 	audioLatency = 0;

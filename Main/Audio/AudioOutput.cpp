@@ -1,8 +1,10 @@
 #include "stdafx.h"
+#ifdef _WIN32
 #include "Audioclient.h"
 #include "Mmdeviceapi.h"
 #include "comdef.h"
 #include "Functiondiscoverykeys_devpkey.h"
+#endif
 #include "AudioOutput.hpp"
 
 #define REFTIME_NS (100)
@@ -13,11 +15,13 @@
               if ((punk) != NULL)  \
                 { (punk)->Release(); (punk) = nullptr; }
 
+#ifdef _WIN32
 static uint32_t freq = 44100;
 static uint32_t channels = 2;
 static uint32_t numBuffers = 2;
 static uint32_t bufferLength = 10;
 static REFERENCE_TIME bufferDuration = (REFERENCE_TIME)(bufferLength * REFTIMES_PER_MILLISEC);
+#endif
 
 AudioOutput::AudioOutput()
 {
@@ -25,6 +29,7 @@ AudioOutput::AudioOutput()
 
 bool AudioOutput::Init()
 {
+#ifdef _WIN32
 	// Initialize the WASAPI device enumerator
 	HRESULT res;
 	const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
@@ -98,18 +103,22 @@ bool AudioOutput::Init()
 
 	res = m_audioClient->Start();
 	return true;
+#endif
 }
 AudioOutput::~AudioOutput()
 {
+#ifdef _WIN32
 	HRESULT res = m_audioClient->Stop();
 
 	CoTaskMemFree(m_format);
 	SAFE_RELEASE(m_device);
 	SAFE_RELEASE(m_audioClient);
 	SAFE_RELEASE(m_audioRenderClient);
+#endif
 }
 bool AudioOutput::Begin(float*& buffer, uint32_t& numSamples)
 {
+#ifdef _WIN32
 	// See how much buffer space is available.
 	uint32_t numFramesPadding;
 	m_audioClient->GetCurrentPadding(&numFramesPadding);
@@ -122,23 +131,32 @@ bool AudioOutput::Begin(float*& buffer, uint32_t& numSamples)
 		return true;
 	}
 	return false;
+#endif
 }
 void AudioOutput::End(uint32_t numSamples)
 {
+#ifdef _WIN32
 	if(numSamples > 0)
 	{
 		m_audioRenderClient->ReleaseBuffer(numSamples, 0);
 	}
+#endif
 }
 uint32_t AudioOutput::GetNumChannels() const
 {
+#ifdef _WIN32
 	return m_format->nChannels;
+#endif
 }
 uint32_t AudioOutput::GetSampleRate() const
 {
+#ifdef _WIN32
 	return m_format->nSamplesPerSec;
+#endif
 }
 double AudioOutput::GetBufferLength() const
 {
+#ifdef _WIN32
 	return m_bufferLength;
+#endif
 }

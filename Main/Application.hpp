@@ -2,7 +2,7 @@
 #include "Sample.hpp"
 
 extern class OpenGL* g_gl;
-extern class Window* g_gameWindow;
+extern class DesktopWindow* g_gameWindow;
 extern float g_aspectRatio;
 extern Vector2i g_resolution;
 extern class Application* g_application;

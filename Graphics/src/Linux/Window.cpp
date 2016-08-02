@@ -9,9 +9,9 @@ namespace Graphics
 	{
 	public:
 		// Handle to outer class to send delegates
-		Window& outer;
+        DesktopWindow& outer;
 	public:
-		Window_Impl(Window& outer, Vector2i size, const CustomWindowStyle& customStyle) : outer(outer)
+        Window_Impl(DesktopWindow& outer, Vector2i size, const CustomWindowStyle& customStyle) : outer(outer)
 		{
 			// Initialize button mapping
 			m_keyMapping.AddRangeMapping(XK_A, XK_Z, Key::A);
@@ -118,69 +118,71 @@ namespace Graphics
 		}
 
 		Atom m_delWindow;
-		
+
+		KeyMap m_keyMapping;
+
 		bool m_closed = false;
 		Vector2i m_size;
-		::Window m_window;
+        ::Window m_window;
 		Display* m_display;
 		int m_screen;
 		int m_evMask;
 		WString m_caption;
 	};
 
-	Window::Window(Vector2i size, const CustomWindowStyle& customStyle)
+    DesktopWindow::DesktopWindow(Vector2i size, const CustomWindowStyle& customStyle)
 	{
 		m_impl = new Window_Impl(*this, size, customStyle);
 	}
-	Window::~Window()
+	DesktopWindow::~DesktopWindow()
 	{
 		delete m_impl;
 	}
-	void Window::Show()
+	void DesktopWindow::Show()
 	{
 		m_impl->Show();
 	}
-	void Window::Hide()
+	void DesktopWindow::Hide()
 	{
 		m_impl->Hide();
 	}
-	bool Window::Update()
+	bool DesktopWindow::Update()
 	{
 		return m_impl->Update();
 	}
-	void* Window::Handle()
+	void* DesktopWindow::Handle()
 	{
 		return (void*)m_impl->m_window;
 	}
-	void Window::SetCaption(const WString& cap)
+	void DesktopWindow::SetCaption(const WString& cap)
 	{
 		m_impl->SetCaption(cap);
 	}
-	void Window::Close()
+	void DesktopWindow::Close()
 	{
 		m_impl->m_closed = true;
 	}
-	void Window::SetWindowStyle(WindowStyle style)
+	void DesktopWindow::SetWindowStyle(WindowStyle style)
 	{
 	}
-	Vector2i Window::GetWindowSize()
+	Vector2i DesktopWindow::GetWindowSize()
 	{
 		return m_impl->GetWindowSize();
 	}
-	void Window::SetWindowSize(const Vector2i& size)
+	void DesktopWindow::SetWindowSize(const Vector2i& size)
 	{
 		m_impl->SetWindowSize(size);
 	}
-	void Window::SwitchFullscreen(uint32 monitorID)
+	void DesktopWindow::SwitchFullscreen(uint32 monitorID)
 	{
 	}
-	void Window::SetStyles(uint32 mask)
+	void DesktopWindow::SetStyles(uint32 mask)
 	{
 	}
-	void Window::UnsetStyles(uint32 mask)
+	void DesktopWindow::UnsetStyles(uint32 mask)
 	{
 	}
-	uint32 Window::HasStyle(uint32 mask)
+	uint32 DesktopWindow::HasStyle(uint32 mask)
 	{
 		return 0;
 	}

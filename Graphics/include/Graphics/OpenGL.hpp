@@ -22,7 +22,7 @@ namespace Graphics
 #else
 		GLXContext m_renderContext = 0;
 #endif
-		Window* m_window;
+        DesktopWindow* m_window;
 		class FramebufferRes* m_boundFramebuffer;
 
 		friend class ShaderRes;
@@ -35,7 +35,7 @@ namespace Graphics
 		OpenGL();
 		~OpenGL();
 		void InitResourceManagers();
-		bool Init(Window& window);
+        bool Init(DesktopWindow& window);
 		void UnbindFramebuffer();
 
 		Recti GetViewport() const;

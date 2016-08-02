@@ -66,9 +66,9 @@ add_subdirectory(Graphics)
 add_subdirectory(Main)
 
 # Linux Test Project
-if(UNIX)
-	add_subdirectory(Test)
-endif(UNIX)
+#if(UNIX)
+#	add_subdirectory(Test)
+#endif(UNIX)
 
 # Enabled project filters on windows
 if(MSVC)
