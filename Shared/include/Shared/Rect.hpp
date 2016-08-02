@@ -87,6 +87,7 @@ template<typename T>
 class RectangleBase3D : public RectangleBase<T>
 {
 public:
+	typedef VectorMath::VectorBase<T, 2> VectorType;
 	using RectangleBase<T>::RectangleBase;
 	using RectangleBase<T>::RectangleBase::pos;
 	using RectangleBase<T>::RectangleBase::size;

@@ -2,6 +2,7 @@
 #include "Scoring.hpp"
 #include "BeatmapPlayback.hpp"
 #include <math.h>
+#include <limits.h>
 
 const float Scoring::idleLaserMoveSpeed = 1.0f;
 const MapTime Scoring::maxEarlyHitTime = 80;
