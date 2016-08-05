@@ -1,10 +1,32 @@
 #pragma once
 #include "GUIElement.hpp"
 #include "Canvas.hpp"
+#include "Shared/Jobs.hpp"
 
-class SongSelectStyle
+struct CachedJacketImage
+{
+	float lastUsage;
+	Texture texture;
+	bool loaded = false;
+	Job loadingJob;
+};
+
+class JacketLoadingJob : public JobBase
 {
 public:
+	virtual bool Run();
+	virtual void Finalize();
+
+	Image loadedImage;
+	String imagePath;
+	CachedJacketImage* target;
+};
+
+class SongSelectStyle : public Unique
+{
+public:
+	~SongSelectStyle();
+
 	Texture frameMain;
 	Texture frameSub;
 	// 5 Difficulty frame textures for the following difficulties
@@ -16,6 +38,9 @@ public:
 	static const size_t numDiffFrames = 5;
 	Texture diffFrames[numDiffFrames];
 
+	// Loading image
+	Texture loadingJacketImage;
+
 	// Material used for compositing difficulty frames with jacket images
 	Material diffFrameMaterial;
 
@@ -23,17 +48,12 @@ public:
 	Texture GetJacketThumnail(const String& path);
 
 private:
-	struct CachedImage
-	{
-		float lastUsage;
-		Texture texture;
-	};
 	Timer m_timer;
-	Map<String, CachedImage> m_jacketImages;
+	Map<String, CachedJacketImage*> m_jacketImages;
 };
 
 // Song select item
-//	either shows only artist and title in compace mode
+//	either shows only artist and title in compact mode
 //	or shows all the difficulties
 class SongSelectItem : public Canvas
 {

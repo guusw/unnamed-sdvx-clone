@@ -9,6 +9,7 @@
 #include "Background.hpp"
 #include "GUI.hpp"
 #include "HealthGauge.hpp"
+#include "Shared/Jobs.hpp"
 
 class Test_Impl : public Test
 {
@@ -22,6 +23,9 @@ private:
 
 	Texture fillTexture;
 	Material noise;
+
+	int32 m_res[16];
+	int32 m_res1;
 
 public:
 	bool Init()

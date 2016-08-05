@@ -29,13 +29,17 @@ public:
 			m_currentStream = m_nextStream;
 		}
 		m_nextStream = stream;
-		m_nextStream->SetVolume(0.0f);
-		m_nextStream->Play();
+		m_nextSet = true;
+		if(m_nextStream)
+		{
+			m_nextStream->SetVolume(0.0f);
+			m_nextStream->Play();
+		}
 		m_fadeTimer = 0.0f;
 	}
 	void Update(float deltaTime)
 	{
-		if(m_nextStream)
+		if(m_nextSet)
 		{
 			m_fadeTimer += deltaTime;
 			if(m_fadeTimer >= m_fadeDuration)
@@ -45,8 +49,10 @@ public:
 					m_currentStream.Destroy();
 				}
 				m_currentStream = m_nextStream;
-				m_currentStream->SetVolume(1.0f);
+				if(m_currentStream)
+					m_currentStream->SetVolume(1.0f);
 				m_nextStream.Release();
+				m_nextSet = false;
 			}
 			else
 			{
@@ -54,7 +60,8 @@ public:
 
 				if(m_currentStream)
 					m_currentStream->SetVolume(1.0f - fade);
-				m_nextStream->SetVolume(fade);
+				if(m_nextStream)
+					m_nextStream->SetVolume(fade);
 			}
 		}
 	}
@@ -78,6 +85,7 @@ private:
 	float m_fadeTimer = 0.0f;
 	AudioStream m_nextStream;
 	AudioStream m_currentStream;
+	bool m_nextSet = false;
 };
 const float PreviewPlayer::m_fadeDuration = 0.5f;
 
@@ -403,6 +411,9 @@ private:
 	// Player of preview music
 	PreviewPlayer m_previewPlayer;
 
+	// Current map that has music being preview played
+	MapIndex* m_currentPreviewAudio;
+
 	// Select sound
 	Sample m_selectSound;
 
@@ -420,6 +431,7 @@ public:
 		m_style->frameSub->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
 		m_style->frameMain = g_application->LoadTexture("song_select/main.png");
 		m_style->frameMain->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
+		m_style->loadingJacketImage = g_application->LoadTexture("song_select/loading.png");
 		static const char* diffTextures[] =
 		{
 			"song_select/nov.png",
@@ -489,6 +501,9 @@ public:
 	// When a map is selected in the song wheel
 	void OnMapSelected(MapIndex* map)
 	{
+		if(map == m_currentPreviewAudio)
+			return;
+
 		// Set current preview audio
 		DifficultyIndex* previewDiff = map->difficulties[0];
 		String audioPath = map->path + "\\" + previewDiff->settings.audioNoFX;
@@ -502,7 +517,9 @@ public:
 		else
 		{
 			Logf("Failed to load preview audio from [%s]", Logger::Warning, audioPath);
+			m_previewPlayer.FadeTo(AudioStream());
 		}
+		m_currentPreviewAudio = map;
 	}
 	// When a difficulty is selected in the song wheel
 	void OnDifficultySelected(DifficultyIndex* diff)

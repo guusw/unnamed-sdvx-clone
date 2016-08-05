@@ -28,7 +28,7 @@ namespace Graphics
 		!! The packing is not optimal as the images are stacked for bottom to top and placed in columns based on their width
 	*/
 	class TextureRes;
-	class SpriteMapRes : public ImageRes
+	class SpriteMapRes
 	{
 	public:
 		virtual ~SpriteMapRes() = default;
@@ -36,7 +36,7 @@ namespace Graphics
 	public:
 		virtual uint32 AddSegment(Ref<ImageRes> image) = 0;
 		virtual void Clear() = 0;
-		virtual Ref<ImageRes> Generate() = 0;
+		virtual Ref<ImageRes> GetImage() = 0;
 		virtual Ref<class TextureRes> GenerateTexture(class OpenGL* gl) = 0;
 		virtual Recti GetCoords(uint32 nIndex) = 0;
 	};

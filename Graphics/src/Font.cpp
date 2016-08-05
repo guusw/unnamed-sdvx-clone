@@ -111,8 +111,7 @@ namespace Graphics
 		{
 			if(bUpdated)
 			{
-				Image image = spriteMap->Generate();
-				textureMap->SetData(image->GetSize(), image->GetBits());
+				textureMap = spriteMap->GenerateTexture(m_gl);
 				bUpdated = false;
 			}
 			return textureMap;
@@ -168,9 +167,14 @@ namespace Graphics
 	TextRes::~TextRes()
 	{
 	}
+
+	Ref<class TextureRes> TextRes::GetTexture()
+	{
+		return fontSize->GetTextureMap();
+	}
 	void TextRes::Draw()
 	{
-		spriteMap->Bind();
+		GetTexture()->Bind();
 		mesh->Draw();
 	}
 
@@ -314,7 +318,7 @@ namespace Graphics
 
 			ret->size.y += size->lineHeight;
 
-			ret->spriteMap = size->GetTextureMap();
+			ret->fontSize = size;
 			ret->mesh->SetData(vertices);
 			ret->mesh->SetPrimitiveType(PrimitiveType::TriangleList);
 
