@@ -1,5 +1,6 @@
 #pragma once
 #include "Sample.hpp"
+#include <string>
 
 extern class OpenGL* g_gl;
 extern class DesktopWindow* g_gameWindow;
@@ -13,7 +14,7 @@ extern class JobSheduler* g_jobSheduler;
 class Application
 {
 public:
-	Application();
+    Application(std::string commandline);
 	~Application();
 
 	// Runs the application
@@ -75,4 +76,5 @@ private:
 	float m_lastRenderTime;
 	float m_deltaTime;
 	bool m_allowMapConversion;
+    std::string m_cmdLine;
 };

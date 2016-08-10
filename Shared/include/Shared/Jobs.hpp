@@ -5,6 +5,7 @@
 #include "Shared/Unique.hpp"
 #include "Shared/Ref.hpp"
 #include "Shared/Delegate.hpp"
+#include <utility>
 
 /*
 	Additional job flags,

@@ -29,15 +29,15 @@ public:
 	// Pop and return
 	I PopBack()
 	{
-		I r = back();
-		pop_back();
+        I r = this->back();
+        this->pop_back();
 		return std::move(r);
 	}
 	// Pop and return
 	I PopFront()
 	{
-		I r = front();
-		pop_front();
+        I r = this->front();
+        this->pop_front();
 		return std::move(r);
 	}
 

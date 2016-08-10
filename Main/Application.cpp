@@ -39,12 +39,12 @@ static float g_targetUpdateTime = 1.0f / 240.0f;
 static float g_avgUpdateDelta = 0.0f;
 static float g_avgRenderDelta = 0.0f;
 
-Application::Application()
+Application::Application(std::string commandline)
 {
 	// Enforce single instance
 	assert(!g_application);
 	g_application = this;
-
+    m_cmdLine = commandline;
 	// Init FPS cap
 	SetFrameLimiter(g_fpsCap);
 }
@@ -131,7 +131,7 @@ bool Application::m_Init()
 #ifdef _WIN32
 	String cmdLine = GetCommandLine();
 #else
-	String cmdLine = "";
+    String cmdLine = m_cmdLine;
 #endif
 	m_commandLine = Path::SplitCommandLine(cmdLine);
 	assert(m_commandLine.size() >= 1);

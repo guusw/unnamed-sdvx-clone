@@ -1,5 +1,6 @@
 #pragma once
 #include <assert.h>
+#include <type_traits>
 
 template<typename T> class RefCounted;
 

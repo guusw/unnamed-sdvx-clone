@@ -87,7 +87,7 @@ public:
 			JobThread* thread = m_threadPool.Add(new JobThread());
 			thread->index = i;
 			thread->thread = Thread(&JobSheduler_Impl::m_JobThread, this, thread);
-			thread->thread.SetAffinityMask(affinityMask);
+            //thread->thread.SetAffinityMask(affinityMask);
 		}
 	}
 
