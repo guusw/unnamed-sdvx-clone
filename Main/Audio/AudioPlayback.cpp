@@ -19,7 +19,7 @@ bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 	m_laserEffectType = LaserEffectType::PeakingFilter;
 
 	const BeatmapSettings& mapSettings = beatmap.GetMapSettings();
-	String audioPath = mapPath + "\\" + mapSettings.audioNoFX;
+    String audioPath = mapPath + "/" + mapSettings.audioNoFX;
 	WString audioPathUnicode = Utility::ConvertToWString(audioPath);
 	if(!Path::FileExists(audioPath))
 	{
@@ -35,7 +35,7 @@ bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 	m_music->SetVolume(1.0f);
 
 	// Load FX track
-	audioPath = mapPath + "\\" + mapSettings.audioFX;
+    audioPath = mapPath + "/" + mapSettings.audioFX;
 	audioPathUnicode = Utility::ConvertToWString(audioPath);
 	if(!audioPath.empty())
 	{
