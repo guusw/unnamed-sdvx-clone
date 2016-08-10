@@ -33,7 +33,7 @@ public:
 		m_TickAnimations(rd.deltaTime);
 
 		// Load jacket?
-		if(!m_jacket)
+		if(!m_jacket || m_jacket == m_style->loadingJacketImage)
 		{
 			String jacketPath = m_diff->path;
 			jacketPath = Path::Normalize(Path::RemoveLast(jacketPath) + "//" + m_diff->settings.jacketPath);
@@ -221,31 +221,43 @@ void SongSelectItem::SetSelectedDifficulty(int32 selectedIndex)
 	}
 }
 
+SongSelectStyle::~SongSelectStyle()
+{
+	for(auto t : m_jacketImages)
+	{
+		t.second->loadingJob->Terminate();
+		delete t.second;
+	}
+}
+
 Texture SongSelectStyle::GetJacketThumnail(const String& path)
 {
+	Texture ret = loadingJacketImage;
+
 	auto it = m_jacketImages.find(path);
 	if(it == m_jacketImages.end())
 	{
-		CachedImage newImage;
-		newImage.lastUsage = m_timer.SecondsAsFloat();
-		Image img = ImageRes::Create(path);
-		if(!img)
-		{
-			m_jacketImages.Add(path, newImage);
-		}
-		else
-		{
-			newImage.texture = TextureRes::Create(g_gl, img);
-			newImage.texture->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
-		}
+		CachedJacketImage* newImage = new CachedJacketImage();
+		JacketLoadingJob* job = new JacketLoadingJob();
+		job->imagePath = path;
+		job->target = newImage;
+		newImage->loadingJob = Ref<JobBase>(job);
+		newImage->lastUsage = m_timer.SecondsAsFloat();
+		g_jobSheduler->Queue(newImage->loadingJob);
+
 		m_jacketImages.Add(path, newImage);
-		return newImage.texture;
 	}
 	else
 	{
-		it->second.lastUsage = m_timer.SecondsAsFloat();
-		return it->second.texture;
+		it->second->lastUsage = m_timer.SecondsAsFloat();
+		// If loaded set texture
+		if(it->second->texture)
+		{
+			ret = it->second->texture;
+		}
 	}
+
+	return ret;
 }
 
 SongStatistics::SongStatistics(Ref<SongSelectStyle> style)
@@ -257,4 +269,19 @@ SongStatistics::SongStatistics(Ref<SongSelectStyle> style)
 	Slot* slot = Add(m_bg->MakeShared());
 	slot->anchor = Anchors::Full;
 	slot->SetZOrder(-1);
+}
+
+bool JacketLoadingJob::Run()
+{
+	// Create loading task
+	loadedImage = ImageRes::Create(imagePath);
+	return loadedImage.IsValid();
+}
+void JacketLoadingJob::Finalize()
+{
+	if(IsSuccessfull())
+	{
+		target->texture = TextureRes::Create(g_gl, loadedImage);
+		target->texture->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
+	}
 }

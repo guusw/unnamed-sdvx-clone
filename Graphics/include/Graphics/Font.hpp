@@ -12,11 +12,11 @@ namespace Graphics
 	class TextRes
 	{
 		friend class Font_Impl;
-		Ref<class TextureRes> spriteMap;
+		struct FontSize* fontSize;
 		Ref<class MeshRes> mesh;
 	public:
 		~TextRes();
-		Ref<class TextureRes> GetTexture() { return spriteMap; }
+		Ref<class TextureRes> GetTexture();
 		Ref<class MeshRes> GetMesh() { return mesh; }
 		void Draw();
 		Vector2 size;

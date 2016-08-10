@@ -8,6 +8,7 @@ extern Vector2i g_resolution;
 extern class Application* g_application;
 extern class Game* g_game;
 extern class Config g_mainConfig;
+extern class JobSheduler* g_jobSheduler;
 
 class Application
 {

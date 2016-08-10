@@ -7,6 +7,7 @@
 #include "Audio.hpp"
 #include <Graphics/Window.hpp>
 #include <Graphics/ResourceManagers.hpp>
+#include "Shared/Jobs.hpp"
 #include "Profiling.hpp"
 #include "Scoring.hpp"
 
@@ -14,6 +15,7 @@ Config g_mainConfig;
 OpenGL* g_gl = nullptr;
 DesktopWindow* g_gameWindow = nullptr;
 Application* g_application = nullptr;
+JobSheduler* g_jobSheduler = nullptr;
 
 Game* g_game = nullptr;
 
@@ -136,6 +138,9 @@ bool Application::m_Init()
 
 	if(!m_LoadConfig())
 		m_LoadDefaultConfig();
+
+	// Job sheduler
+	g_jobSheduler = new JobSheduler();
 
 	m_allowMapConversion = false;
 	bool debugMute = false;
@@ -323,6 +328,10 @@ void Application::m_MainLoop()
 			// Garbage collect resources
 			ResourceManagers::TickAll();
 		}
+
+		// Tick job sheduler
+		// processed callbacks for finished tasks
+		g_jobSheduler->Update();
 	}
 }
 void Application::m_Cleanup()
@@ -333,6 +342,7 @@ void Application::m_Cleanup()
 	{
 		delete it;
 	}
+	g_tickables.clear();
 	g_game = nullptr;
 
 	CleanupMap();
@@ -340,6 +350,7 @@ void Application::m_Cleanup()
 	if(g_audio)
 	{
 		delete g_audio;
+		g_audio = nullptr;
 	}
 
 	if(g_gl)
@@ -352,6 +363,12 @@ void Application::m_Cleanup()
 	{
 		delete g_gameWindow;
 		g_gameWindow = nullptr;
+	}
+
+	if(g_jobSheduler)
+	{
+		delete g_jobSheduler;
+		g_jobSheduler = nullptr;
 	}
 
 	// Finally, save config

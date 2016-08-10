@@ -26,6 +26,21 @@ public:
 		return *it;
 	}
 
+	// Pop and return
+	I PopBack()
+	{
+		I r = back();
+		pop_back();
+		return std::move(r);
+	}
+	// Pop and return
+	I PopFront()
+	{
+		I r = front();
+		pop_front();
+		return std::move(r);
+	}
+
 	// Sort function with uppercase for consistency
 	template<typename Predicate>
 	void Sort(Predicate& pred)

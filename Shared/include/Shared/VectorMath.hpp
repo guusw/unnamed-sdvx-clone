@@ -210,7 +210,7 @@ namespace VectorMath
 	public:
 		T x, y;
 		VectorBase() : x(0), y(0) {};
-		explicit VectorBase(float c) : x(c), y(c) {};
+		explicit VectorBase(T c) : x(c), y(c) {};
 		VectorBase(T x, T y) : x(x), y(y) {};
 		template<typename T1>
 		VectorBase(const VectorBase<T1, 2>& other)
