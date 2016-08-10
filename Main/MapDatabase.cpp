@@ -503,6 +503,7 @@ private:
 	// Main search thread
 	void m_SearchThread()
 	{
+#ifdef _WIN32
 		Map<String, WIN32_FIND_DATA> fileList;
 
 		{
@@ -648,6 +649,7 @@ private:
 		}
 
 		m_searching = false;
+#endif
 	}
 };
 MapDatabase::MapDatabase()

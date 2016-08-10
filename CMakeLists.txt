@@ -45,7 +45,7 @@ endmacro(precompiled_header_exclude)
 macro(enable_cpp11)
 	if(UNIX)
 		# C++11 support enabled for linux compilers
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 	endif(UNIX)
 endmacro(enable_cpp11)
 
@@ -63,9 +63,9 @@ add_subdirectory(Graphics)
 add_subdirectory(Main)
 
 # Linux Test Project
-if(UNIX)
-	add_subdirectory(Test)
-endif(UNIX)
+#if(UNIX)
+#	add_subdirectory(Test)
+#endif(UNIX)
 
 # Enabled project filters on windows
 if(MSVC)

@@ -49,11 +49,11 @@ bool Variant::StaticSerialize(class BinaryStream& stream, Variant*& object)
 	switch(type)
 	{
 	default:
-	case VariantType::Null:
+    case static_cast<int>(VariantType::Null):
 		if(stream.IsReading())
 			object = new Variant();
 		break;
-	case VariantType::Float:
+    case static_cast<int>(VariantType::Float):
 	{
 		float v = 0.0f;
 		if(!stream.IsReading() && object->m_variant)
@@ -63,7 +63,7 @@ bool Variant::StaticSerialize(class BinaryStream& stream, Variant*& object)
 			object = new Variant(Variant::Create(v));
 	}
 		break;
-	case VariantType::Int:
+    case static_cast<int>(VariantType::Int):
 	{
 		int32 v = 0;
 		if(!stream.IsReading() && object->m_variant)
@@ -73,7 +73,7 @@ bool Variant::StaticSerialize(class BinaryStream& stream, Variant*& object)
 			object = new Variant(Variant::Create(v));
 	}
 		break;
-	case VariantType::String:
+	case static_cast<int>(VariantType::String):
 	{
 		String v = String();
 		if(!stream.IsReading() && object->m_variant)

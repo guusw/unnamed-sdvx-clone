@@ -27,6 +27,6 @@ private:
 	// Text string that is displayed
 	WString m_textString;
 	// Font override
-	Font m_font;
+	GlFont m_font;
 	uint32 m_fontSize = 16;
 };

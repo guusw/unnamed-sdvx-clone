@@ -26,6 +26,6 @@ public:
 	Delegate<const WString&> OnTextUpdated;
 
 protected:
-	class Label* text;
-	class Label* composition;
+    class Label* text;
+    class Label* composition;
 };

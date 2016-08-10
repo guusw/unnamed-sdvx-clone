@@ -1,5 +1,10 @@
 #pragma once
 
+// defined in X11/X.h
+#ifdef None
+#undef None
+#endif
+
 namespace Graphics
 {
 	enum class ModifierKeys : uint8 

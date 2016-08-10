@@ -109,7 +109,7 @@ public:
 	}
 
 	template<typename Predicate>
-	void Sort(Predicate& pred)
+	void Sort(const Predicate& pred)
 	{
 		std::sort(begin(), end(), pred);
 	}

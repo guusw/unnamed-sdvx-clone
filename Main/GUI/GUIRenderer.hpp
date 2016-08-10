@@ -22,7 +22,7 @@ public:
 	~GUIRenderer();
 
 	// Loads gui shaders/textures/etc.
-	bool Init(class OpenGL* gl, Window* window = nullptr);
+    bool Init(class OpenGL* gl, DesktopWindow* window = nullptr);
 	void Render(float deltaTime, Rect viewportSize, Ref<class GUIElementBase> rootElement);
 
 	// Use to manually start rendering GUI elements
@@ -30,8 +30,8 @@ public:
 	// Use to manually stop rendering GUI elements
 	void End();
 
-	void SetWindow(Window* window);
-	Window* GetWindow() const;
+    void SetWindow(DesktopWindow* window);
+    DesktopWindow* GetWindow() const;
 
 	void PushScissorRect(const Rect& scissor);
 	void PopScissorRect();
@@ -54,7 +54,7 @@ public:
 	void RenderRect(RenderQueue& rq, const Rect& rect, const Color& color = Color(1.0f), Texture texture = Texture());
 
 	// Default used font
-	Font font;
+	GlFont font;
 	// Material used for rendering fonts
 	Material fontMaterial;
 
@@ -74,7 +74,7 @@ private:
 
 	GUITextInput m_textInput;
 	OpenGL* m_gl;
-	Window* m_window = nullptr;
+    DesktopWindow* m_window = nullptr;
 	RenderQueue* m_renderQueue = nullptr;
 
 	// Size.x < 0 means disabled

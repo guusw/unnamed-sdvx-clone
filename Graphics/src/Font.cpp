@@ -329,17 +329,17 @@ namespace Graphics
 		}
 	};
 
-	Font FontRes::Create(OpenGL* gl, const String& assetPath)
+	GlFont FontRes::Create(OpenGL* gl, const String& assetPath)
 	{
 		Font_Impl* pImpl = new Font_Impl(gl);
 		if(pImpl->Init(assetPath))
 		{
-			return GetResourceManager<ResourceType::Font>().Register(pImpl);
+            return GetResourceManager<ResourceType::GlFont>().Register(pImpl);
 		}
 		else
 		{
 			delete pImpl;
-			return Font();
+            return GlFont();
 		}
 	}
 

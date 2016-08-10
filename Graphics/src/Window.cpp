@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Window.hpp"
 #include "KeyMap.hpp"
-#include "SDL_syswm.h"
+#include <SDL2/SDL_syswm.h>
 
 namespace Graphics
 {
@@ -31,9 +31,9 @@ namespace Graphics
 	{
 	public:
 		// Handle to outer class to send delegates
-		Window& outer;
+        DesktopWindow& outer;
 	public:
-		Window_Impl(Window& outer, Vector2i size) : outer(outer)
+        Window_Impl(DesktopWindow& outer, Vector2i size) : outer(outer)
 		{
 			SDL::Main();
 
@@ -241,82 +241,82 @@ namespace Graphics
 		Vector2i m_clntSize;
 		WString m_caption;
 	};
-	Window::Window(Vector2i size)
+    DesktopWindow::DesktopWindow(Vector2i size)
 	{
 		m_impl = new Window_Impl(*this, size);
 	}
-	Window::~Window()
+	DesktopWindow::~DesktopWindow()
 	{
 		delete m_impl;
 	}
-	void Window::Show()
+	void DesktopWindow::Show()
 	{
 		m_impl->Show();
 	}
-	void Window::Hide()
+	void DesktopWindow::Hide()
 	{
 		m_impl->Hide();
 	}
-	bool Window::Update()
+	bool DesktopWindow::Update()
 	{
 		return m_impl->Update();
 	}
-	void* Window::Handle()
+	void* DesktopWindow::Handle()
 	{
 		return m_impl->m_window;
 	}
-	void Window::SetCaption(const WString& cap)
+	void DesktopWindow::SetCaption(const WString& cap)
 	{
 		m_impl->SetCaption(cap);
 	}
-	void Window::Close()
+	void DesktopWindow::Close()
 	{
 		m_impl->m_closed = true;
 	}
-	void Window::SetWindowStyle(WindowStyle style)
+	void DesktopWindow::SetWindowStyle(WindowStyle style)
 	{
 		m_impl->SetWindowStyle(style);
 	}
-	Vector2i Window::GetWindowPos() const
+	Vector2i DesktopWindow::GetWindowPos() const
 	{
 		return m_impl->GetWindowPos();
 	}
-	void Window::SetWindowPos(const Vector2i& pos)
+	void DesktopWindow::SetWindowPos(const Vector2i& pos)
 	{
 		m_impl->SetWindowPos(pos);
 	}
 
-	Vector2i Window::GetWindowSize() const
+	Vector2i DesktopWindow::GetWindowSize() const
 {
 		return m_impl->GetWindowSize();
 	}
-	void Window::SetWindowSize(const Vector2i& size)
+	void DesktopWindow::SetWindowSize(const Vector2i& size)
 	{
 		m_impl->SetWindowSize(size);
 	}
-	void Window::SwitchFullscreen(uint32 monitorID)
+	void DesktopWindow::SwitchFullscreen(uint32 monitorID)
 	{
 		m_impl->SwitchFullscreen(monitorID);
 	}
-	bool Window::IsKeyPressed(Key key) const
+	bool DesktopWindow::IsKeyPressed(Key key) const
 	{
 		return m_impl->m_keyStates[(uint8)key] > 0;
 	}
 
-	Graphics::ModifierKeys Window::GetModifierKeys() const
+	Graphics::ModifierKeys DesktopWindow::GetModifierKeys() const
 	{
 		return m_impl->m_modKeys;
 	}
 
-	void Window::StartTextInput()
+	void DesktopWindow::StartTextInput()
 	{
 		SDL_StartTextInput();
 	}
-	void Window::StopTextInput()
+	void DesktopWindow::StopTextInput()
 	{
 		SDL_StopTextInput();
 	}
-	const Graphics::TextComposition& Window::GetTextComposition() const
+	const Graphics::TextComposition& DesktopWindow::GetTextComposition() const
 	{
 		return m_impl->m_textComposition;
 	}

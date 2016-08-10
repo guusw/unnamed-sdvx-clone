@@ -34,8 +34,8 @@ namespace Graphics
 		virtual Ref<TextRes> CreateText(const WString& str, uint32 nFontSize) = 0;
 	};
 
-	typedef Ref<FontRes> Font;
+    typedef Ref<FontRes> GlFont;
 	typedef Ref<TextRes> Text;
 
-	DEFINE_RESOURCE_TYPE(Font, FontRes);
+    DEFINE_RESOURCE_TYPE(GlFont, FontRes);
 }

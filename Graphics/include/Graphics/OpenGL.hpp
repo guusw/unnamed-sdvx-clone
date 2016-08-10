@@ -17,7 +17,7 @@ namespace Graphics
 		class ShaderRes* m_activeShaders[3] = { 0 };
 		uint32 m_mainProgramPipeline;
 		class OpenGL_Impl* m_impl;
-		Window* m_window;
+        DesktopWindow* m_window;
 		class FramebufferRes* m_boundFramebuffer;
 
 		friend class ShaderRes;
@@ -31,7 +31,7 @@ namespace Graphics
 		OpenGL();
 		~OpenGL();
 		void InitResourceManagers();
-		bool Init(Window& window);
+		bool Init(DesktopWindow& window);
 		void UnbindFramebuffer();
 
 		Recti GetViewport() const;

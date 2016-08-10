@@ -4,6 +4,7 @@
 /*
 	GUI space rectangle with bottom as y+height
 */
+
 template<typename T>
 class RectangleBase
 {
@@ -87,7 +88,7 @@ public:
 		float bottom = Math::Min(other.Bottom(), Bottom());
 		float left = Math::Max(other.Left(), Left());
 		float right = Math::Min(other.Right(), Right());
-		return Rect(left, top, right, bottom);
+        return RectangleBase<float>(left, top, right, bottom);
 	}
 };
 
@@ -98,6 +99,7 @@ template<typename T>
 class RectangleBase3D : public RectangleBase<T>
 {
 public:
+	typedef VectorMath::VectorBase<T, 2> VectorType;
 	using RectangleBase<T>::RectangleBase;
 	using RectangleBase<T>::RectangleBase::pos;
 	using RectangleBase<T>::RectangleBase::size;
@@ -110,8 +112,8 @@ public:
 	};
 	RectangleBase3D(T left, T top, T right, T bottom)
 	{
-		pos = VectorType(left, bottom);
-		size = VectorType(right - left, top - bottom);
+        pos = VectorType(left, bottom);
+        size = VectorType(right - left, top - bottom);
 	}
 	T Top() const
 	{

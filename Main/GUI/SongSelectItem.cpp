@@ -117,15 +117,15 @@ SongSelectItem::SongSelectItem(Ref<SongSelectStyle> style)
 
 	// Add Titles
 	{
-		m_title = new Label();
+        m_title = new Label();
 		m_title->SetFontSize(40);
 		m_title->SetText(L"FRANK IS DE MEESTER");
 		LayoutBox::Slot* slot = m_mainVert->Add(m_title->MakeShared());
 		slot->padding = Margin(0, -5.0f);
 
-		m_artist = new Label();
+        m_artist = new Label();
 		m_artist->SetFontSize(32);
-		m_artist->SetText(L"“ú–{ PIPES");
+		m_artist->SetText(L"æ—¥æœ¬ PIPES");
 		slot = m_mainVert->Add(m_artist->MakeShared());
 		slot->padding = Margin(0, -5.0f);
 	}

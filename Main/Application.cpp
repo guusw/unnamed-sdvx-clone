@@ -13,7 +13,7 @@
 
 Config g_mainConfig;
 OpenGL* g_gl = nullptr;
-Window* g_gameWindow = nullptr;
+DesktopWindow* g_gameWindow = nullptr;
 Application* g_application = nullptr;
 JobSheduler* g_jobSheduler = nullptr;
 
@@ -39,12 +39,12 @@ static float g_targetUpdateTime = 1.0f / 240.0f;
 static float g_avgUpdateDelta = 0.0f;
 static float g_avgRenderDelta = 0.0f;
 
-Application::Application()
+Application::Application(std::string commandline)
 {
 	// Enforce single instance
 	assert(!g_application);
 	g_application = this;
-
+    m_cmdLine = commandline;
 	// Init FPS cap
 	SetFrameLimiter(g_fpsCap);
 }
@@ -127,7 +127,12 @@ bool Application::m_Init()
 	ProfilerScope $("Application Setup");
 
 	// Split up command line parameters
-	String cmdLine = Utility::ConvertToUTF8(GetCommandLine());
+	// TODO: Linux compatibility
+#ifdef _WIN32
+	String cmdLine = GetCommandLine();
+#else
+    String cmdLine = m_cmdLine;
+#endif
 	m_commandLine = Path::SplitCommandLine(cmdLine);
 	assert(m_commandLine.size() >= 1);
 
@@ -170,7 +175,7 @@ bool Application::m_Init()
 
 	// Create the game window
 	g_resolution = Vector2i{ (int32)(g_screenHeight * g_aspectRatio), (int32)g_screenHeight };
-	g_gameWindow = new Window(g_resolution);
+    g_gameWindow = new DesktopWindow(g_resolution);
 	g_gameWindow->Show();
 	m_OnWindowResized(g_resolution);
 	g_gameWindow->OnKeyPressed.Add(this, &Application::m_OnKeyPressed);

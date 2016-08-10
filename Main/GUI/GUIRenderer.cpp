@@ -10,7 +10,7 @@ GUIRenderer::~GUIRenderer()
 	SetInputFocus(nullptr);
 	SetWindow(nullptr);
 }
-bool GUIRenderer::Init(class OpenGL* gl, class Window* window)
+bool GUIRenderer::Init(class OpenGL* gl, class DesktopWindow* window)
 {
 	assert(gl);
 	m_gl = gl;
@@ -88,7 +88,7 @@ void GUIRenderer::End()
 	glCullFace(GL_BACK);
 }
 
-void GUIRenderer::SetWindow(Window* window)
+void GUIRenderer::SetWindow(DesktopWindow* window)
 {
 	if(m_window)
 	{
@@ -108,7 +108,7 @@ void GUIRenderer::SetWindow(Window* window)
 	}
 }
 
-Window* GUIRenderer::GetWindow() const
+DesktopWindow* GUIRenderer::GetWindow() const
 {
 	return m_window;
 }
