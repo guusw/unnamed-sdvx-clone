@@ -3,7 +3,6 @@
 #include "GUIRenderer.hpp"
 
 // Label/Text Element
-
 void Label::Render(GUIRenderData rd)
 {
 	m_TickAnimations(rd.deltaTime);
@@ -17,24 +16,22 @@ void Label::Render(GUIRenderData rd)
 	rd.area.pos = Vector2i(rd.area.pos);
 
 	/// DEBUG label draw area
-	//rd.guiRenderer->RenderRect(*rd.rq, rd.area, Color(1, 1, 1, 0.1f));
+	//rd.guiRenderer->RenderRect(rd.area, Color(1, 1, 1, 0.1f));
 
-	rd.guiRenderer->RenderText(*rd.rq, m_text, rd.area.pos, color);
+	rd.guiRenderer->RenderText(m_text, rd.area.pos, color);
 }
-bool Label::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
+Vector2 Label::GetDesiredSize(GUIRenderData rd)
 {
 	if(visibility == Visibility::Collapsed)
-		return false;
+		return Vector2();
 
 	if(m_dirty)
 		m_UpdateText(rd.guiRenderer);
 
 	if(!m_text)
-		return false;
+		return Vector2();
 
-	sizeOut = m_text->size;
-
-	return true;
+	return m_text->size;
 }
 void Label::SetText(const WString& text)
 {

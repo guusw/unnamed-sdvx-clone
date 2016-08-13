@@ -2,6 +2,13 @@
 
 namespace Graphics
 {
+	enum class MouseButton : uint8 
+	{
+		Left = 0,
+		Middle,
+		Right
+	};
+
 	enum class ModifierKeys : uint8 
 	{
 		None = 0,
@@ -84,5 +91,6 @@ namespace Graphics
 		Return,
 		PageUp,
 		PageDown,
+		Tab,
 	};
 }

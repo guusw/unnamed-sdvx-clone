@@ -1,6 +1,7 @@
 #pragma once
 #include "Rect.hpp"
 #include "Math.hpp"
+#include "VectorMath.hpp"
 #include <limits>
 
 /*
@@ -64,6 +65,12 @@ public:
 	T Height() const
 	{
 		return top + bottom;
+	}
+
+	// Size (Width, Height)
+	VectorMath::VectorBase<T, 2> GetSize() const
+	{
+		return VectorMath::VectorBase<T, 2>(Width(), Height());
 	}
 
 	void ClampMin(T min = 0)

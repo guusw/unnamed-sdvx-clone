@@ -50,6 +50,11 @@ public:
 	float zoomBottom = 0.0f;
 	float zoomTop = 0.0f;
 
+	float cameraHeightBase = 0.35f;
+	float cameraHeightMult = 1.0f;
+	float cameraNearBase = 0.53f;
+	float cameraNearMult = 1.0f;
+
 private:
 	float m_baseRollBlend = 0.0f;
 	float m_ClampRoll(float in) const;

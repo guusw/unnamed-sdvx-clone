@@ -5,15 +5,19 @@ class Panel : public GUIElementBase
 {
 public:
 	~Panel();
-	void Render(GUIRenderData rd) override;
+	virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
+	virtual void Render(GUIRenderData rd) override;
 
 	// Calculates the image size if set
-	bool GetDesiredSize(GUIRenderData rd, Vector2& sizeOut) override;
+	Vector2 GetDesiredSize(GUIRenderData rd) override;
 
 	class Slot : public GUISlotBase
 	{
 	public:
-		virtual void Render(GUIRenderData rd);
+		virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement);
+		virtual void Render(GUIRenderData rd) override;
+		virtual Vector2 GetDesiredSize(GUIRenderData rd) override;
+
 		// Content alignment
 		Vector2 alignment = Vector2(0.5f,0.5f);
 	};

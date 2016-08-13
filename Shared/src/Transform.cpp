@@ -296,10 +296,8 @@ Transform Transform::LookAt(const Vector3& position, const Vector3& target, cons
 
 Transform CameraMatrix::BillboardMatrix(const Transform& matrix)
 {
-	Vector3 pos = matrix.GetPosition();
 	Vector3 rot = matrix.GetEuler();
 	Transform ret;
-	ret *= Transform::Translation(-pos);
 	ret *= Transform::Rotation(rot);
 	return ret;
 }

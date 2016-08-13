@@ -5,7 +5,7 @@ class Label : public GUIElementBase
 {
 public:
 	void Render(GUIRenderData rd) override;
-	bool GetDesiredSize(GUIRenderData rd, Vector2& sizeOut) override;
+	Vector2 GetDesiredSize(GUIRenderData rd) override;
 
 	// The text displayed
 	const WString& GetText() const;

@@ -205,6 +205,7 @@ public:
 					visibleMaps.Add(it->second);
 
 					// Add a new map slot
+					bool newItem = m_guiElements.find(it->second) == m_guiElements.end();
 					Ref<SongSelectItem> item = m_GetMapGUIElement(it->second);
 					float offset = 0;
 					if(i != 0)
@@ -221,10 +222,20 @@ public:
 					slot->autoSizeX = true;
 					slot->autoSizeY = true;
 					slot->alignment = Vector2(0, 0.5f);
-					item->AddAnimation(Ref<IGUIAnimation>(
-						new GUIAnimation<Vector2>(&slot->offset.pos, Vector2(0, offset), 0.1f)), true);
-					item->AddAnimation(Ref<IGUIAnimation>(
-						new GUIAnimation<float>(&slot->offset.size.x, z * 50.0f, 0.1f)), true);
+					if(newItem)
+					{
+						// Hard set target position
+						slot->offset.pos = Vector2(0, offset);
+						slot->offset.size.x = z * 50.0f;
+					}
+					else
+					{
+						// Animate towards target position
+						item->AddAnimation(Ref<IGUIAnimation>(
+							new GUIAnimation<Vector2>(&slot->offset.pos, Vector2(0, offset), 0.1f)), true);
+						item->AddAnimation(Ref<IGUIAnimation>(
+							new GUIAnimation<float>(&slot->offset.size.x, z * 50.0f, 0.1f)), true);
+					}
 
 					item->fade = 1.0f - ((float)abs(i) / (float)numItems);
 					item->innerOffset = item->fade * 100.0f;
@@ -400,6 +411,7 @@ private:
 	MapDatabase m_mapDatabase;
 
 	Ref<SongSelectStyle> m_style;
+	Ref<CommonGUIStyle> m_commonGUIStyle;
 
 	// Shows additional information about a map
 	Ref<SongStatistics> m_statisticsWindow;
@@ -422,6 +434,8 @@ public:
 	{
 		if(!m_guiRenderer.Init(g_gl, g_gameWindow))
 			return false;
+
+		m_commonGUIStyle = Ref<CommonGUIStyle>(new CommonGUIStyle(g_application));
 
 		m_canvas = Utility::MakeRef(new Canvas());
 
@@ -451,29 +465,38 @@ public:
 		// Split between statistics and selection wheel (in percentage)
 		const float screenSplit = 0.4f;
 
+		// Statistics window
 		m_statisticsWindow = Ref<SongStatistics>(new SongStatistics(m_style));
 		Canvas::Slot* statisticsSlot = m_canvas->Add(m_statisticsWindow.As<GUIElementBase>());
 		statisticsSlot->anchor = Anchor(0, 0, screenSplit, 1.0f);
+		statisticsSlot->SetZOrder(2);
+
+		// Background
+		Panel* background = new Panel();
+		background->imageFillMode = FillMode::Fill;
+		background->texture = g_application->LoadTexture("bg.png");
+		background->color = Color(0.5f);
+		Canvas::Slot* bgSlot = m_canvas->Add(background->MakeShared());
+		bgSlot->anchor = Anchors::Full;
+		bgSlot->SetZOrder(-2);
 
 		LayoutBox* box = new LayoutBox();
-		box->fill = false;
 		Canvas::Slot* boxSlot = m_canvas->Add(box->MakeShared());
 		boxSlot->anchor = Anchor(screenSplit, 0, 1.0f, 1.0f);
 		box->layoutDirection = LayoutBox::Vertical;
 		{
-			m_searchField = Ref<TextInputField>(new TextInputField());
+			m_searchField = Ref<TextInputField>(new TextInputField(m_commonGUIStyle));
 			LayoutBox::Slot* searchFieldSlot = box->Add(m_searchField.As<GUIElementBase>());
-			searchFieldSlot->fill = false;
+			searchFieldSlot->fillX = true;
 			m_guiRenderer.SetInputFocus(m_searchField.GetData());
 			m_searchField->OnTextUpdated.Add(this, &SongSelect_Impl::OnSearchTermChanged);
 
 			m_selectionWheel = Ref<SelectionWheel>(new SelectionWheel(m_style));
 			LayoutBox::Slot* selectionSlot = box->Add(m_selectionWheel.As<GUIElementBase>());
-			selectionSlot->fill = true;
+			selectionSlot->fillY = true;
 			m_selectionWheel->OnMapSelected.Add(this, &SongSelect_Impl::OnMapSelected);
 			m_selectionWheel->OnDifficultySelected.Add(this, &SongSelect_Impl::OnDifficultySelected);
 		}
-
 
 		// Select interface sound
 		m_selectSound = g_audio->CreateSample("audio/menu_click.wav");

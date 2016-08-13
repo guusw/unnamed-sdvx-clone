@@ -106,6 +106,10 @@ public:
 	// (New Combo)
 	Delegate<uint32> OnComboChanged;
 
+	// Called when score has changed
+	//	(New Score)
+	Delegate<uint32> OnScoreChanged;
+
 	// Object timing window
 	static const MapTime goodHitTime;
 	static const MapTime perfectHitTime;

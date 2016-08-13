@@ -7,7 +7,7 @@
 #include "BeatmapObjects.hpp"
 
 const float Track::trackWidth = 1.0f;
-const float Track::trackLength = 30.0f;
+const float Track::trackLength = 6.0f;
 const float Track::buttonWidth = 1.0f / 6;
 const float Track::laserWidth = buttonWidth * 0.7f;
 const float Track::fxbuttonWidth = buttonWidth * 2;
@@ -147,7 +147,6 @@ bool Track::Init()
 		m_laserTrackBuilder[i]->laserEntryTextureSize = laserTailTextures[0]->GetSize();
 		m_laserTrackBuilder[i]->laserExitTextureSize = laserTailTextures[1]->GetSize();
 		m_laserTrackBuilder[i]->laserBorderPixels = 12;
-		m_laserTrackBuilder[i]->perspectiveHeightScale = perspectiveHeightScale;
 		m_laserTrackBuilder[i]->laserLengthScale = trackLength / viewRange;
 		m_laserTrackBuilder[i]->Reset(); // Also initializes the track builder
 	}
@@ -218,7 +217,6 @@ void Track::DrawBase(class RenderQueue& rq)
 		Vector3 tickPosition = Vector3(0.0f, trackLength * fLocal - trackTickLength * 0.5f, 0.01f);
 		Transform tickTransform;
 		tickTransform *= Transform::Translation(tickPosition);
-		tickTransform *= Transform::Scale({ 1.0f, perspectiveHeightScale, 1.0f });
 		rq.Draw(tickTransform, trackTickMesh, trackMaterial, params);
 	}
 }
@@ -267,7 +265,7 @@ void Track::DrawObjectState(RenderQueue& rq, class BeatmapPlayback& playback, Ob
 
 		Transform buttonTransform;
 		buttonTransform *= Transform::Translation(buttonPos);
-		float scale = perspectiveHeightScale;
+		float scale = 1.0f;
 		if(isHold) // Hold Note?
 		{
 			scale = (playback.DurationToBarDistance(mobj->hold.duration) / viewRange) / length  * trackLength;
@@ -293,7 +291,8 @@ void Track::DrawObjectState(RenderQueue& rq, class BeatmapPlayback& playback, Ob
 
 			// Get the length of this laser segment
 			Transform laserTransform;
-			laserTransform *= Transform::Translation(Vector3{ 0.0f, trackLength * position, 0.02f + 0.02f * laser->index });
+			laserTransform *= Transform::Translation(Vector3{ 0.0f, trackLength * position, 
+				0.007f + 0.003f * laser->index }); // Small amount of elevation
 
 			// Set laser color
 			laserParams.SetParameter("color", laserColors[laser->index]);
@@ -328,7 +327,7 @@ void Track::DrawOverlays(class RenderQueue& rq)
 	Vector2 barSize = Vector2(trackWidth * 1.4f, 1.0f);
 	barSize.y = scoreBarTexture->CalculateHeight(barSize.x);
 
-	DrawSprite(rq, Vector3(0.0f, 0.1f, -0.03f), barSize, scoreBarTexture, Color::White, 4.0f);
+	DrawSprite(rq, Vector3(0.0f, 0.0f, 0.0f), barSize, scoreBarTexture, Color::White, 5.0f);
 
 	// Draw button hit effect sprites
 	for(auto& hfx : m_hitEffects)
@@ -341,7 +340,7 @@ void Track::DrawOverlays(class RenderQueue& rq)
 	{
 		float pos = laserPositions[i];
 		Vector2 objectSize = Vector2(buttonWidth * 0.7f, 0.0f);
-		objectSize.y = laserPointerTexture->CalculateHeight(objectSize.x) * perspectiveHeightScale;
+		objectSize.y = laserPointerTexture->CalculateHeight(objectSize.x);
 		DrawSprite(rq, Vector3(pos - trackWidth * 0.5f, 0.0f, 0.0f), objectSize, laserPointerTexture, laserColors[i]);
 	}
 }
@@ -390,8 +389,8 @@ void Track::DrawCombo(RenderQueue& rq, uint32 score, Color color, float scale)
 	for(uint32 i = 0; i < meshes.size(); i++)
 	{
 		float xpos = -halfSize + seperation * (meshes.size()-1-i);
-		Transform t = Transform::Translation({ xpos, 0.3f, 0.03f});
-		t *= Transform::Scale({charWidth, charWidth * perspectiveHeightScale, 1.0f});
+		Transform t = Transform::Translation({ xpos, 0.3f, -0.004f});
+		t *= Transform::Scale({charWidth, charWidth, 1.0f});
 		rq.Draw(t, meshes[i], spriteMaterial, params);
 	}
 }

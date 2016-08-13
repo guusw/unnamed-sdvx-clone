@@ -40,6 +40,11 @@ namespace Graphics
 		// Closes the window
 		void Close();
 
+		Vector2i GetMousePos();
+		// Sets cursor to use
+		void SetCursor(Ref<class ImageRes> image, Vector2i hotspot = Vector2i(0,0));
+		void SetCursorVisible(bool visible);
+
 		// Switches between borderless and windowed
 		void SetWindowStyle(WindowStyle style);
 
@@ -66,8 +71,17 @@ namespace Graphics
 		// Used to get current IME working data
 		const TextComposition& GetTextComposition() const;
 
+		// Get the text currently in the clipboard
+		WString GetClipboard() const;
+
 		Delegate<Key> OnKeyPressed;
 		Delegate<Key> OnKeyReleased;
+		Delegate<MouseButton> OnMousePressed;
+		Delegate<MouseButton> OnMouseReleased;
+		// Mouse scroll wheel 
+		//	Positive for scroll down
+		//	Negative for scroll up
+		Delegate<int32> OnMouseScroll;
 		// Called for the initial an repeating presses of a key
 		Delegate<Key> OnKeyRepeat;
 		Delegate<const WString&> OnTextInput;

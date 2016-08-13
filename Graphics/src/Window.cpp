@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Window.hpp"
 #include "KeyMap.hpp"
+#include "Image.hpp"
 #include "SDL_syswm.h"
 
 namespace Graphics
@@ -57,6 +58,7 @@ namespace Graphics
 			m_keyMapping.AddMapping(SDLK_DOWN, Key::ArrowDown);
 			m_keyMapping.AddMapping(SDLK_SPACE, Key::Space);
 			m_keyMapping.AddMapping(SDLK_BACKSPACE, Key::Backspace);
+			m_keyMapping.AddMapping(SDLK_TAB, Key::Tab);
 
 			m_clntSize = size;
 
@@ -154,6 +156,27 @@ namespace Graphics
 			SDL_SetWindowTitle(m_window, *titleUtf8);
 		}
 
+		void SetCursor(Ref<class ImageRes> image, Vector2i hotspot)
+		{
+			if(currentCursor)
+			{
+				SDL_FreeCursor(currentCursor);
+				currentCursor = nullptr;
+			}
+			if(image)
+			{
+				Vector2i size = image->GetSize();
+				void* bits = image->GetBits();
+				SDL_Surface* surf = SDL_CreateRGBSurfaceFrom(bits, size.x, size.y, 32, size.x * 4,
+					0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+				if(surf)
+				{
+					currentCursor = SDL_CreateColorCursor(surf, hotspot.x, hotspot.y);
+				}
+			}
+			SDL_SetCursor(currentCursor);
+		}
+
 		// Update loop
 		Timer t;
 		bool Update()
@@ -172,6 +195,47 @@ namespace Graphics
 				else if(evt.type == SDL_EventType::SDL_KEYUP)
 				{
 					HandleKeyEvent(evt.key.keysym.sym, 0, 0);
+				}
+				else if(evt.type == SDL_EventType::SDL_MOUSEBUTTONDOWN)
+				{
+					switch(evt.button.button)
+					{
+					case SDL_BUTTON_LEFT:
+						outer.OnMousePressed.Call(MouseButton::Left);
+							break;
+					case SDL_BUTTON_MIDDLE:
+						outer.OnMousePressed.Call(MouseButton::Middle);
+							break;
+					case SDL_BUTTON_RIGHT:
+						outer.OnMousePressed.Call(MouseButton::Right);
+							break;
+					}
+				}
+				else if(evt.type == SDL_EventType::SDL_MOUSEBUTTONUP)
+				{
+					switch(evt.button.button)
+					{
+					case SDL_BUTTON_LEFT:
+						outer.OnMouseReleased.Call(MouseButton::Left);
+						break;
+					case SDL_BUTTON_MIDDLE:
+						outer.OnMouseReleased.Call(MouseButton::Middle);
+						break;
+					case SDL_BUTTON_RIGHT:
+						outer.OnMouseReleased.Call(MouseButton::Right);
+						break;
+					}
+				}
+				else if(evt.type == SDL_EventType::SDL_MOUSEWHEEL)
+				{
+					if(evt.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+					{
+						outer.OnMouseScroll.Call(evt.wheel.y);
+					}
+					else
+					{
+						outer.OnMouseScroll.Call(-evt.wheel.y);
+					}
 				}
 				else if(evt.type == SDL_EventType::SDL_QUIT)
 				{
@@ -225,6 +289,8 @@ namespace Graphics
 
 		SDL_Window* m_window;
 
+		SDL_Cursor* currentCursor = nullptr;
+
 		// Window Input State
 		uint8 m_keyStates[256] = { 0 };
 		KeyMap m_keyMapping;
@@ -273,6 +339,22 @@ namespace Graphics
 	{
 		m_impl->m_closed = true;
 	}
+
+	Vector2i Window::GetMousePos()
+	{
+		Vector2i res;
+		SDL_GetMouseState(&res.x, &res.y);
+		return res;
+	}
+	void Window::SetCursor(Ref<class ImageRes> image, Vector2i hotspot /*= Vector2i(0,0)*/)
+	{
+		m_impl->SetCursor(image, hotspot);
+	}
+	void Window::SetCursorVisible(bool visible)
+	{
+		SDL_ShowCursor(visible);
+	}
+
 	void Window::SetWindowStyle(WindowStyle style)
 	{
 		m_impl->SetWindowStyle(style);
@@ -320,6 +402,16 @@ namespace Graphics
 	{
 		return m_impl->m_textComposition;
 	}
+
+	WString Window::GetClipboard() const
+	{
+		char* utf8Clipboard = SDL_GetClipboardText();
+		WString ret = Utility::ConvertToWString(utf8Clipboard);
+		SDL_free(utf8Clipboard);
+
+		return ret;
+	}
+
 }
 
 namespace Graphics

@@ -28,7 +28,6 @@ public:
 
 	// The length scale based on the view distance
 	float laserLengthScale;
-	float perspectiveHeightScale;
 
 	// The length of the horizontal slam segments
 	MapTime slamDuration;

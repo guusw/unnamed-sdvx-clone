@@ -11,6 +11,13 @@ public:
 	typedef VectorMath::VectorBase<T, 2> VectorType;
 	VectorType pos;
 	VectorType size;
+	// Conversion from other types
+	template<typename Q>
+	RectangleBase(const RectangleBase<Q>& other)
+	{
+		pos = (VectorType)other.pos;
+		size = (VectorType)other.size;
+	}
 	// Give all 4 sides of the rectangle
 	RectangleBase(T all = 0) : RectangleBase(all, all, all, all) {}
 	RectangleBase(T left, T top, T right, T bottom)
@@ -103,6 +110,13 @@ public:
 	using RectangleBase<T>::RectangleBase::size;
 	
 	RectangleBase3D() = default;
+	// Conversion from other types
+	template<typename Q>
+	RectangleBase3D(const RectangleBase<Q>& other)
+	{
+		pos = (VectorType)other.pos;
+		size = (VectorType)other.size;
+	}
 	RectangleBase3D(const RectangleBase<T>& other)
 	{
 		pos = other.pos; 

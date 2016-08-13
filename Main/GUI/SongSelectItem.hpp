@@ -59,8 +59,9 @@ class SongSelectItem : public Canvas
 {
 public:
 	SongSelectItem(Ref<SongSelectStyle> style);
+	virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
 	virtual void Render(GUIRenderData rd) override;
-	virtual bool GetDesiredSize(GUIRenderData rd, Vector2& sizeOut) override;
+	virtual Vector2 GetDesiredSize(GUIRenderData rd) override;
 
 	// Assigns/Updates the map to be displayed on this item
 	void SetMap(struct MapIndex* map);

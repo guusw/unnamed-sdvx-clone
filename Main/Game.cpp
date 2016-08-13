@@ -12,8 +12,9 @@
 #include "Input.hpp"
 #include "SongSelect.hpp"
 
-#include "GUI.hpp"
-#include "HealthGauge.hpp"
+#include "GUI/GUI.hpp"
+#include "GUI/HealthGauge.hpp"
+#include "GUI/SettingsBar.hpp"
 
 class Game_Impl : public Game
 {
@@ -30,6 +31,9 @@ class Game_Impl : public Game
 	// Main Canvas
 	Ref<Canvas> m_canvas;
 	Ref<HealthGauge> m_scoringGauge;
+	Ref<SettingsBar> m_settingsBar;
+	Ref<CommonGUIStyle> m_guiStyle;
+	Ref<Label> m_scoreText;
 
 	// Texture of the map jacket image, if available
 	Texture m_jacketTexture;
@@ -72,6 +76,7 @@ class Game_Impl : public Game
 	// Particle effects
 	Material particleMaterial;
 	Texture basicParticleTexture;
+	Texture squareParticleTexture;
 	ParticleSystem m_particleSystem;
 	Ref<ParticleEmitter> m_laserFollowEmitters[2];
 	Ref<ParticleEmitter> m_holdEmitters[6];
@@ -167,8 +172,11 @@ public:
 		m_camera.SetTargetRoll((rollA + rollB) * m_rollIntensity);
 
 		// Set track zoom
-		m_camera.zoomBottom = m_playback.GetZoom(0);
-		m_camera.zoomTop = m_playback.GetZoom(1);
+		if(!m_settingsBar->IsShown()) // Overridden settings?
+		{
+			m_camera.zoomBottom = m_playback.GetZoom(0);
+			m_camera.zoomTop = m_playback.GetZoom(1);
+		}
 		m_camera.track = m_track;
 		m_camera.Tick(deltaTime);
 		RenderState rs = m_camera.CreateRenderState(true);
@@ -248,7 +256,6 @@ public:
 					float hitWidth = (i < 4) ? m_track->buttonWidth : m_track->fxbuttonWidth;
 					m_holdEmitters[i] = CreateHoldEmitter(hitColor, hitWidth);
 					m_holdEmitters[i]->position.x = GetButtonPlacement(i);
-					m_holdEmitters[i]->position.y = 0.1f;
 				}
 			}
 			else
@@ -275,6 +282,7 @@ public:
 		particleMaterial->blendMode = MaterialBlendMode::Additive;
 		particleMaterial->opaque = false;
 		CheckedLoad(basicParticleTexture = g_application->LoadTexture("particle_flare.png"));
+		CheckedLoad(squareParticleTexture = g_application->LoadTexture("particle_square.png"));
 
 		m_laserFollowEmitters[0] = CreateTrailEmitter(m_track->laserColors[0]);
 
@@ -293,7 +301,7 @@ public:
 		emitter->loops = 0;
 		emitter->duration = 5.0f;
 		emitter->SetSpawnRate(PPRandomRange<float>(250, 300));
-		emitter->SetStartPosition(PPBox({ 0.5f, 0.1f, 0.0f }));
+		emitter->SetStartPosition(PPBox({ 0.5f, 0.0f, 0.0f }));
 		emitter->SetStartSize(PPRandomRange<float>(0.25f, 0.4f));
 		emitter->SetScaleOverTime(PPRange<float>(2.0f, 1.0f));
 		emitter->SetFadeOverTime(PPRangeFadeIn<float>(1.0f, 0.0f, 0.4f));
@@ -315,18 +323,18 @@ public:
 		emitter->loops = 0;
 		emitter->duration = 5.0f;
 		emitter->SetSpawnRate(PPRandomRange<float>(50, 100));
-		emitter->SetStartPosition(PPBox({ width * 1.5f, 0.1f, 0.0f }));
-		emitter->SetStartSize(PPRandomRange<float>(0.5f, 0.6f));
-		emitter->SetScaleOverTime(PPRange<float>(1.5f, 1.0f));
-		emitter->SetFadeOverTime(PPRangeFadeIn<float>(1.0f, 0.0f, 0.4f));
-		emitter->SetLifetime(PPRandomRange<float>(0.17f, 0.2f));
+		emitter->SetStartPosition(PPBox({ width, 0.0f, 0.0f }));
+		emitter->SetStartSize(PPRandomRange<float>(0.3f, 0.35f));
+		emitter->SetScaleOverTime(PPRange<float>(1.2f, 1.0f));
+		emitter->SetFadeOverTime(PPRange<float>(1.0f, 0.0f));
+		emitter->SetLifetime(PPRandomRange<float>(0.10f, 0.15f));
 		emitter->SetStartDrag(PPConstant<float>(0.0f));
-		emitter->SetStartVelocity(PPConstant<Vector3>({ 0,-10.0f,0.5f }));
-		emitter->SetSpawnVelocityScale(PPRandomRange<float>(0.9f, 2));
+		emitter->SetStartVelocity(PPConstant<Vector3>({ 0.0f, 0.0f, 0.0f }));
+		emitter->SetSpawnVelocityScale(PPRandomRange<float>(0.2f, 0.2f));
 		emitter->SetStartColor(PPConstant<Color>(color*0.6f));
-		emitter->SetGravity(PPConstant<Vector3>(Vector3(0.0f, 0.0f, -1.81f)));
-		emitter->position.y = 0.2f;
-		emitter->scale = 0.4f;
+		emitter->SetGravity(PPConstant<Vector3>(Vector3(0.0f, 0.0f, -4.81f)));
+		emitter->position.y = 0.01f;
+		emitter->scale = 1.0f;
 		return emitter;
 	}
 	Ref<ParticleEmitter> CreateExplosionEmitter(const Color& color, const Vector3 dir)
@@ -358,7 +366,7 @@ public:
 		emitter->loops = 1;
 		emitter->duration = 0.15f;
 		emitter->SetSpawnRate(PPRange<float>(50, 0));
-		emitter->SetStartPosition(PPBox(Vector3(width * 0.5f, 0.1f, 0)));
+		emitter->SetStartPosition(PPBox(Vector3(width * 0.5f, 0.0f, 0)));
 		emitter->SetStartSize(PPRandomRange<float>(0.3f, 0.1f));
 		emitter->SetFadeOverTime(PPRangeFadeIn<float>(0.7f, 0.0f, 0.0f));
 		emitter->SetLifetime(PPRandomRange<float>(0.35f, 0.4f));
@@ -376,13 +384,58 @@ public:
 		if(!m_guiRenderer.Init(g_gl, g_gameWindow))
 			return false;
 
-		m_canvas = Utility::MakeRef(new Canvas());
-		m_scoringGauge = Utility::MakeRef(new HealthGauge());
-		Canvas::Slot* slot = m_canvas->Add(m_scoringGauge.As<GUIElementBase>());
-		slot->anchor = Anchor(0.95f, 0.5f);
-		slot->alignment = Vector2(1.0f, 0.5f);
-		slot->autoSizeX = true;
-		slot->autoSizeY = true;
+		m_guiStyle = Ref<CommonGUIStyle>(new CommonGUIStyle(g_application));
+
+		// Gauge
+		{
+			m_canvas = Utility::MakeRef(new Canvas());
+			m_scoringGauge = Utility::MakeRef(new HealthGauge());
+			Canvas::Slot* slot = m_canvas->Add(m_scoringGauge.As<GUIElementBase>());
+			slot->anchor = Anchor(0.95f, 0.5f);
+			slot->alignment = Vector2(1.0f, 0.5f);
+			slot->autoSizeX = true;
+			slot->autoSizeY = true;
+		}
+
+		// Setting bar
+		{
+			SettingsBar* sb = new SettingsBar(m_guiStyle);
+			m_settingsBar = Ref<SettingsBar>(sb);
+			sb->AddSetting(&m_camera.zoomBottom, -1.0f, 1.0f, "Bottom Zoom");
+			sb->AddSetting(&m_camera.zoomTop, -1.0f, 1.0f, "Top Zoom");
+			sb->AddSetting(&m_camera.cameraNearBase, 0.01f, 1.0f, "Camera Near Base");
+			sb->AddSetting(&m_camera.cameraNearMult, 0.0f, 2.0f, "Camera Near Mult");
+			sb->AddSetting(&m_camera.cameraHeightBase, 0.01f, 1.0f, "Camera Height Base");
+			sb->AddSetting(&m_camera.cameraHeightMult, 0.0f, 2.0f, "Camera Height Mult");
+			m_settingsBar->SetShow(false);
+
+			Canvas::Slot* settingsSlot = m_canvas->Add(sb->MakeShared());
+			settingsSlot->anchor = Anchor(0.75f, 0.0f, 1.0f, 1.0f);
+			settingsSlot->autoSizeX = false;
+			settingsSlot->autoSizeY = false;
+			settingsSlot->SetZOrder(2);
+		}
+		
+		// Score
+		{
+			Panel* scorePanel = new Panel();
+			scorePanel->texture = g_application->LoadTexture("scoring_base.png");
+			scorePanel->color = Color::White;
+
+			Canvas::Slot* scoreSlot = m_canvas->Add(scorePanel->MakeShared());
+			scoreSlot->anchor = Anchors::TopsRight;
+			scoreSlot->alignment = Vector2(1.0f, 0.0f);
+			scoreSlot->autoSizeX = true;
+			scoreSlot->autoSizeY = true;
+
+			m_scoreText = Ref<Label>(new Label());
+			m_scoreText->SetFontSize(64);
+			m_scoreText->SetText(L"0");
+
+			Panel::Slot* slot = scorePanel->SetContent(m_scoreText.As<GUIElementBase>());
+			slot->padding = Margin(30, 0, 30, 30);
+			slot->alignment = Vector2(1.0f, 0.5f);
+		}
 
 		return true;
 	}
@@ -394,7 +447,7 @@ public:
 		RenderQueue& debugRq = m_guiRenderer.Begin();
 		auto RenderText = [&](const String& text, const Vector2& pos, const Color& color = Color::White)
 		{
-			return m_guiRenderer.RenderText(debugRq, text, pos, color);
+			return m_guiRenderer.RenderText(text, pos, color);
 		};
 
 		const BeatmapSettings& bms = m_beatmap->GetMapSettings();
@@ -487,7 +540,7 @@ public:
 		float dir = Math::Sign(object->points[1] - object->points[0]);
 		float laserPos = m_track->trackWidth * object->points[1] - m_track->trackWidth * 0.5f;
 		Ref<ParticleEmitter> ex = CreateExplosionEmitter(m_track->laserColors[object->index], Vector3(dir, 0, 0));
-		ex->position = Vector3(laserPos, 0.5f, -0.1f);
+		ex->position = Vector3(laserPos, 0.0f, -0.05f);
 	}
 	void OnButtonHit(Input::Button button, ScoreHitRating rating, ObjectState* hitObject)
 	{
@@ -507,9 +560,10 @@ public:
 			float hitWidth = (buttonIdx < 4) ? m_track->buttonWidth : m_track->fxbuttonWidth;
 			Ref<ParticleEmitter> emitter = CreateHitEmitter(hitColor, hitWidth);
 			emitter->position.x = GetButtonPlacement(buttonIdx);
-			emitter->position.z = -0.1f;
-			emitter->position.y = 0.2f;
+			emitter->position.z = -0.05f;
+			emitter->position.y = 0.0f;
 		}
+
 	}
 	void OnButtonMiss(Input::Button button)
 	{
@@ -519,6 +573,14 @@ public:
 	void OnComboChanged(uint32 newCombo)
 	{
 		m_comboAnimation.Restart();
+	}
+	void OnScoreChanged(uint32 newScore)
+	{
+		// Update score text
+		if(m_scoreText)
+		{
+			m_scoreText->SetText(Utility::WSprintf(L"%d", newScore));
+		}
 	}
 
 	// These functions control if FX button DSP's are muted or not
@@ -631,6 +693,7 @@ public:
 		m_scoring.OnComboChanged.Add(this, &Game_Impl::OnComboChanged);
 		m_scoring.OnObjectHold.Add(this, &Game_Impl::OnObjectHold);
 		m_scoring.OnObjectReleased.Add(this, &Game_Impl::OnObjectReleased);
+		m_scoring.OnScoreChanged.Add(this, &Game_Impl::OnScoreChanged);
 		m_scoring.Reset(); // Initialize
 
 		return true;
@@ -754,6 +817,10 @@ public:
 			{
 				g_application->Shutdown();
 			}
+		}
+		else if(key == Key::Tab)
+		{
+			m_settingsBar->SetShow(!m_settingsBar->IsShown());
 		}
 	}
 

@@ -16,4 +16,7 @@ struct GUIRenderData
 	bool isSizeFixed = false;
 	// Time between this and last render call
 	float deltaTime;
+
+	// Use this overlap test for correct clipping rectangle tests
+	bool OverlapTest(Rect rect) const;
 };

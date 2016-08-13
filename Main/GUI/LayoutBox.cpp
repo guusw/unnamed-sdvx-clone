@@ -11,12 +11,10 @@ LayoutBox::~LayoutBox()
 		delete s;
 	}
 }
-void LayoutBox::Render(GUIRenderData rd)
+
+void LayoutBox::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 {
 	m_TickAnimations(rd.deltaTime);
-
-	if(visibility != Visibility::Visible)
-		return;
 
 	Rect sourceRect = rd.area;
 	Vector<float> elementSizes = CalculateSizes(rd);
@@ -38,36 +36,42 @@ void LayoutBox::Render(GUIRenderData rd)
 			rd.area.size.x = mySize;
 		}
 
-		m_children[i]->Render(rd);
+		m_children[i]->PreRender(rd, inputElement);
 		offset += mySize;
 	}
 }
-bool LayoutBox::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
+
+void LayoutBox::Render(GUIRenderData rd)
+{
+	if(visibility != Visibility::Visible)
+		return;
+
+	for(size_t i = 0; i < m_children.size(); i++)
+	{
+		m_children[i]->Render(rd);
+	}
+}
+Vector2 LayoutBox::GetDesiredSize(GUIRenderData rd)
 {
 	if(visibility == Visibility::Collapsed)
-		return false;
+		return Vector2();
 
-	sizeOut = Vector2(0, 0);
-	bool set = false;
+	Vector2 sizeOut;
 	for(auto it = m_children.begin(); it != m_children.end(); it++)
 	{
-		Vector2 elemSize;
-		if((*it)->GetDesiredSize(rd,elemSize))
+		Vector2 elemSize = (*it)->GetDesiredSize(rd);
+		if(layoutDirection == Vertical)
 		{
-			if(layoutDirection == Vertical)
-			{
-				sizeOut.y += elemSize.y;
-				sizeOut.x = Math::Max(sizeOut.x, elemSize.x);
-			}
-			else
-			{
-				sizeOut.x += elemSize.x;
-				sizeOut.y = Math::Max(sizeOut.y, elemSize.y);
-			}
-			set = true;
+			sizeOut.y += elemSize.y;
+			sizeOut.x = Math::Max(sizeOut.x, elemSize.x);
+		}
+		else
+		{
+			sizeOut.x += elemSize.x;
+			sizeOut.y = Math::Max(sizeOut.y, elemSize.y);
 		}
 	}
-	return set;
+	return sizeOut;
 }
 LayoutBox::Slot* LayoutBox::Add(GUIElement element)
 {
@@ -75,7 +79,9 @@ LayoutBox::Slot* LayoutBox::Add(GUIElement element)
 	for(auto it = m_children.begin(); it != m_children.end(); it++)
 	{
 		if((*it)->element == element)
+		{
 			return *it; // Already exists
+		}
 	}
 
 	Slot* slot = CreateSlot<LayoutBox::Slot>(element);
@@ -87,9 +93,14 @@ void LayoutBox::Remove(GUIElement element)
 	for(auto it = m_children.begin(); it != m_children.end();)
 	{
 		if((*it)->element == element)
+		{
 			m_children.erase(it);
+			break;
+		}
 		else
+		{
 			it++;
+		}
 	}
 }
 
@@ -101,11 +112,11 @@ Vector<float> LayoutBox::CalculateSizes(const GUIRenderData& rd) const
 	uint32 fillCount = 0;
 	for(auto it = m_children.begin(); it != m_children.end(); it++)
 	{
-		Vector2 size;
-		(*it)->GetDesiredSize(rd, size);
+		Vector2 size = (*it)->GetDesiredSize(rd);
 		float currentSize = (layoutDirection == Horizontal) ? size.x : size.y;
+		bool currentFill = (layoutDirection == Horizontal) ? (*it)->fillX : (*it)->fillY;
 		minSize += currentSize;
-		if((*it)->fill)
+		if(currentFill)
 		{
 			fillCount++;
 		}
@@ -135,11 +146,11 @@ Vector<float> LayoutBox::CalculateSizes(const GUIRenderData& rd) const
 	Vector<float> ret;
 	for(auto it = m_children.begin(); it != m_children.end(); it++)
 	{
-		Vector2 size;
-		(*it)->GetDesiredSize(rd, size);
+		Vector2 size = (*it)->GetDesiredSize(rd);
 		float currentSize = (layoutDirection == Horizontal) ? size.x : size.y;
+		bool currentFill = (layoutDirection == Horizontal) ? (*it)->fillX : (*it)->fillY;
 		float mySize;
-		if((*it)->fill)
+		if(currentFill)
 		{
 			mySize = fillSpace * fillMult;
 		}
@@ -164,4 +175,39 @@ void LayoutBox::Clear()
 		delete s;
 	}
 	m_children.clear();
+}
+
+void LayoutBox::Slot::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
+{
+	Vector2 size = GetDesiredSize(rd);
+
+	// Padding
+	rd.area = padding.Apply(rd.area);
+
+	// Filling
+	if(!fillX || !fillY)
+	{
+		Rect rect = rd.area;
+		if(!fillX && size.x < rd.area.size.x)
+		{
+			rect.size.x = size.x;
+		}
+		if(!fillY && size.y < rd.area.size.y)
+		{
+			rect.size.y = size.y;
+		}
+		rd.area = GUISlotBase::ApplyAlignment(alignment, rect, rd.area);
+	}
+	m_cachedArea = rd.area;
+
+	element->PreRender(rd, inputElement);
+}
+void LayoutBox::Slot::Render(GUIRenderData rd)
+{
+	rd.area = m_cachedArea;
+	if(!allowOverflow)
+		rd.guiRenderer->PushScissorRect(rd.area);
+	element->Render(rd);
+	if(!allowOverflow)
+		rd.guiRenderer->PopScissorRect();
 }

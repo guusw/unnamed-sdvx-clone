@@ -8,12 +8,14 @@ class Canvas : public GUIElementBase
 {
 public:
 	~Canvas();
+	void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
 	void Render(GUIRenderData rd) override;
-	virtual bool GetDesiredSize(GUIRenderData rd, Vector2& sizeOut) override;
+	virtual Vector2 GetDesiredSize(GUIRenderData rd) override;
 
 	class Slot : public GUISlotBase
 	{
 	public:
+		virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
 		virtual void Render(GUIRenderData rd) override;
 
 		// Anchor for the element

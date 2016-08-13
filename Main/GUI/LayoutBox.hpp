@@ -8,8 +8,9 @@ class LayoutBox : public GUIElementBase
 {
 public:
 	~LayoutBox();
-	void Render(GUIRenderData rd) override;
-	virtual bool GetDesiredSize(GUIRenderData rd, Vector2& sizeOut) override;
+	virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
+	virtual void Render(GUIRenderData rd) override;
+	virtual Vector2 GetDesiredSize(GUIRenderData rd) override;
 
 	// Calculates child element sizes based on the current settings
 	Vector<float> CalculateSizes(const GUIRenderData& rd) const;
@@ -23,15 +24,18 @@ public:
 	// The layout direction of the box
 	LayoutDirection layoutDirection = LayoutDirection::Horizontal;
 
-	// If true will stretch all the elements to take up equal space
-	//	otherwise they will get put after each other
-	bool fill = false;
-
 	class Slot : public GUISlotBase
 	{
 	public:
-		// Should fill all possible space? or just take up the wanted amount of space
-		bool fill = false;
+		// If true will stretch all the elements to take up equal space
+		//	otherwise they will get put after each other
+		bool fillX = false;
+		bool fillY = false;
+
+		Vector2 alignment = Vector2(0.0f, 0.0f);
+
+		virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement);
+		virtual void Render(GUIRenderData rd) override;
 	};
 
 	Slot* Add(GUIElement element);

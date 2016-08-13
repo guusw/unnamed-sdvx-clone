@@ -73,6 +73,8 @@ void Scoring::Reset()
 
 	m_CleanupHitStats();
 	m_CleanupTicks();
+
+	OnScoreChanged.Call(0);
 }
 
 void Scoring::Tick(float deltaTime)
@@ -502,6 +504,10 @@ ObjectState* Scoring::m_ConsumeTick(uint32 buttonCode)
 
 void Scoring::m_OnTickProcessed(ScoreTick* tick, uint32 index)
 {
+	if(OnScoreChanged.IsHandled())
+	{
+		OnScoreChanged.Call(CalculateCurrentScore());
+	}
 }
 void Scoring::m_TickHit(ScoreTick* tick, uint32 index, MapTime delta /*= 0*/)
 {

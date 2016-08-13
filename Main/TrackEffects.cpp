@@ -36,7 +36,7 @@ void ButtonHitEffect::Draw(class RenderQueue& rq)
 	}
 
 	Vector2 hitEffectSize = Vector2(w * 1.2f, 0.0f);
-	hitEffectSize.y = track->scoreHitTexture->CalculateHeight(hitEffectSize.x) * track->perspectiveHeightScale;
+	hitEffectSize.y = track->scoreHitTexture->CalculateHeight(hitEffectSize.x);
 	Color c = color.WithAlpha(GetRate());
 	track->DrawSprite(rq, Vector3(x, 0.05f + hitEffectSize.y * 0.5f, -0.03f), hitEffectSize, track->scoreHitTexture, c);
 }
@@ -56,13 +56,13 @@ void ButtonHitRatingEffect::Draw(class RenderQueue& rq)
 	{
 		w = track->buttonWidth;
 		x = (-track->buttonWidth * 1.5f) + w * buttonCode;
-		y = 0.80f;
+		y = 0.15f;
 	}
 	else
 	{
 		w = track->buttonWidth * 2.0f;
 		x = -track->buttonWidth + w * (buttonCode - 4);
-		y = 1.0f;
+		y = 0.175f;
 	}
 
 	float iScale = 1.0f;
@@ -75,14 +75,20 @@ void ButtonHitRatingEffect::Draw(class RenderQueue& rq)
 	if(on == 1)
 	{
 		Texture hitTexture = track->scoreHitTextures[(size_t)rating];
-		Vector2 hitEffectSize = Vector2(track->buttonWidth, 0.0f);
-		hitEffectSize.y = hitTexture->CalculateHeight(hitEffectSize.x) * track->perspectiveHeightScale;
+
+		// Shrink
+		float t = GetRate();
+		float add = 0.4f * t * (2 - t);
+
+		// Size of effect
+		Vector2 hitEffectSize = Vector2(track->buttonWidth * (1.0f + add), 0.0f);
+		hitEffectSize.y = hitTexture->CalculateHeight(hitEffectSize.x);
 
 		// Fade out
 		Color c = Color::White.WithAlpha(GetRate());
 		// Intensity scale
 		Utility::Reinterpret<Vector3>(c) *= iScale;
 
-		track->DrawSprite(rq, Vector3(x, y + hitEffectSize.y * 0.5f, -0.03f), hitEffectSize, hitTexture, c, 0.0f);
+		track->DrawSprite(rq, Vector3(x, y + hitEffectSize.y * 0.5f, -0.02f), hitEffectSize, hitTexture, c, 0.0f);
 	}
 }

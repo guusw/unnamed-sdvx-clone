@@ -177,6 +177,10 @@ bool Application::m_Init()
 	g_gameWindow->OnKeyReleased.Add(this, &Application::m_OnKeyReleased);
 	g_gameWindow->OnResized.Add(this, &Application::m_OnWindowResized);
 
+	// Window cursor
+	Image cursorImg = ImageRes::Create("textures/cursor.png");
+	g_gameWindow->SetCursor(cursorImg, Vector2i(5, 5));
+
 	if(startFullscreen)
 		g_gameWindow->SwitchFullscreen(fullscreenMonitor);
 

@@ -197,14 +197,13 @@ namespace Utility
 	WARNING: Only use on objects allocated with "new"
 	Repeatedly calling MakeShared will return the same shared pointer
 */
-template<typename T>
-class RefCounted
+class IRefCounted
 {
 protected:
 	int32* m_refCount = (int32*)0;
 public:
 #if _DEBUG
-	~RefCounted()
+	~IRefCounted()
 	{
 		// Should never happen, object will always 
 		assert(!m_refCount || m_refCount[0] <= 0);
@@ -213,11 +212,6 @@ public:
 	int32 GetRefCount() const
 	{
 		return (m_refCount) ? m_refCount[0] : 0;
-	}
-	// Can be used for objects allocated with new to get a reference counted handle to this object
-	Ref<T> MakeShared()
-	{
-		return Ref<T>((T*)this, _GetRefCounter());
 	}
 	// Internal use, assigns the reference counter when constructing a Ref object without calling RefCounted::MakeShared
 	void _AssignRefCounter(int32* counter)
@@ -230,6 +224,17 @@ public:
 		if(!m_refCount)
 			m_refCount = new int32(0);
 		return m_refCount;
+	}
+};
+// Same as above but typed version
+template<typename T>
+class RefCounted : public IRefCounted
+{
+public:
+	// Can be used for objects allocated with new to get a reference counted handle to this object
+	Ref<T> MakeShared()
+	{
+		return Ref<T>((T*)this, _GetRefCounter());
 	}
 };
 
@@ -259,10 +264,10 @@ template<typename T> struct RefCounterHelper<T, true>
 template<typename T> void Ref<T>::m_AssignCounter()
 {
 	assert(m_data);
-	RefCounterHelper<T, std::is_base_of<RefCounted<T>, T>::value>::Assign((T*)m_data, m_refCount);
+	RefCounterHelper<T, std::is_base_of<IRefCounted, T>::value>::Assign((T*)m_data, m_refCount);
 }
 template<typename T> int32* Ref<T>::m_CreateNewCounter()
 {
 	assert(m_data);
-	return RefCounterHelper<T, std::is_base_of<RefCounted<T>, T>::value>::CreateCounter((T*)m_data);
+	return RefCounterHelper<T, std::is_base_of<IRefCounted, T>::value>::CreateCounter((T*)m_data);
 }

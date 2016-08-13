@@ -22,10 +22,6 @@ public:
 	float buttonLength;
 	float fxbuttonLength;
 
-	// This is due to the viewing angle of the camera, objects should be longer to appear their normal size
-	// This gets applied to all objects' Y direction drawn parallel to the track.
-	float perspectiveHeightScale = 5.0f;
-
 	// Laser color setting
 	Color laserColors[2] = {};
 

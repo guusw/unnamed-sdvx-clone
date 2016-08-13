@@ -11,9 +11,20 @@ Canvas::~Canvas()
 		delete c;
 	}
 }
+
+void Canvas::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
+{
+	for(auto& c : m_children)
+	{
+		c->PreRender(rd, inputElement);
+	}
+}
 void Canvas::Render(GUIRenderData rd)
 {
 	m_TickAnimations(rd.deltaTime);
+
+	if(visibility != Visibility::Visible)
+		return;
 
 	for(auto& c : m_children)
 	{
@@ -72,17 +83,14 @@ void Canvas::m_SortChildren()
 	});
 }
 
-void Canvas::Slot::Render(GUIRenderData rd)
+void Canvas::Slot::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 {
-	rd.guiRenderer->PushScissorRect(rd.area);
-
 	// Apply anchor and offset to get the canvas rectangle
 	rd.area = anchor.Apply(rd.area);
 	
 	// Perform auto-sizing
 	{
-		Vector2 size;
-		GetDesiredSize(rd, size);
+		Vector2 size = GetDesiredSize(rd);
 		Rect autoSized = ApplyAlignment(alignment, Rect(Vector2(), size), rd.area);
 		if(autoSizeX)
 		{
@@ -101,25 +109,30 @@ void Canvas::Slot::Render(GUIRenderData rd)
 
 	// Apply padding
 	rd.area = padding.Apply(rd.area);
+	// Cache area
+	m_cachedArea = rd.area;
+	
+	element->PreRender(rd, inputElement);
 
+}
+void Canvas::Slot::Render(GUIRenderData rd)
+{
+	rd.area = m_cachedArea;
+	if(!allowOverflow)
+		rd.guiRenderer->PushScissorRect(rd.area);
 	element->Render(rd);
-
-	rd.guiRenderer->PopScissorRect();
+	if(!allowOverflow)
+		rd.guiRenderer->PopScissorRect();
 }
 
-bool Canvas::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
+Vector2 Canvas::GetDesiredSize(GUIRenderData rd)
 {
-	bool set = false;
-	sizeOut = Vector2(0, 0);
+	Vector2 sizeOut = Vector2(0, 0);
 	for(auto s : m_children)
 	{
-		Vector2 elemSize;
-		if(s->GetDesiredSize(rd, elemSize))
-		{
-			sizeOut.x = Math::Max(sizeOut.x, elemSize.x);
-			sizeOut.y = Math::Max(sizeOut.y, elemSize.y);
-			set = true;
-		}
+		Vector2 elemSize = s->GetDesiredSize(rd);
+		sizeOut.x = Math::Max(sizeOut.x, elemSize.x);
+		sizeOut.y = Math::Max(sizeOut.y, elemSize.y);
 	}
-	return set;
+	return sizeOut;
 }

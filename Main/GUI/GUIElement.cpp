@@ -9,13 +9,12 @@ GUIElementBase::~GUIElementBase()
 		m_rendererFocus->SetInputFocus(nullptr);
 	}
 }
-void GUIElementBase::Render(GUIRenderData rd)
+void GUIElementBase::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 {
-	m_TickAnimations(rd.deltaTime);
 }
-bool GUIElementBase::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
+Vector2 GUIElementBase::GetDesiredSize(GUIRenderData rd)
 {
-	return false;
+	return Vector2();
 }
 bool GUIElementBase::AddAnimation(Ref<IGUIAnimation> anim, bool removeOld)
 {
@@ -31,9 +30,31 @@ bool GUIElementBase::AddAnimation(Ref<IGUIAnimation> anim, bool removeOld)
 	return true;
 }
 
+Ref<IGUIAnimation> GUIElementBase::GetAnimation(uint32 uid)
+{
+	size_t suid = (size_t)uid;
+	return GetAnimation((void*)suid);
+}
+Ref<IGUIAnimation> GUIElementBase::GetAnimation(void* target)
+{
+	Ref<IGUIAnimation>* found = m_animationMap.Find(target);
+	if(found)
+		return *found;
+	return Ref<IGUIAnimation>();
+}
+
 bool GUIElementBase::HasInputFocus() const
 {
 	return m_rendererFocus != nullptr;
+}
+
+bool GUIElementBase::OverlapTest(Rect rect, Vector2 point)
+{
+	if(point.x < rect.Left() || point.x > rect.Right())
+		return false;
+	if(point.y < rect.Top() || point.y > rect.Bottom())
+		return false;
+	return true;
 }
 
 void GUIElementBase::m_OnRemovedFromParent()
@@ -66,27 +87,32 @@ GUISlotBase::~GUISlotBase()
 		element->m_OnRemovedFromParent();
 	}
 }
-void GUISlotBase::Render(GUIRenderData rd)
+void GUISlotBase::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 {
-	// Scissor Rectangle
-	rd.guiRenderer->PushScissorRect(rd.area);
-
 	// Apply padding
 	Rect scissorRect = rd.area = padding.Apply(rd.area);
 
-	element->Render(rd);
+	// Store area
+	m_cachedArea = rd.area;
 
-	rd.guiRenderer->PopScissorRect();
+	element->PreRender(rd, inputElement);
 }
-bool GUISlotBase::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
+
+void GUISlotBase::Render(GUIRenderData rd)
 {
-	if(element->GetDesiredSize(rd, sizeOut))
-	{
-		sizeOut.x += padding.Width();
-		sizeOut.y += padding.Height();
-		return true;
-	}
-	return false;
+	// Scissor Rectangle
+	rd.area = m_cachedArea;
+
+	rd.guiRenderer->PushScissorRect(rd.area);
+	element->Render(rd);
+	rd.guiRenderer->PopScissorRect();
+
+}
+
+Vector2 GUISlotBase::GetDesiredSize(GUIRenderData rd)
+{
+	Vector2 size = element->GetDesiredSize(rd);
+	return size + padding.GetSize();
 }
 Rect GUISlotBase::ApplyFill(FillMode fillMode, const Vector2& inSize, const Rect& rect)
 {
@@ -146,8 +172,6 @@ Rect GUISlotBase::ApplyFill(FillMode fillMode, const Vector2& inSize, const Rect
 Rect GUISlotBase::ApplyAlignment(const Vector2& alignment, const Rect& rect, const Rect& parent)
 {
 	Vector2 remaining = parent.size - rect.size;
-	//remaining.x = Math::Max<float>(0, remaining.x);
-	//remaining.y = Math::Max<float>(0, remaining.y);
 	remaining.x = remaining.x;
 	remaining.y = remaining.y;
 

@@ -63,7 +63,10 @@ template<typename T, typename... A>
 struct LambdaDelegatehandler : public IDelegateHandler<A...>
 {
 	// Copies the given lambda
-	LambdaDelegatehandler(T&& lambda) : lambda(lambda) {};
+	LambdaDelegatehandler(T& lambda) : lambda(lambda) {};
+	~LambdaDelegatehandler() 
+	{ 
+	}
 	virtual void Call(A... args) override
 	{
 		lambda(args...);
@@ -71,6 +74,9 @@ struct LambdaDelegatehandler : public IDelegateHandler<A...>
 
 	T lambda;
 };
+
+// Handle to a registered delegate
+typedef void* DelegateHandle;
 
 /*
 	Template delegate class, can have multiple registered classes that handle a call to this function
@@ -104,11 +110,12 @@ public:
 		staticMap.Add(id, new StaticDelegateHandler<A...>(func));
 	}
 	// Adds a lambda function as a handler for this delegate
-	template<typename T> void AddLambda(T&& lambda)
+	template<typename T> DelegateHandle AddLambda(T& lambda)
 	{
 		void* id = &lambda;
 		assert(!lambdaMap.Contains(id));
-		lambdaMap.Add(id, new LambdaDelegatehandler<T, A...>(std::forward<T>(lambda)));
+		lambdaMap.Add(id, new LambdaDelegatehandler<T, A...>(lambda));
+		return id;
 	}
 
 	// Removes an object handler
@@ -138,6 +145,14 @@ public:
 		delete lambdaMap[id];
 		lambdaMap.erase(id);
 	}
+	// Removes a lambda by it's handle
+	template<typename T> void RemoveLambda(DelegateHandle handle)
+	{
+		assert(!lambdaMap.Contains(handle));
+		delete lambdaMap[handle];
+		lambdaMap.erase(handle);
+	}
+
 	// Removes all handlers belonging to a specific object
 	void RemoveAll(void* object)
 	{
@@ -194,5 +209,11 @@ public:
 		{
 			h.second->Call(args...);
 		}
+	}
+
+	// True if anything function is handling this delegate being called
+	bool IsHandled() const
+	{
+		return !staticMap.empty() || !objectMap.empty() || !lambdaMap.empty();
 	}
 };

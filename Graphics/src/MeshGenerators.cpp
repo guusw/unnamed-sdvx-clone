@@ -42,4 +42,20 @@ namespace Graphics
 		for(auto& v : verts)
 			out.Add(v);
 	}
+	void MeshGenerators::GenerateSimpleXZQuad(Rect3D r, Rect uv, Vector<MeshGenerators::SimpleVertex>& out)
+	{
+		Vector<MeshGenerators::SimpleVertex> verts =
+		{
+			{ { r.Left(),  0.0f, r.Top(),    },{ uv.Left(), uv.Top() } },
+			{ { r.Right(), 0.0f, r.Bottom(), },{ uv.Right(), uv.Bottom() } },
+			{ { r.Right(), 0.0f, r.Top(),    },{ uv.Right(), uv.Top() } },
+						   
+			{ { r.Left(),  0.0f, r.Top(),    },{ uv.Left(), uv.Top() } },
+			{ { r.Left(),  0.0f, r.Bottom(), },{ uv.Left(), uv.Bottom() } },
+			{ { r.Right(), 0.0f, r.Bottom(), },{ uv.Right(), uv.Bottom() } },
+		};
+		for(auto& v : verts)
+			out.Add(v);
+	}
+
 }

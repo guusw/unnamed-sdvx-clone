@@ -20,7 +20,7 @@ void HealthGauge::Render(GUIRenderData rd)
 	float elementScale = barArea.size.x / m_frame->GetSize().x; // Scale of the original bar
 	GUISlotBase::ApplyAlignment(Vector2(0.5f), barArea, rd.area);
 
-	rd.guiRenderer->RenderRect(*rd.rq, barArea, Color::White, m_bg);
+	rd.guiRenderer->RenderRect(barArea, Color::White, m_bg);
 
 	// Acquire bar inner area
 	Margin barMargin = Margin(20, 38, 20, 38) * elementScale;
@@ -37,11 +37,10 @@ void HealthGauge::Render(GUIRenderData rd)
 	rd.rq->Draw(transform, rd.guiRenderer->guiQuad, m_fillMaterial, params);
 
 	// Draw frame last
-	rd.guiRenderer->RenderRect(*rd.rq, barArea, Color::White, m_frame);
+	rd.guiRenderer->RenderRect(barArea, Color::White, m_frame);
 }
 
-bool HealthGauge::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
+Vector2 HealthGauge::GetDesiredSize(GUIRenderData rd)
 {
-	sizeOut = m_frame->GetSize();
-	return true;
+	return m_frame->GetSize();
 }

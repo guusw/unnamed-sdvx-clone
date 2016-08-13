@@ -51,7 +51,6 @@ public:
 		static const float scale = 0.1f;
 		area.pos -= area.size * scale * m_fade * 0.5f;
 		area.size += area.size * scale * m_fade;
-		rd.guiRenderer->PushScissorRect(area);
 
 		// Custom rendering to combine jacket image and frame
 		Transform transform;
@@ -62,7 +61,7 @@ public:
 		params.SetParameter("frame", m_frame);
 		if(m_jacket)
 			params.SetParameter("jacket", m_jacket);
-		rd.rq->DrawScissored(area, transform, rd.guiRenderer->guiQuad, m_style->diffFrameMaterial, params);
+		rd.rq->Draw(transform, rd.guiRenderer->guiQuad, m_style->diffFrameMaterial, params);
 
 		// Render level text
 		Rect textRect = Rect(Vector2(), m_lvlText->size);
@@ -70,16 +69,13 @@ public:
 		textFrameRect.size.x = area.size.x * 0.25f;
 		textFrameRect = GUISlotBase::ApplyAlignment(Vector2(1, 0), textFrameRect, area);
 		textRect = GUISlotBase::ApplyAlignment(Vector2(0.5f, 0.5f), textRect, textFrameRect);
-		rd.guiRenderer->RenderRect(*rd.rq, textFrameRect, Color::Black.WithAlpha(0.5f));
-		rd.guiRenderer->RenderText(*rd.rq, m_lvlText, textRect.pos, Color::White);
-
-		rd.guiRenderer->PopScissorRect();
+		rd.guiRenderer->RenderRect(textFrameRect, Color::Black.WithAlpha(0.5f));
+		rd.guiRenderer->RenderText(m_lvlText, textRect.pos, Color::White);
 	}
-	virtual bool GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
+	virtual Vector2 GetDesiredSize(GUIRenderData rd)
 	{
 		Rect base = GUISlotBase::ApplyFill(FillMode::Fit, m_size, rd.area);
-		sizeOut = base.size;
-		return true;
+		return base.size;
 	}
 	virtual void SetSelected(bool selected)
 	{
@@ -119,13 +115,13 @@ SongSelectItem::SongSelectItem(Ref<SongSelectStyle> style)
 	{
 		m_title = new Label();
 		m_title->SetFontSize(40);
-		m_title->SetText(L"FRANK IS DE MEESTER");
+		m_title->SetText(L"<title>");
 		LayoutBox::Slot* slot = m_mainVert->Add(m_title->MakeShared());
 		slot->padding = Margin(0, -5.0f);
 
 		m_artist = new Label();
 		m_artist->SetFontSize(32);
-		m_artist->SetText(L"“ú–{ PIPES");
+		m_artist->SetText(L"<artist>");
 		slot = m_mainVert->Add(m_artist->MakeShared());
 		slot->padding = Margin(0, -5.0f);
 	}
@@ -137,9 +133,15 @@ SongSelectItem::SongSelectItem(Ref<SongSelectStyle> style)
 		Slot* slot = Add(m_diffSelect->MakeShared());
 		slot->anchor = Anchor(0.0f, 0.4f, 1.0f, 1.0f - 0.09f);
 		slot->padding = Margin(padding, 0, 0, 0);
+		slot->allowOverflow = true;
 	}
 
 	SwitchCompact(true);
+}
+
+void SongSelectItem::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
+{
+	Canvas::PreRender(rd, inputElement);
 }
 void SongSelectItem::Render(GUIRenderData rd)
 {
@@ -154,12 +156,11 @@ void SongSelectItem::Render(GUIRenderData rd)
 	// Render canvas
 	Canvas::Render(rd);
 }
-
-bool SongSelectItem::GetDesiredSize(GUIRenderData rd, Vector2& sizeOut)
+Vector2 SongSelectItem::GetDesiredSize(GUIRenderData rd)
 {
-	sizeOut = m_bg->texture->GetSize();
+	Vector2 sizeOut = m_bg->texture->GetSize();
 	sizeOut.x = Math::Min(sizeOut.x, rd.area.size.x);
-	return true;
+	return sizeOut;
 }
 void SongSelectItem::SetMap(struct MapIndex* map)
 {
@@ -175,6 +176,7 @@ void SongSelectItem::SetMap(struct MapIndex* map)
 		SongDifficultyFrame* frame = new SongDifficultyFrame(m_style, d);
 		LayoutBox::Slot* slot = m_diffSelect->Add(frame->MakeShared());
 		slot->padding = Margin(2);
+		slot->allowOverflow = true;
 		m_diffSelectors.Add(frame);
 	}
 }
