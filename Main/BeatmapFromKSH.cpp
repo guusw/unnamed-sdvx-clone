@@ -494,7 +494,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input, bool metadataOnly)
 			auto CreateLaserSegment = [&](float endPos) 
 			{
 				// Process existing segment
-				assert(state->numTicks > 0);
+				//assert(state->numTicks > 0);
 
 				LaserObjectState* obj = new LaserObjectState();
 				obj->time = state->startTime;
