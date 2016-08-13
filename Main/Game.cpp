@@ -355,7 +355,7 @@ public:
 		emitter->SetStartVelocity(PPConstant<Vector3>(dir * 5.0f));
 		emitter->SetStartColor(PPConstant<Color>(color));
 		emitter->SetGravity(PPConstant<Vector3>(Vector3(0.0f, 0.0f, -9.81f)));
-		emitter->scale = 0.3f;
+		emitter->scale = 0.4f;
 		return emitter;
 	}
 	Ref<ParticleEmitter> CreateHitEmitter(const Color& color, float width)
