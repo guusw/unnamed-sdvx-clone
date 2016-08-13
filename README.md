@@ -45,17 +45,14 @@ Additional command line parameters:
 - Left Laser = [W] [E] 
  Move left / move right respectively
 - Right Laser = [O] [P]
-- Back to song select [ESC]
+- Back to song select [Esc]
 
 ### Song Select Controls:
-In the song select, use arrow keys to select a song.
+- Use the arrow keys to select a song and difficulty
+- Use [Page Down]/[Page Up] to scroll faster
+- Press [Enter] to start a song
+- Press [Ctrl]+[Enter] to start autoplay
+- Use the Search bar on the top to search for songs.
 
-Use [Page Down]/[Page Up] to scroll faster
-
-Use the Search bar on the top to search for songs.
-
-The folder that is scanned for songs can be changed in the "Main.cfg" file (songfolder = "path to my song folder")
-
+The folder that is scanned for songs can be changed in the "Main.cfg" file (songfolder = "path to my song folder").
 If anything breaks in the song database delete "maps.db"
-
-
