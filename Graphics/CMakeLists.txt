@@ -22,7 +22,7 @@ include_directories(include include/Graphics src
 add_library(Graphics ${Graphics_src})
 
 # Public include paths for library
-target_include_directories(Graphics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(Graphics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics/glew)
 	
 # GLEW is included statically and also doesn't need GLU(Which doesn't even exist on linux)
 add_definitions(-DGLEW_STATIC -DGLEW_NO_GLU)
@@ -33,16 +33,9 @@ enable_precompiled_headers(${Graphics_src} src/stdafx.cpp)
 precompiled_header_exclude(src/glew.c)
 
 # Dependencies
-target_link_libraries(Graphics png)
-target_link_libraries(Graphics jpeg)
 target_link_libraries(Graphics Shared)
-target_link_libraries(Graphics SDL2)
-target_include_directories(Graphics PUBLIC ${SDL2_SOURCE_DIR}/include/)
 if(UNIX)
-	# Find Freetype as a linux package
+	find_package(X11 REQUIRED)
 	find_package(Freetype REQUIRED)
-	include_directories(${FREETYPE_INCLUDE_DIRS})
-else(UNIX)
-	# Link against bundled freetype
-	target_link_libraries(Graphics freetype)
+	include_directories(${X11_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
 endif(UNIX)

@@ -200,7 +200,7 @@ bool Beatmap::m_Serialize(BinaryStream& stream, bool metadataOnly)
 }
 
 // Object array sorting
-void TObjectState<void>::SortArray(Vector<TObjectState<void>*>& arr)
+void TObjectState<void>::SortArray(Vector<ObjectState*>& arr)
 {
 	arr.Sort([](const ObjectState* l, const ObjectState* r)
 	{

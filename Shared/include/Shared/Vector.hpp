@@ -55,7 +55,7 @@ public:
 
 	// Find first item that matches Predicate
 	template<typename Predicate>
-	I* Find(Predicate& pred)
+	I* Find(Predicate&& pred)
 	{
 		for(auto& i : *this)
 		{
@@ -68,7 +68,7 @@ public:
 	}
 	// Find first item that matches Predicate
 	template<typename Predicate>
-	const I* Find(Predicate& pred) const
+	const I* Find(Predicate&& pred) const
 	{
 		for(auto& i : *this)
 		{
@@ -82,7 +82,7 @@ public:
 
 	// Find all items that match Predicate
 	template<typename Predicate>
-	Vector<I*> FindAll(Predicate& pred)
+	Vector<I*> FindAll(Predicate&& pred)
 	{
 		Vector<I*> r;
 		for(auto& i : *this)
@@ -95,7 +95,7 @@ public:
 		return r;
 	}
 	template<typename Predicate>
-	Vector<const I*> FindAll(Predicate& pred) const
+	Vector<const I*> FindAll(Predicate&& pred) const
 	{
 		Vector<I*> r;
 		for(auto& i : *this)
@@ -109,7 +109,7 @@ public:
 	}
 
 	template<typename Predicate>
-	void Sort(Predicate& pred)
+	void Sort(Predicate&& pred)
 	{
 		std::sort(begin(), end(), pred);
 	}

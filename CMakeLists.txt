@@ -8,11 +8,14 @@ set(CMAKE_DEBUG_POSTFIX _Debug)
 set(CMAKE_RELEASE_POSTFIX _Release)
 
 # Set output folders
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PROJECT_SOURCE_DIR}/bin )
-    set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PROJECT_SOURCE_DIR}/bin )
-    set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PROJECT_SOURCE_DIR}/lib )
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PROJECT_SOURCE_DIR}/bin )
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PROJECT_SOURCE_DIR}/bin )
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PROJECT_SOURCE_DIR}/lib )
 endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
 # All projects use unicode define
@@ -45,7 +48,7 @@ endmacro(precompiled_header_exclude)
 macro(enable_cpp11)
 	if(UNIX)
 		# C++11 support enabled for linux compilers
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 	endif(UNIX)
 endmacro(enable_cpp11)
 
@@ -62,16 +65,12 @@ add_subdirectory(Shared)
 add_subdirectory(Graphics)
 add_subdirectory(Main)
 
-# Linux Test Project
-if(UNIX)
-	add_subdirectory(Test)
-endif(UNIX)
-
 # Enabled project filters on windows
 if(MSVC)
+	# Use filters in VS projects
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 	
-	# Then in some target add this to put the target in the Development folder.
+	# Put all third party libraries in a seperate folder in the VS solution
 	set_target_properties(jpeg PROPERTIES FOLDER "Third Party")
 	set_target_properties(png PROPERTIES FOLDER "Third Party")
 	set_target_properties(zlib PROPERTIES FOLDER "Third Party")
@@ -79,9 +78,9 @@ if(MSVC)
 	set_target_properties(ogg PROPERTIES FOLDER "Third Party")
 	set_target_properties(vorbis PROPERTIES FOLDER "Third Party")
 	set_target_properties(freetype PROPERTIES FOLDER "Third Party")
-	# SDL
 	set_target_properties(SDL2 PROPERTIES FOLDER "Third Party")
 	
+	# My libraries in the libraries folder
 	set_target_properties(Shared PROPERTIES FOLDER Libraries)
 	set_target_properties(Graphics PROPERTIES FOLDER Libraries)
 endif(MSVC)

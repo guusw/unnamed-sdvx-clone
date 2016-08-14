@@ -13,7 +13,7 @@
 
 Config g_mainConfig;
 OpenGL* g_gl = nullptr;
-Window* g_gameWindow = nullptr;
+Graphics::Window* g_gameWindow = nullptr;
 Application* g_application = nullptr;
 JobSheduler* g_jobSheduler = nullptr;
 
@@ -53,6 +53,23 @@ Application::~Application()
 	m_Cleanup();
 	assert(g_application == this);
 	g_application = nullptr;
+}
+void Application::SetCommandLine(int32 argc, char** argv)
+{
+	m_commandLine.clear();
+	
+	// Split up command line parameters
+	for(int32 i = 0 ; i < argc; i++)
+	{
+		m_commandLine.Add(argv[i]);
+	}
+}
+void Application::SetCommandLine(const char* cmdLine)
+{
+	m_commandLine.clear();
+	
+	// Split up command line parameters
+	m_commandLine = Path::SplitCommandLine(cmdLine);
 }
 int32 Application::Run()
 {
@@ -126,9 +143,7 @@ bool Application::m_Init()
 {
 	ProfilerScope $("Application Setup");
 
-	// Split up command line parameters
-	String cmdLine = Utility::ConvertToUTF8(GetCommandLine());
-	m_commandLine = Path::SplitCommandLine(cmdLine);
+	// Must have command line
 	assert(m_commandLine.size() >= 1);
 
 	if(!m_LoadConfig())
@@ -170,7 +185,7 @@ bool Application::m_Init()
 
 	// Create the game window
 	g_resolution = Vector2i{ (int32)(g_screenHeight * g_aspectRatio), (int32)g_screenHeight };
-	g_gameWindow = new Window(g_resolution);
+	g_gameWindow = new Graphics::Window(g_resolution);
 	g_gameWindow->Show();
 	m_OnWindowResized(g_resolution);
 	g_gameWindow->OnKeyPressed.Add(this, &Application::m_OnKeyPressed);

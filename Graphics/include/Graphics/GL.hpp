@@ -9,6 +9,11 @@
 #define GLEW_STATIC
 #endif
 
+// We don't need GLU
+#ifndef GLEW_NO_GLU
+#define GLEW_NO_GLU
+#endif
+
 #include <Graphics/glew/GL/glew.h>
 
 // Include platform specific OpenGL headers

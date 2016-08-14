@@ -21,7 +21,7 @@ public:
 	TimeFunction timeFunction = TimeFunction::Linear;
 
 	template<typename T, typename Lambda>
-	static Ref<IGUIAnimation> CreateCallback(T next, T last, float duration, Lambda& l, uint32 identifier);
+	static Ref<IGUIAnimation> CreateCallback(T next, T last, float duration, Lambda&& l, uint32 identifier);
 	template<typename T>
 	static Ref<IGUIAnimation> Create(T* target, T next, float duration);
 	template<typename T>
@@ -113,7 +113,7 @@ class GUICallbackAnimation : public IGUIAnimation
 {
 public:
 	// A->B animation with A and B provided, calls l on every update
-	GUICallbackAnimation(Lambda& l, T newValue, T lastValue, float duration, uint32 identifier) : m_lambda(l)
+	GUICallbackAnimation(Lambda&& l, T newValue, T lastValue, float duration, uint32 identifier) : m_lambda(l)
 	{
 		m_identifier = identifier;
 		m_duration = duration;
@@ -153,20 +153,17 @@ private:
 };
 
 template<typename T, typename Lambda>
-static Ref<IGUIAnimation>
-IGUIAnimation::CreateCallback(T next, T last, float duration, Lambda& l, uint32 identifier)
+Ref<IGUIAnimation> IGUIAnimation::CreateCallback(T next, T last, float duration, Lambda&& l, uint32 identifier)
 {
-	return Ref<IGUIAnimation>(new GUICallbackAnimation<T, Lambda>(l, next, last, duration, identifier));
+	return Ref<IGUIAnimation>(new GUICallbackAnimation<T, Lambda>(std::forward<Lambda>(l), next, last, duration, identifier));
 }
 template<typename T>
-static Ref<IGUIAnimation>
-IGUIAnimation::Create(T* target, T next, float duration)
+Ref<IGUIAnimation> IGUIAnimation::Create(T* target, T next, float duration)
 {
 	return Ref<IGUIAnimation>(new GUIAnimation<T>(target, next, duration));
 }
 template<typename T>
-static Ref<IGUIAnimation>
-IGUIAnimation::Create(T* target, T next, T last, float duration)
+Ref<IGUIAnimation> IGUIAnimation::Create(T* target, T next, T last, float duration)
 {
 	return Ref<IGUIAnimation>(new GUIAnimation<T>(target, next, last, duration));
 }

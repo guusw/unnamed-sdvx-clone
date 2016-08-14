@@ -81,7 +81,7 @@ void Audio_Impl::AudioThread()
 
 			delete[] tempData;
 		}
-		Sleep(0);
+		std::this_thread::yield();
 	}
 }
 void Audio_Impl::Start()
@@ -145,7 +145,7 @@ Audio::~Audio()
 	assert(g_audio == this);
 	g_audio = nullptr;
 }
-bool Audio::Init(class Window& window)
+bool Audio::Init(class Graphics::Window& window)
 {
 	m_window = &window;
 	audioLatency = 0;

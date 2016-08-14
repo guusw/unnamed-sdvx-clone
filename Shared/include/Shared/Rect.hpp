@@ -94,7 +94,7 @@ public:
 		float bottom = Math::Min(other.Bottom(), Bottom());
 		float left = Math::Max(other.Left(), Left());
 		float right = Math::Min(other.Right(), Right());
-		return Rect(left, top, right, bottom);
+		return RectangleBase(left, top, right, bottom);
 	}
 };
 
@@ -105,6 +105,7 @@ template<typename T>
 class RectangleBase3D : public RectangleBase<T>
 {
 public:
+	typedef VectorMath::VectorBase<T, 2> VectorType;
 	using RectangleBase<T>::RectangleBase;
 	using RectangleBase<T>::RectangleBase::pos;
 	using RectangleBase<T>::RectangleBase::size;

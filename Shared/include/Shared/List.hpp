@@ -14,6 +14,10 @@ public:
 	using std::list<I>::list::begin;
 	using std::list<I>::list::end;
 	using std::list<I>::list::sort;
+	using std::list<I>::list::front;
+	using std::list<I>::list::back;
+	using std::list<I>::list::pop_front;
+	using std::list<I>::list::pop_back;
 
 	I& AddBack(const I& item = I())
 	{

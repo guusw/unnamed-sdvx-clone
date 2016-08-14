@@ -55,7 +55,7 @@ uint32 Label::GetFontSize() const
 }
 void Label::m_UpdateText(class GUIRenderer* renderer)
 {
-	Font fontToUse = m_font;
+	Graphics::Font fontToUse = m_font;
 	if(!fontToUse)
 		fontToUse = renderer->font;
 	m_text = fontToUse->CreateText(m_textString, m_fontSize);

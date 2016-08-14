@@ -21,6 +21,7 @@ public:
 	using std::basic_string<T>::back;
 	using std::basic_string<T>::empty;
 	using std::basic_string<T>::front;
+	using std::basic_string<T>::find;
 	using std::basic_string<T>::find_last_of;
 	
 	StringBase() = default;

@@ -60,7 +60,7 @@ bool Path::FileExists(const String& path)
 {
 	return access(*path, F_OK) != -1;
 }
-String Path::Canonical(const String& path)
+String Path::Normalize(const String& path)
 {
 	char out[MAX_PATH];
 	realpath(*path, out);

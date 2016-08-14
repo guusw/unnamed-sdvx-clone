@@ -21,7 +21,7 @@ public:
 		Length,
 	};
 
-	void Init(Window& wnd);
+	void Init(Graphics::Window& wnd);
 	void Cleanup();
 
 	bool GetButton(Button button) const;
@@ -45,5 +45,5 @@ private:
 	bool m_buttonStates[(size_t)Button::Length];
 	float m_laserStates[2] = { 0.0f };
 
-	Window* m_window = nullptr;
+	Graphics::Window* m_window = nullptr;
 };

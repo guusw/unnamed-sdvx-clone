@@ -13,7 +13,6 @@
 #include "Framebuffer.hpp"
 #include "ParticleSystem.hpp"
 #include "Window.hpp"
-#include "SDL_syswm.h"
 
 namespace Graphics
 {
@@ -136,7 +135,11 @@ namespace Graphics
 		SDL_GL_SwapWindow(sdlWnd);
 	}
 
+	#ifdef _WIN32
 	void APIENTRY GLDebugProc(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+	#else
+	void GLDebugProc(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+	#endif
 	{
 #define DEBUG_SEVERITY_HIGH                              0x9146
 #define DEBUG_SEVERITY_MEDIUM                            0x9147

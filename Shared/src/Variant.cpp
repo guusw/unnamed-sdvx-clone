@@ -46,7 +46,7 @@ bool Variant::StaticSerialize(class BinaryStream& stream, Variant*& object)
 {
 	uint8 type = stream.IsReading() ? 0 : (uint8)object->GetType();
 	stream << type;
-	switch(type)
+	switch((VariantType)type)
 	{
 	default:
 	case VariantType::Null:

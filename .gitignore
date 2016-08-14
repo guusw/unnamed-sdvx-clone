@@ -2,6 +2,7 @@
 *.dll
 *.lib
 *.exe
+*.a
 
 # Intermediate Files
 x64
@@ -33,6 +34,7 @@ Release
 *.dir
 CMakeCache.txt
 CMakeFiles
+Makefile
 
 # Not adding photoshop source files for textures
 *.psd

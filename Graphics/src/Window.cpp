@@ -2,7 +2,7 @@
 #include "Window.hpp"
 #include "KeyMap.hpp"
 #include "Image.hpp"
-#include "SDL_syswm.h"
+#include "SDL2/SDL_syswm.h"
 
 namespace Graphics
 {

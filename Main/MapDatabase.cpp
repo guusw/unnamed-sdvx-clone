@@ -503,6 +503,8 @@ private:
 	// Main search thread
 	void m_SearchThread()
 	{
+		/// TODO: ADD Linux version for file finding functions
+		/*
 		Map<String, WIN32_FIND_DATA> fileList;
 
 		{
@@ -647,6 +649,7 @@ private:
 			}
 		}
 
+		*/
 		m_searching = false;
 	}
 };

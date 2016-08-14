@@ -1,5 +1,10 @@
 #pragma once
 
+// In case None is defined by someone (linux)
+#ifdef None
+#undef None
+#endif
+
 namespace Graphics
 {
 	enum class MouseButton : uint8 

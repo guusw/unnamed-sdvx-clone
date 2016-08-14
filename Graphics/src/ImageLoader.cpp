@@ -10,7 +10,6 @@ namespace Graphics
 {
 	class ImageLoader_Impl
 	{
-
 		ImageLoader_Impl()
 		{
 		}
@@ -30,19 +29,15 @@ namespace Graphics
 		}
 		static void jpegErrorReset(jpeg_common_struct* cinfo)
 		{
-			__nop();
 		}
 		static void jpegEmitMessage(jpeg_common_struct* cinfo, int msgLvl)
 		{
-			__nop();
 		}
 		static void jpegOutputMessage(jpeg_common_struct* cinfo)
 		{
-			__nop();
 		}
 		static void jpegFormatMessage(jpeg_common_struct* cinfo, char * buffer)
 		{
-			__nop();
 		}
 
 		bool LoadJPEG(ImageRes* pImage, Buffer& in)

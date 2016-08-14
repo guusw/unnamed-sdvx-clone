@@ -13,7 +13,6 @@ Buffer::Buffer(const char* string)
 		push_back((uint8)string[i]);
 	}
 }
-
 Buffer::Buffer(Buffer&& rhs)
 {
 	((vector<uint8>*)this)->operator=((Buffer&&)rhs);

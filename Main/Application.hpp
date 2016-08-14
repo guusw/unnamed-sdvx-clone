@@ -2,7 +2,7 @@
 #include "Sample.hpp"
 
 extern class OpenGL* g_gl;
-extern class Window* g_gameWindow;
+extern class Graphics::Window* g_gameWindow;
 extern float g_aspectRatio;
 extern Vector2i g_resolution;
 extern class Application* g_application;
@@ -18,6 +18,9 @@ public:
 
 	// Runs the application
 	int32 Run();
+	
+	void SetCommandLine(int32 argc, char** argv);
+	void SetCommandLine(const char* cmdLine);
 
 	// Tries to launch a new game window for specified map
 	//	doesn't work if a game is already in progress

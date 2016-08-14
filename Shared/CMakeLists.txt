@@ -1,7 +1,10 @@
 # Shared Library
 
 # Find files used for project
-file(GLOB Shared_src "src/*.cpp" "include/Shared/*.hpp")
+file(GLOB Shared_src "src/*.cpp")
+file(GLOB Shared_include "include/Shared/*.hpp")
+source_group("Source Files" FILES ${Shared_src})
+source_group("Header Files" FILES ${Shared_include})
 
 # Platform specific source files
 if(WIN32)
@@ -10,10 +13,9 @@ if(WIN32)
 else(WIN32)
 	file(GLOB Platform_src "src/Linux/*.cpp")
 endif(WIN32)
-file(GLOB Shared_src ${Shared_src} ${Platform_src})
 
 include_directories(include include/Shared src)
-add_library(Shared ${Shared_src})
+add_library(Shared ${Shared_src} ${Shared_include} ${Platform_src})
 
 # Public include paths for library
 target_include_directories(Shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
