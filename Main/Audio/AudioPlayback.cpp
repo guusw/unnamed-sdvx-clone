@@ -193,7 +193,6 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 		dsp->mix = m_effectMix[index];
 	}
 }
-
 void AudioPlayback::SetEffectEnabled(uint32 index, bool enabled)
 {
 	assert(index >= 0 && index <= 1);
@@ -203,13 +202,11 @@ void AudioPlayback::SetEffectEnabled(uint32 index, bool enabled)
 		m_buttonDSPs[index]->mix = m_effectMix[index];
 	}
 }
-
 void AudioPlayback::ClearEffect(uint32 index)
 {
 	assert(index >= 0 && index <= 1);
 	m_CleanupDSP(m_buttonDSPs[index]);
 }
-
 void AudioPlayback::SetLaserEffect(LaserEffectType type)
 {
 	if(type == m_laserEffectType)
@@ -220,7 +217,6 @@ void AudioPlayback::SetLaserEffect(LaserEffectType type)
 	}
 	m_laserEffectType = type;
 }
-
 void AudioPlayback::SetLaserFilterInput(float input, bool active)
 {
 	if(active || (input != 0.0f))
@@ -251,8 +247,7 @@ float AudioPlayback::GetLaserEffectMix() const
 
 AudioStream AudioPlayback::m_GetDSPTrack()
 {
-	if(m_fxtrack)
-		return m_fxtrack;
+	// Always apply DSP's on regular track
 	return m_music;
 }
 
@@ -300,7 +295,6 @@ DSP* AudioPlayback::m_InitDSP(LaserEffectType type)
 
 	return ret;
 }
-
 void AudioPlayback::m_CleanupDSP(DSP*& ptr)
 {
 	if(ptr)
