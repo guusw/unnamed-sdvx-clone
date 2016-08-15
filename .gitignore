@@ -30,7 +30,7 @@ Release
 !Graphics.vcxproj.filters
 
 # Ignore local cmake files
-*.cmake
+cmake_install.cmake
 *.dir
 CMakeCache.txt
 CMakeFiles

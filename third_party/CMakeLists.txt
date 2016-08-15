@@ -8,8 +8,6 @@ if(WIN32)
 	add_subdirectory(zlib-1.2.8)
 	add_subdirectory(SDL2-2.0.4)
 	add_subdirectory(lpng1621)
+	add_subdirectory(libogg-1.3.2)
+	add_subdirectory(libvorbis-1.3.5)
 endif(WIN32)
-
-# TODO: Add find_package scripts for these libraries
-add_subdirectory(libogg-1.3.2)
-add_subdirectory(libvorbis-1.3.5)
