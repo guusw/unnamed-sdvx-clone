@@ -68,23 +68,45 @@ namespace Graphics
 		}
 		void UpdateFilterState()
 		{
-			if(!m_mipmaps)
-			{
-				glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, m_filter ? GL_LINEAR : GL_NEAREST);
-				glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, m_filter ? GL_LINEAR : GL_NEAREST);
+            if(glTextureParameteri)
+            {
+                if(!m_mipmaps)
+                {
+                    glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, m_filter ? GL_LINEAR : GL_NEAREST);
+                    glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, m_filter ? GL_LINEAR : GL_NEAREST);
+                }
+                else
+                {
+                    if(m_mipFilter)
+                        glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, m_filter ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR);
+                    else
+                        glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, m_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST);
+                    glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, m_filter ? GL_LINEAR : GL_NEAREST);
+                }
+                if(GL_TEXTURE_MAX_ANISOTROPY_EXT)
+                {
+                    glTextureParameterf(m_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, m_anisotropic);
+                }
 			}
-			else
+			else /* Sigh */
 			{
-				if(m_mipFilter)
-					glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, m_filter ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR);
-				else
-					glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, m_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST);
-				glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, m_filter ? GL_LINEAR : GL_NEAREST);
-			}
-
-			if(GL_TEXTURE_MAX_ANISOTROPY_EXT)
-			{
-				glTextureParameterf(m_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, m_anisotropic);
+                if(!m_mipmaps)
+                {
+                    glTextureParameteriEXT(m_texture, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_filter ? GL_LINEAR : GL_NEAREST);
+                    glTextureParameteriEXT(m_texture, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_filter ? GL_LINEAR : GL_NEAREST);
+                }
+                else
+                {
+                    if(m_mipFilter)
+                        glTextureParameteriEXT(m_texture, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_filter ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR);
+                    else
+                        glTextureParameteriEXT(m_texture, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST);
+                    glTextureParameteriEXT(m_texture, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_filter ? GL_LINEAR : GL_NEAREST);
+                }
+                if(GL_TEXTURE_MAX_ANISOTROPY_EXT)
+                {
+                    glTextureParameterfEXT(m_texture, GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, m_anisotropic);
+                }
 			}
 		}
 		virtual void SetFilter(bool enabled, bool mipFiltering, float anisotropic)
@@ -125,8 +147,16 @@ namespace Graphics
 				GL_MIRRORED_REPEAT,
 				GL_CLAMP_TO_EDGE,
 			};
-			glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, wmode[(size_t)u]);
-			glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, wmode[(size_t)v]);
+			if(glTextureParameteri)
+			{
+                glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, wmode[(size_t)u]);
+                glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, wmode[(size_t)v]);
+			}
+			else
+			{
+                glTextureParameteriEXT(m_texture, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wmode[(size_t)u]);
+                glTextureParameteriEXT(m_texture, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wmode[(size_t)v]);
+			}
 		}
 
 		TextureFormat GetFormat() const

@@ -10,7 +10,7 @@ if(WIN32)
 	# Platform specific source group
 	source_group("Source Files\\Windows" FILES ${Platform_src})
 else(WIN32)
-include_directories("src/Linux")
+	include_directories("src/Linux")
 	file(GLOB Platform_src "src/Linux/*.cpp")
 endif(WIN32)
 
@@ -25,7 +25,7 @@ add_library(Graphics ${Graphics_src})
 target_include_directories(Graphics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics/glew)
 	
 # GLEW is included statically and also doesn't need GLU(Which doesn't even exist on linux)
-add_definitions(-DGLEW_STATIC -DGLEW_NO_GLU)
+add_definitions(-DGLEW_NO_GLU -DGLEW_STATIC)
 	
 # Compiler stuff
 enable_cpp11()

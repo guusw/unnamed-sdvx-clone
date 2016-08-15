@@ -71,15 +71,19 @@ namespace Graphics
 
 		// Create a context
 		m_impl->context = SDL_GL_CreateContext(sdlWnd);
+		SDL_GL_MakeCurrent(sdlWnd, m_impl->context);
+
+		// To allow usage of experimental features
+		glewExperimental = true;
 		glewInit();
 
 		//#define LIST_OGL_EXTENSIONS
 #ifdef LIST_OGL_EXTENSIONS
-		PRINT("Listing OpenGL Extensions:");
+		Logf("Listing OpenGL Extensions:", Logger::Info);
 		GLint n, i;
 		glGetIntegerv(GL_NUM_EXTENSIONS, &n);
 		for(i = 0; i < n; i++) {
-			printf("%s\n", glGetStringi(GL_EXTENSIONS, i));
+			Logf("%s", Logger::Info, glGetStringi(GL_EXTENSIONS, i));
 		}
 #endif
 
