@@ -67,6 +67,8 @@ namespace Graphics
 		m_window = &window;
 		SDL_Window* sdlWnd = (SDL_Window*)m_window->Handle();
 
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
 		// Create a context
 		m_impl->context = SDL_GL_CreateContext(sdlWnd);
 		glewInit();
@@ -82,10 +84,16 @@ namespace Graphics
 #endif
 
 #ifdef _DEBUG
-		glDebugMessageCallback(GLDebugProc, 0);
-		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
-		glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 0, 0, GL_FALSE);
+		// Setup GL debug messages to go to the console
+		if(glDebugMessageCallback && glDebugMessageControl)
+		{
+			glDebugMessageCallback(GLDebugProc, 0);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+			glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 0, 0, GL_FALSE);
+		}
 #endif
+
+		Logf("OpenGL Version: %s", Logger::Info, glGetString(GL_VERSION));
 
 		// Disable VSync
 		//	Framerate is to be limited by the application manually

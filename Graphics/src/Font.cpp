@@ -346,7 +346,15 @@ namespace Graphics
 	bool FontLibrary::LoadFallbackFont()
 	{
 		bool success = true;
-		success = success && EmbeddedResource::LoadResource(IDR_FALLBACKFONT, loadedFallbackFont);
+
+		// Load fallback font
+		File file;
+		if(!file.OpenRead("fonts/fallbackfont.otf"))
+			return false;
+		loadedFallbackFont.resize(file.GetSize());
+		file.Read(loadedFallbackFont.data(), loadedFallbackFont.size());
+		file.Close();
+
 		success = success && FT_New_Memory_Face(library, loadedFallbackFont.data(), (uint32)loadedFallbackFont.size(), 0, &fallbackFont) == 0;
 		success = success && FT_Select_Charmap(fallbackFont, FT_ENCODING_UNICODE) == 0;
 		return success;

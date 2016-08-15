@@ -6,7 +6,7 @@
 int32 __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	new Application();
-	g_application->SetCommandLine(lpCmdLine);
+	g_application->SetCommandLine(GetCommandLineA());
 	int32 ret = g_application->Run();
 	delete g_application;
 	return ret;
