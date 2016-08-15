@@ -1,8 +1,8 @@
 #version 330
 #extension GL_ARB_separate_shader_objects : enable
 
-in layout(location=1) vec2 texVp;
-out layout(location=0) vec4 target;
+layout(location=1) in vec2 texVp;
+layout(location=0) out vec4 target;
 
 uniform ivec2 screenCenter;
 // x = bar time
