@@ -4,6 +4,11 @@
 *.exe
 *.a
 
+# Game files
+bin/songs/*
+maps.db
+bin/Main.cfg
+
 # Intermediate Files
 x64
 Win32
@@ -14,6 +19,7 @@ Release
 *.obj
 *.iobj
 *.ipdb
+lib/
 
 # Profiling results
 *.vspx
@@ -24,13 +30,11 @@ Release
 *.vcxproj.user
 *.vcxproj
 *.vcxproj.filters
-# Allow project .filters to have filters in visual studio
-!Main.vcxproj.filters
-!Shared.vcxproj.filters
-!Graphics.vcxproj.filters
 
 # Ignore local cmake files
 cmake_install.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
 *.dir
 CMakeCache.txt
 CMakeFiles
