@@ -1,4 +1,5 @@
-#version 440
+#version 330
+#extension GL_ARB_separate_shader_objects : enable
 in layout(location=0) vec3 inPos;
 in layout(location=1) vec4 inColor;
 in layout(location=2) vec4 inParams;
