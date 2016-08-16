@@ -13,7 +13,7 @@
 // this is the offset from the audio file beginning in ms for timing points
 // this is the offset from the map's global offset in ms for object states
 // this type is also used for negative time delta values
-// the maximum map length that can be represented by map time is 
+// the maximum map length that can be represented by map time is
 //	2147483648	ms
 //	~2147483	sec
 //	~35791		min
@@ -44,12 +44,15 @@ enum class TrackRollBehaviour : uint8
 	Zero = 0,
 	Normal = 0x1,
 	Bigger = 0x2,
-	Biggest = 0x3, 
+	Biggest = 0x3,
 	// Flag for keep
 	Keep = 0x4,
 };
 TrackRollBehaviour operator|(const TrackRollBehaviour& l, const TrackRollBehaviour& r);
 TrackRollBehaviour operator&(const TrackRollBehaviour& l, const TrackRollBehaviour& r);
+
+// Sensitive data layout since union structure is used to access buttons/holds/... object states
+#pragma pack(push, 1)
 
 // Common data for all object types
 struct ObjectTypeData_Base
@@ -189,7 +192,7 @@ struct MultiObjectState
 	MapTime time;
 	// Type of this object, determines the size of this struct and which type its data is
 	ObjectType type;
-	union 
+	union
 	{
 		ObjectTypeData_Button button;
 		ObjectTypeData_Hold hold;
@@ -201,6 +204,9 @@ struct MultiObjectState
 	operator TObjectState<void>*() { return (TObjectState<void>*)this; }
 	operator const TObjectState<void>*() const { return (TObjectState<void>*)this; }
 };
+
+// Restore packing
+#pragma pack(pop)
 
 typedef TObjectState<void> ObjectState;
 typedef TObjectState<ObjectTypeData_Button> ButtonObjectState;

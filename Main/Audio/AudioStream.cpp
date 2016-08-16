@@ -22,7 +22,7 @@ class AudioStreamOGG_Impl : public AudioStreamRes
 
 	mutex m_lock;
 	OggVorbis_File m_ovf = { 0 };
-	ov_callbacks callbacks = 
+	ov_callbacks callbacks =
 	{
 		(decltype(ov_callbacks::read_func))&AudioStreamOGG_Impl::m_Read,
 		(decltype(ov_callbacks::seek_func))&AudioStreamOGG_Impl::m_Seek,
@@ -73,7 +73,7 @@ public:
 			m_fileReader = FileReader(m_file);
 			m_preloaded = false;
 		}
-		
+
 		int32 r = ov_open_callbacks(this, &m_ovf, 0, 0, callbacks);
 		if(r != 0)
 		{
@@ -128,7 +128,7 @@ public:
 			RestartTiming();
 		}
 	}
-	
+
 	uint64 SecondsToSamples(double s) const
 	{
 		return (uint64)(s * (double)m_info->rate);
@@ -163,7 +163,7 @@ public:
 		ov_pcm_seek(&m_ovf, m_samplePos);
 		m_lock.unlock();
 	}
-	
+
 	virtual void Process(float* out, uint32 numSamples) override
 	{
 		if(!m_playing || m_paused)
@@ -243,7 +243,7 @@ public:
 			m_samplePos = (uint32)ov_pcm_tell(&m_ovf) - m_remainingBufferData;
 			double timingDelta = GetPositionSeconds() - SamplesToSeconds(m_samplePos);
 
-			// This is to stabilize the running timer with the actual audio stream, the delta is added for 50% as an offset to this timer 
+			// This is to stabilize the running timer with the actual audio stream, the delta is added for 50% as an offset to this timer
 			if(abs(timingDelta) > 0.002)
 			{
 				ResyncTiming(timingDelta);

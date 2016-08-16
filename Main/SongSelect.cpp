@@ -11,8 +11,8 @@
 
 #include "Audio.hpp"
 
-/* 
-	Song preview player with fade-in/out 
+/*
+	Song preview player with fade-in/out
 */
 class PreviewPlayer
 {
@@ -94,7 +94,7 @@ const float PreviewPlayer::m_fadeDuration = 0.5f;
 */
 class SelectionWheel : public Canvas
 {
-	Map<MapIndex*, Ref<SongSelectItem>> m_guiElements;	
+	Map<MapIndex*, Ref<SongSelectItem>> m_guiElements;
 
 	Vector<MapIndex*> m_mapRange;
 	Map<int32, MapIndex*> m_maps;
@@ -520,7 +520,7 @@ public:
 		// Clear callbacks
 		m_mapDatabase.OnMapsCleared.Clear();
 	}
-	
+
 	// When a map is selected in the song wheel
 	void OnMapSelected(MapIndex* map)
 	{
@@ -529,7 +529,7 @@ public:
 
 		// Set current preview audio
 		DifficultyIndex* previewDiff = map->difficulties[0];
-		String audioPath = map->path + "\\" + previewDiff->settings.audioNoFX;
+		String audioPath = map->path + Path::sep + previewDiff->settings.audioNoFX;
 
 		AudioStream previewAudio = g_audio->CreateStream(audioPath);
 		if(previewAudio)

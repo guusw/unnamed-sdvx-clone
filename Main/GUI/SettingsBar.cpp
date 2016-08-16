@@ -36,8 +36,10 @@ void SettingsBar::Render(GUIRenderData rd)
 {
 	if(m_shown)
 	{
-		rd.guiRenderer->RenderRect(rd.area, Color::White.WithAlpha(0.1f));
+        // Background
+		rd.guiRenderer->RenderRect(rd.area, Color(0.2f,0.2f,0.2f,0.8f));
 		rd.area = padding.Apply(rd.area);
+		// Content
 		ScrollBox::Render(rd);
 	}
 }
@@ -46,6 +48,8 @@ void SettingsBar::AddSetting(float* target, float min, float max, const String& 
 {
 	SettingBarSetting* setting = new SettingBarSetting();
 	setting->name = Utility::ConvertToWString(name);
+    const wchar_t* nw = *setting->name;
+    const char* na = *name;
 	setting->floatSetting.target = target;
 	setting->floatSetting.min = min;
 	setting->floatSetting.max = max;
@@ -90,5 +94,5 @@ void SettingsBar::SetShow(bool shown)
 void SettingBarSetting::m_SliderUpdate(float val)
 {
 	floatSetting.target[0] = val * (floatSetting.max - floatSetting.min) + floatSetting.min;
-	label->SetText(Utility::WSprintf(L"%s (%f):", name, floatSetting.target[0]));
+	label->SetText(Utility::WSprintf(L"%ls (%f):", name, floatSetting.target[0]));
 }

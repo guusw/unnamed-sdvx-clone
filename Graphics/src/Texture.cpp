@@ -121,7 +121,10 @@ namespace Graphics
 		{
 			if(enabled)
 			{
-				glGenerateTextureMipmap(m_texture);
+                if(glGenerateTextureMipmap)
+                    glGenerateTextureMipmap(m_texture);
+                else
+                    glGenerateTextureMipmapEXT(m_texture, GL_TEXTURE_2D);
 			}
 			m_mipmaps = enabled;
 			UpdateFilterState();

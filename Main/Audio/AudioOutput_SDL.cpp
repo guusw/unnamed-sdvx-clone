@@ -45,6 +45,13 @@ public:
 public:
 	AudioOutput_Impl()
 	{
+        int32 numAudioDrivers = SDL_GetNumAudioDrivers();
+        for(int32 i = 0; i < numAudioDrivers; i++)
+		{
+            const char* drvName = SDL_GetAudioDriver(i);
+            Logf("Audio driver [%d]: %s", Logger::Info, i, drvName);
+		}
+
 		SDLAudio::Main();
 	}
 	~AudioOutput_Impl()
@@ -73,9 +80,24 @@ public:
 		desiredSpec.callback = (SDL_AudioCallback)&AudioOutput_Impl::FillBuffer;
 		desiredSpec.userdata = this;
 
-		m_deviceId = SDL_OpenAudioDevice(dev, 0, &desiredSpec, &m_audioSpec, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
+		const char* audioDriverName = SDL_GetCurrentAudioDriver();
+		Logf("Using audio driver: %s", Logger::Info, audioDriverName);
+
+		int32 numAudioDevices = SDL_GetNumAudioDevices(0);
+		for(int32 i = 0; i < numAudioDevices; i++)
+		{
+            const char* devName = SDL_GetAudioDeviceName(i, 0);
+            Logf("Audio device [%d]: %s", Logger::Info, i, devName);
+		}
+
+
+		m_deviceId = SDL_OpenAudioDevice(dev, 0, &desiredSpec, &m_audioSpec, SDL_AUDIO_ALLOW_ANY_CHANGE);
 		if(m_deviceId == 0 || m_deviceId < 2)
+		{
+            const char* errMsg = SDL_GetError();
+            Logf("Failed to open SDL audio device: %s", Logger::Error, errMsg);
 			return false;
+        }
 
 		SDL_PauseAudioDevice(m_deviceId, 0);
 

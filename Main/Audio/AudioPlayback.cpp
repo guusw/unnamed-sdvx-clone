@@ -19,7 +19,7 @@ bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 	m_laserEffectType = LaserEffectType::PeakingFilter;
 
 	const BeatmapSettings& mapSettings = beatmap.GetMapSettings();
-	String audioPath = mapPath + "\\" + mapSettings.audioNoFX;
+	String audioPath = mapPath + Path::sep + mapSettings.audioNoFX;
 	WString audioPathUnicode = Utility::ConvertToWString(audioPath);
 	if(!Path::FileExists(audioPath))
 	{
@@ -28,14 +28,14 @@ bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 	}
 	m_music = g_audio->CreateStream(audioPath, true);
 	if(!m_music)
-	{	
+	{
 		Logf("Failed to load any audio for beatmap \"%s\"", Logger::Error, audioPath);
 		return false;
 	}
 	m_music->SetVolume(1.0f);
 
 	// Load FX track
-	audioPath = mapPath + "\\" + mapSettings.audioFX;
+	audioPath = mapPath + Path::sep + mapSettings.audioFX;
 	audioPathUnicode = Utility::ConvertToWString(audioPath);
 	if(!audioPath.empty())
 	{
@@ -247,7 +247,8 @@ float AudioPlayback::GetLaserEffectMix() const
 
 AudioStream AudioPlayback::m_GetDSPTrack()
 {
-	// Always apply DSP's on regular track
+    if(m_fxtrack)
+        return m_fxtrack;
 	return m_music;
 }
 
@@ -329,13 +330,13 @@ void AudioPlayback::m_SetLaserEffectParameter(float input)
 		if(input < volumeFadeIn) // Fade in
 			gain = (input / volumeFadeIn) * gain;
 		input = LaserSlope(input);
-		float width = 1.0f + 1.0f * input; 
+		float width = 1.0f + 1.0f * input;
 		((BQFDSP*)m_laserDSP)->SetPeaking(width, 200.0f + input * 8000.0f, gain);
 		break;
 	}
 	case LaserEffectType::LowPassFilter:
 	{
-		float v = LaserSlope(1.0f - input); 
+		float v = LaserSlope(1.0f - input);
 		float freq = 100.0f + 10000 * v;
 		((BQFDSP*)m_laserDSP)->SetLowPass(2.0f + 4.0f * (1-v), freq);
 		((BQFDSP*)m_laserDSP)->mix = m_laserEffectMix;
