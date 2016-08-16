@@ -8,81 +8,66 @@
 Audio* g_audio = nullptr;
 Audio_Impl impl;
 
-// Main mixer thread
-void Audio_Impl::AudioThread()
+void Audio_Impl::Mix(float* data, uint32& numSamples)
 {
-	double f = 0.0;
-	while(runAudioThread)
-	{
-		int32 sleepDuration = 1;
-		float* data;
-		uint32 numSamples;
-		if(output->Begin(data, numSamples))
-		{
 #if _DEBUG
-			static const uint32 guardBand = 1024;
+	static const uint32 guardBand = 1024;
 #else
-			static const uint32 guardBand = 0;
+	static const uint32 guardBand = 0;
 #endif
 
-			float* tempData = new float[numSamples * 2 + guardBand];
-			uint32* guardBuffer = (uint32*)tempData + 2 * numSamples;
-			double adv = GetSecondsPerSample();
+	float* tempData = new float[numSamples * 2 + guardBand];
+	uint32* guardBuffer = (uint32*)tempData + 2 * numSamples;
+	double adv = GetSecondsPerSample();
 
-			// Clear buffer
-			memset(data, 0, sizeof(float) * 2 * numSamples);
+	// Clear buffer
+	memset(data, 0, sizeof(float) * 2 * numSamples);
 
-			// Render items
-			lock.lock();
-			for(auto& item : itemsToRender)
-			{
-				memset(tempData, 0, sizeof(float) * (2 * numSamples + guardBand));
-				item->Process(tempData, numSamples);
+	// Render items
+	lock.lock();
+	for(auto& item : itemsToRender)
+	{
+		memset(tempData, 0, sizeof(float) * (2 * numSamples + guardBand));
+		item->Process(tempData, numSamples);
 #if _DEBUG
-				// Check for memory corruption
-				for(uint32 i = 0; i < guardBand; i++)
-				{
-					assert(guardBuffer[i] == 0);
-				}
-#endif
-				item->ProcessDSPs(tempData, numSamples);
-#if _DEBUG
-				// Check for memory corruption
-				for(uint32 i = 0; i < guardBand; i++)
-				{
-					assert(guardBuffer[i] == 0);
-				}
-#endif
-
-				// Mix into buffer and apply volume scaling
-				for(uint32 i = 0; i < numSamples; i++)
-				{
-					data[i * 2 + 0] += tempData[i * 2] * item->GetVolume();
-					data[i * 2 + 1] += tempData[i * 2 + 1] * item->GetVolume();
-				}
-			}
-			lock.unlock();
-
-			// Apply volume levels
-			for(uint32 i = 0; i < numSamples; i++)
-			{
-				data[i * 2 + 0] *= globalVolume;
-				data[i * 2 + 1] *= globalVolume;
-			}	
-
-			// Process global DSPs
-			for(auto dsp : globalDSPs)
-			{
-				dsp->Process(data, numSamples);
-			}
-
-			f += adv * numSamples;
-			output->End(numSamples);
-
-			delete[] tempData;
+		// Check for memory corruption
+		for(uint32 i = 0; i < guardBand; i++)
+		{
+			assert(guardBuffer[i] == 0);
 		}
-		std::this_thread::yield();
+#endif
+		item->ProcessDSPs(tempData, numSamples);
+#if _DEBUG
+		// Check for memory corruption
+		for(uint32 i = 0; i < guardBand; i++)
+		{
+			assert(guardBuffer[i] == 0);
+		}
+#endif
+
+		// Mix into buffer and apply volume scaling
+		for(uint32 i = 0; i < numSamples; i++)
+		{
+			data[i * 2 + 0] += tempData[i * 2] * item->GetVolume();
+			data[i * 2 + 1] += tempData[i * 2 + 1] * item->GetVolume();
+		}
 	}
+	lock.unlock();
+
+	// Apply volume levels
+	for(uint32 i = 0; i < numSamples; i++)
+	{
+		data[i * 2 + 0] *= globalVolume;
+		data[i * 2 + 1] *= globalVolume;
+	}
+
+	// Process global DSPs
+	for(auto dsp : globalDSPs)
+	{
+		dsp->Process(data, numSamples);
+	}
+
+	delete[] tempData;
 }
 void Audio_Impl::Start()
 {
@@ -90,17 +75,11 @@ void Audio_Impl::Start()
 	limiter->audio = this;
 	limiter->releaseTime = 0.05f;
 	globalDSPs.Add(limiter);
-
-	impl.runAudioThread = true;
-	impl.audioThread = thread(&Audio_Impl::AudioThread, &impl);
+	output->Start(this);
 }
 void Audio_Impl::Stop()
 {
-	// Join audio thread
-	runAudioThread = false;
-	if(audioThread.joinable())
-		audioThread.join();
-
+	output->Stop();
 	delete limiter;
 	globalDSPs.Remove(limiter);
 }

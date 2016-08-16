@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "AudioOutput.hpp"
+#include "Shared/Thread.hpp"
 
 #ifndef AUDIO_SDL
 #include "Audioclient.h"
@@ -75,13 +76,21 @@ public:
 	IMMDevice* m_pendingDevice = nullptr;
 	bool m_pendingDeviceChange = false;
 
+	bool m_runAudioThread = false;
+	Thread m_audioThread;
+	IMixer* m_mixer = nullptr;
+
 public:
 	AudioOutput_Impl()
 	{
 		m_notificationClient.output = this;
+
 	}
 	~AudioOutput_Impl()
 	{
+		// Stop thread
+		Stop();
+
 		CloseDevice();
 
 		SAFE_RELEASE(m_pendingDevice);
@@ -91,6 +100,26 @@ public:
 			SAFE_RELEASE(m_deviceEnumerator);
 		}
 	}
+
+	void Start()
+	{
+		if(m_runAudioThread)
+			return;
+
+		m_runAudioThread = true;
+		m_audioThread = Thread(&AudioOutput_Impl::AudioThread, this);
+	}
+	void Stop()
+	{
+		if(!m_runAudioThread)
+			return;
+
+		// Join audio thread
+		m_runAudioThread = false;
+		if(m_audioThread.joinable())
+			m_audioThread.join();
+	}
+
 	bool Init()
 	{
 		// Initialize the WASAPI device enumerator
@@ -114,7 +143,6 @@ public:
 		m_deviceEnumerator->GetDefaultAudioEndpoint(EDataFlow::eRender, ERole::eMultimedia, &defaultDevice);		
 		return OpenDevice(defaultDevice);
 	}	
-	
 	void CloseDevice()
 	{
 		if(m_audioClient)
@@ -276,6 +304,24 @@ public:
 			m_audioRenderClient->ReleaseBuffer(numSamples, 0);
 		}
 	}
+
+	// Main mixer thread
+	void AudioThread()
+	{
+		while(m_runAudioThread)
+		{
+			int32 sleepDuration = 1;
+			float* data;
+			uint32 numSamples;
+			if(Begin(data, numSamples))
+			{
+				if(m_mixer)
+					m_mixer->Mix(data, numSamples);
+				End(numSamples);
+			}
+			std::this_thread::yield();
+		}
+	}
 };
 
 /* Audio change notifications */
@@ -317,13 +363,15 @@ bool AudioOutput::Init()
 {
 	return m_impl->Init();
 }
-bool AudioOutput::Begin(float*& buffer, uint32_t& numSamples)
+void AudioOutput::Start(IMixer* mixer)
 {
-	return m_impl->Begin(buffer, numSamples);
+	m_impl->m_mixer = mixer;
+	m_impl->Start();
 }
-void AudioOutput::End(uint32_t numSamples)
+void AudioOutput::Stop()
 {
-	m_impl->End(numSamples);
+	m_impl->Stop();
+	m_impl->m_mixer = nullptr;
 }
 uint32_t AudioOutput::GetNumChannels() const
 {

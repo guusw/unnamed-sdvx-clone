@@ -8,12 +8,13 @@
 using std::thread;
 using std::mutex;
 
-class Audio_Impl
+class Audio_Impl : public IMixer
 {
 public:
 	void Start();
 	void Stop();
-	void AudioThread();
+	// Get samples
+	virtual void Mix(float* data, uint32& numSamples) override;
 	// Registers an AudioBase to be rendered
 	void Register(AudioBase* audio);
 	// Removes an AudioBase so it is no longer rendered

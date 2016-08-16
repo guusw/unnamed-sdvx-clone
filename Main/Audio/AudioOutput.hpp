@@ -1,7 +1,13 @@
 #pragma once
 
 // This define is used to switch between the SDL or WASAPI audio implementation
-//#define AUDIO_SDL
+#define AUDIO_SDL
+
+class IMixer
+{
+public:
+	virtual void Mix(float* data, uint32& numSamples) = 0;
+};
 
 /*
 	Low level audio output
@@ -14,12 +20,10 @@ public:
 
 	bool Init();
 
-	// Starts filling of the output buffer
-	// Always call End after calling begin
-	// The number of available samples is returned in 'numSamples'
-	bool Begin(float*& buffer, uint32_t& numSamples);
-	// Call this after you're done filling the output buffer
-	void End(uint32_t numSamples);
+	// Safe to start mixing
+	void Start(IMixer* mixer);
+	// Should stop mixing
+	void Stop();
 
 	uint32_t GetNumChannels() const;
 	uint32_t GetSampleRate() const;
