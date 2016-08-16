@@ -63,7 +63,7 @@ namespace Graphics
 
 			m_caption = L"Window";
 			String titleUtf8 = Utility::ConvertToUTF8(m_caption);
-			m_window = SDL_CreateWindow(*titleUtf8, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
+			m_window = SDL_CreateWindow(*titleUtf8, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 				m_clntSize.x, m_clntSize.y, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 			assert(m_window);
 		}
@@ -157,6 +157,7 @@ namespace Graphics
 
 		void SetCursor(Ref<class ImageRes> image, Vector2i hotspot)
 		{
+#ifdef _WIN32
 			if(currentCursor)
 			{
 				SDL_FreeCursor(currentCursor);
@@ -174,6 +175,8 @@ namespace Graphics
 				}
 			}
 			SDL_SetCursor(currentCursor);
+#endif
+/// NOTE: Cursor transparency is broken on linux
 		}
 
 		// Update loop

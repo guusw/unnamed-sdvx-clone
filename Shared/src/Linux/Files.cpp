@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-static Vector<FileInfo> _ScanFiles(const String& rootFolder, String extFilter, bool recurse)
+static Vector<FileInfo> _ScanFiles(String rootFolder, String extFilter, bool recurse)
 {
 	Vector<FileInfo> ret;
 	if(!Path::IsDirectory(rootFolder))
@@ -19,39 +19,41 @@ static Vector<FileInfo> _ScanFiles(const String& rootFolder, String extFilter, b
 
 	// List of paths to process, subfolders are getting added to this list
 	List<String> folderQueue;
+
+	// Add / to the end
 	folderQueue.AddBack(rootFolder);
 
 	bool filterByExtension = !extFilter.empty();
 	extFilter.TrimFront('.'); // Remove possible leading dot
-
 							  // Recursive folder search
 	while(!folderQueue.empty())
 	{
 		String searchPath = folderQueue.front();
 		folderQueue.pop_front();
 
-		/// DEBUG
-		Logf("FSD> %s", Logger::Info, *searchPath);
-		
 		DIR* dir = opendir(*searchPath);
 		if(dir == nullptr)
 			continue;
 
 		// Open first entry
 		dirent* ent = readdir(dir);
-		if(end)
+		if(ent)
 		{
 			// Keep scanning files in this folder
-
-			String currentfolder;
 			do
 			{
+                String filename = ent->d_name;
+
+                /// TODO: Ask linux why
+                if(filename == ".")
+                    continue;
+                if(filename == "..")
+                    continue;
+
 				FileInfo info;
-				info.fullPath = Path::Normalize(ent->d_name);
+                info.fullPath = Path::Normalize(searchPath + Path::sep + filename);
 				info.lastWriteTime = File::GetLastWriteTime(info.fullPath); // linux doesn't provide this timestamp in the directory entry
 				info.type = FileType::Regular;
-
-				Logf("FS> %s", Logger::Info, *info.fullPath);
 
 				if(ent->d_type == DT_DIR)
 				{
