@@ -1,7 +1,7 @@
 #pragma once
 
 // This define is used to switch between the SDL or WASAPI audio implementation
-#define AUDIO_SDL
+//#define AUDIO_SDL
 
 class IMixer
 {

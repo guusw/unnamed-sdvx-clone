@@ -36,32 +36,32 @@ File::~File()
 bool File::OpenRead(const String& path)
 {
 	Close();
-	
+
 	int handle = open(*path, O_RDONLY);
 	if(handle == -1)
 	{
 		Logf("Failed to open file for reading %s: %d", Logger::Warning, *path, errno);
 		return false;
 	}
-	
+
 	m_impl = new File_Impl(handle);
-	
+
 	return true;
 }
 bool File::OpenWrite(const String& path, bool append /*= false*/)
 {
 	Close();
-	
+
 	int flags = O_WRONLY | O_CREAT;
 	if(append)
 		flags |= O_APPEND;
-	int handle = open(*path, flags);
+	int handle = open(*path, flags, S_IRUSR | S_IWUSR | S_IROTH);
 	if(handle == -1)
 	{
 		Logf("Failed to open file for writing %s: %d", Logger::Warning, *path, errno);
 		return false;
 	}
-	
+
 	m_impl = new File_Impl(handle);
 
 	return true;

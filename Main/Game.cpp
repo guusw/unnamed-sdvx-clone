@@ -23,7 +23,7 @@ class Game_Impl : public Game
 	bool m_playing = true;
 	bool m_started = false;
 	bool m_paused = false;
-	
+
 	bool m_renderDebugHUD = false;
 
 	// GUI
@@ -44,6 +44,8 @@ class Game_Impl : public Game
 	BeatmapPlayback m_playback;
 	// Audio playback manager (music and FX))
 	AudioPlayback m_audioPlayback;
+	// Applied audio offset
+	int32 m_audioOffset = 0;
 
 	// The play field
 	Track* m_track;
@@ -199,7 +201,7 @@ public:
 		}
 
 		// Use new camera for scoring overlay
-		//	this is because otherwise some of the scoring elements would get clipped to 
+		//	this is because otherwise some of the scoring elements would get clipped to
 		//	the track's near and far planes
 		rs = m_camera.CreateRenderState(false);
 		RenderQueue scoringRq(g_gl, rs);
@@ -216,7 +218,7 @@ public:
 				m_track->laserPositions[i] = m_scoring.laserPositions[i];
 			}
 		}
-		
+
 		m_track->DrawOverlays(scoringRq);
 		float comboZoom = Math::Max(0.0f, (1.0f - (m_comboAnimation.SecondsAsFloat() / 0.2f)) * 0.5f);
 		m_track->DrawCombo(scoringRq, m_scoring.currentComboCounter, Color::White, 1.0f + comboZoom);
@@ -415,7 +417,7 @@ public:
 			settingsSlot->autoSizeY = false;
 			settingsSlot->SetZOrder(2);
 		}
-		
+
 		// Score
 		{
 			Panel* scorePanel = new Panel();
@@ -439,7 +441,7 @@ public:
 
 		return true;
 	}
-	
+
 	// Main GUI/HUD Rendering loop
 	virtual void RenderDebugHUD(float deltaTime)
 	{
@@ -479,7 +481,7 @@ public:
 		if(m_scoring.autoplay)
 			textPos.y += RenderText("Autoplay enabled", textPos, Color::Blue).y;
 
-		// List recent hits and their delay	
+		// List recent hits and their delay
 		Vector2 tableStart = textPos;
 		uint32 hitsShown = 0;
 		// Show all hit debug info on screen (up to a maximum)
@@ -633,7 +635,7 @@ public:
 			m_slamSample->SetVolume(data.floatVal);
 		}
 	}
-	
+
 	// These functions register / remove DSP's for the effect buttons
 	// the actual hearability of these is toggled in the tick by wheneter the buttons are held down
 	void OnFXBegin(HoldObjectState* object)
@@ -671,6 +673,12 @@ public:
 			m_lastMapTime = firstObjectTime - 1000;
 			m_audioPlayback.SetPosition(m_lastMapTime);
 		}
+
+		// Load audio offset
+		Variant* offsetSetting = g_mainConfig.Get("offset");
+		if(offsetSetting)
+            m_audioOffset = offsetSetting->ToInt();
+        g_mainConfig.Add("offset", Variant::Create(m_audioOffset));
 
 		// Playback and timing
 		m_playback = BeatmapPlayback(*m_beatmap);
@@ -710,7 +718,7 @@ public:
 			if(g_application->GetAppCommandLine().Contains("-autoskip"))
 			{
 				SkipIntro();
-			}	
+			}
 
 			// Disable framerate limiting while playing
 			g_application->SetFrameLimiter(-1);
@@ -719,10 +727,7 @@ public:
 		const BeatmapSettings& beatmapSettings = m_beatmap->GetMapSettings();
 
 		// Update beatmap playback
-		MapTime playbackPositionMs = m_audioPlayback.GetPosition();
-
-		// Apply offset correction
-		playbackPositionMs -= (MapTime)g_audio->audioLatency;
+		MapTime playbackPositionMs = m_audioPlayback.GetPosition() - m_audioOffset;
 		m_playback.Update(playbackPositionMs);
 
 		MapTime delta = playbackPositionMs - m_lastMapTime;

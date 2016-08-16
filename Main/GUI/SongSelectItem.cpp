@@ -36,7 +36,7 @@ public:
 		if(!m_jacket || m_jacket == m_style->loadingJacketImage)
 		{
 			String jacketPath = m_diff->path;
-			jacketPath = Path::Normalize(Path::RemoveLast(jacketPath) + "//" + m_diff->settings.jacketPath);
+			jacketPath = Path::Normalize(Path::RemoveLast(jacketPath) + Path::sep + m_diff->settings.jacketPath);
 			m_jacket = m_style->GetJacketThumnail(jacketPath);
 		}
 
@@ -193,15 +193,15 @@ void SongSelectItem::SwitchCompact(bool compact)
 		mainSlot->anchor = Anchor(0.0f, 0.5f, 1.0, 0.5f);
 		mainSlot->autoSizeX = true;
 		mainSlot->autoSizeY = true;
-		mainSlot->alignment = Vector2(0.0f, 0.5f); 
+		mainSlot->alignment = Vector2(0.0f, 0.5f);
 	}
 	else
 	{
-		m_bg->texture = m_style->frameMain; 
+		m_bg->texture = m_style->frameMain;
 		m_bg->texture->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
 		m_diffSelect->visibility = Visibility::Visible;
 
-		// Take 0.3 of top 
+		// Take 0.3 of top
 		mainSlot->anchor = Anchor(0.0f, 0.09f, 1.0, 0.3f);
 		mainSlot->autoSizeX = true;
 		mainSlot->autoSizeY = true;

@@ -11,7 +11,7 @@ class StringBase : public std::basic_string<T>
 {
 public:
 	using std::basic_string<T>::basic_string;
-	
+
 	// These are for allowing function to be called on the base class when compiling on GCC
 	using std::basic_string<T>::c_str;
 	using std::basic_string<T>::substr;
@@ -23,7 +23,7 @@ public:
 	using std::basic_string<T>::front;
 	using std::basic_string<T>::find;
 	using std::basic_string<T>::find_last_of;
-	
+
 	StringBase() = default;
 	StringBase(const T* cs);
 	StringBase(const std::basic_string<T>& ss);
@@ -70,7 +70,7 @@ namespace Utility
 #ifdef _WIN32
 		sprintf_s(buffer, fmt, SprintfArgFilter(args)...);
 #else
-		snprintf(buffer, sizeof(buffer), fmt, SprintfArgFilter(args)...);
+		snprintf(buffer, 8000-1, fmt, SprintfArgFilter(args)...);
 #endif
 		return String(buffer);
 	}
@@ -82,9 +82,9 @@ namespace Utility
 	{
 		static wchar_t buffer[8000];
 #ifdef _WIN32
-		swprintf(buffer, sizeof(buffer), fmt, WSprintfArgFilter(args)...);
+		swprintf(buffer, 8000-1, fmt, WSprintfArgFilter(args)...);
 #else
-		swprintf(buffer, sizeof(buffer), fmt, WSprintfArgFilter(args)...);
+		swprintf(buffer, 8000-1, fmt, WSprintfArgFilter(args)...);
 #endif
 		return WString(buffer);
 	}
@@ -169,7 +169,7 @@ Vector<StringBase<T>> StringBase<T>::Explode(const StringBase& delim) const
 		return res;
 	}
 
-	do 
+	do
 	{
 		res.Add(a);
 	} while(b.Split(delim, &a, &b));

@@ -19,7 +19,7 @@ bool BeatmapPlayback::Reset(MapTime startTime)
 	m_currentObj = &m_objects.front();
 	m_currentTiming = &m_timingPoints.front();
 	m_currentZoomPoint = m_zoomPoints.empty() ? nullptr : &m_zoomPoints.front();
-		
+
 	m_barTime = 0;
 	m_initialEffectStateSent = false;
 	return true;
