@@ -3,6 +3,7 @@
 #include "Database.hpp"
 #include "Beatmap.hpp"
 #include "Profiling.hpp"
+#include "Shared/Files.hpp"
 #include <thread>
 #include <mutex>
 #include <chrono>
@@ -503,61 +504,16 @@ private:
 	// Main search thread
 	void m_SearchThread()
 	{
-		/// TODO: ADD Linux version for file finding functions
-		/*
-		Map<String, WIN32_FIND_DATA> fileList;
+		Map<String, FileInfo> fileList;
 
 		{
 			ProfilerScope $("Map Database - Enumerate Files and Folders");
 			for(String rootSearchPath : m_searchPaths)
 			{
-				if(!m_searching)
-					break;
-
-				// List of paths to process, subfolders are getting added to this list
-				List<String> folderQueue;
-				folderQueue.AddBack(rootSearchPath);
-
-				// Recursive folder search
-				while(!folderQueue.empty() && m_searching)
+				Vector<FileInfo> files = Files::ScanFilesRecursive(rootSearchPath, "ksh");
+				for(FileInfo& fi : files)
 				{
-					String searchPath = folderQueue.front();
-					folderQueue.pop_front();
-
-					WString searchPathW = Utility::ConvertToWString(searchPath) + L"\\*";
-					WIN32_FIND_DATA findDataW;
-					HANDLE searchHandle = FindFirstFile(*searchPathW, &findDataW);
-					if(searchHandle == INVALID_HANDLE_VALUE)
-						continue;
-
-					String currentfolder;
-					do
-					{
-						String filename = Utility::ConvertToUTF8(findDataW.cFileName);
-						String fullPath = Path::Normalize(searchPath + "/" + filename);
-						if(filename == ".")
-							continue;
-						if(filename == "..")
-							continue;
-
-						if(findDataW.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-						{
-							// Visit sub-folder
-							folderQueue.AddBack(fullPath);
-						}
-						else
-						{
-							// Check file
-							String ext = Path::GetExtension(filename);
-							if(ext == "ksh")
-							{
-								fileList.Add(fullPath, findDataW);
-							}
-						}
-
-					} while(FindNextFile(searchHandle, &findDataW) && m_searching);
-
-					FindClose(searchHandle);
+					fileList.Add(fi.fullPath, fi);
 				}
 			}
 		}
@@ -588,7 +544,7 @@ private:
 				if(!m_searching)
 					break;
 
-				uint64 mylwt = ((uint64)f.second.ftLastWriteTime.dwHighDateTime << 32) | (uint64)f.second.ftLastWriteTime.dwLowDateTime;
+				uint64 mylwt = f.second.lastWriteTime;
 				Event evt;
 				evt.lwt = mylwt;
 
@@ -648,8 +604,6 @@ private:
 				continue;
 			}
 		}
-
-		*/
 		m_searching = false;
 	}
 };
