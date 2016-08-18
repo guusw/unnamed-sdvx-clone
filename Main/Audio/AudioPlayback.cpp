@@ -100,6 +100,10 @@ void AudioPlayback::TogglePause()
 
 void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class BeatmapPlayback& playback)
 {
+	// Don't use effects when using an FX track
+	if(m_fxtrack.IsValid())
+		return;
+
 	assert(index >= 0 && index <= 1);
 	ClearEffect(index);
 
@@ -224,6 +228,10 @@ void AudioPlayback::SetLaserFilterInput(float input, bool active)
 		// Create DSP
 		if(!m_laserDSP)
 		{
+			// Don't use Bitcrush effects over FX track
+			if(m_fxtrack.IsValid() && m_laserEffectType == LaserEffectType::Bitcrush)
+				return;
+
 			m_laserDSP = m_InitDSP(m_laserEffectType);
 		}
 

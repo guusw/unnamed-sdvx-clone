@@ -47,6 +47,10 @@ class AudioStreamOGG_Impl : public AudioStreamRes
 	Timer m_streamTimer;
 	double m_streamTimeOffset = 0.0f;
 	double m_offsetCorrection = 0.0f;
+
+	double m_deltaSum = 0.0f;
+	int32 m_deltaSamples = 0;
+
 	bool m_paused = false;
 	bool m_playing = false;
 
@@ -137,7 +141,7 @@ public:
 	{
 		return (double)s / (double)m_info->rate;
 	}
-	double GetPositionSeconds() const
+	double GetPositionSeconds(bool allowFreezeSkip = true) const
 	{
 		double samplePosTime = SamplesToSeconds(m_samplePos);
 		if(m_paused || m_samplePos < 0)
@@ -145,7 +149,7 @@ public:
 		else
 		{
 			double ret = m_streamTimeOffset + m_streamTimer.SecondsAsDouble() - m_offsetCorrection;
-			if((ret - samplePosTime) > 0.2f) // Prevent time from running of when the application freezes
+			if(allowFreezeSkip && (ret - samplePosTime) > 0.2f) // Prevent time from running of when the application freezes
 				return samplePosTime;
 			return ret;
 		}
@@ -241,28 +245,31 @@ public:
 		if(m_samplePos > 0)
 		{
 			m_samplePos = (uint32)ov_pcm_tell(&m_ovf) - m_remainingBufferData;
-			double timingDelta = GetPositionSeconds() - SamplesToSeconds(m_samplePos);
-
-			// This is to stabilize the running timer with the actual audio stream, the delta is added for 50% as an offset to this timer
-			if(abs(timingDelta) > 0.002)
+			double timingDelta = GetPositionSeconds(false) - SamplesToSeconds(m_samplePos);
+			m_deltaSum += timingDelta;
+			m_deltaSamples += 1;
+			
+			double avgDelta = m_deltaSum / (double)m_deltaSamples;
+			if(abs(timingDelta - avgDelta) > 0.2)
 			{
-				ResyncTiming(timingDelta);
+				Logf("Timing restart, delta = %f", Logger::Info, avgDelta);
+				RestartTiming();
+			}
+			else
+			{
+				if(abs(avgDelta) > 0.001f)
+				{
+					// Fine tune timing
+					double step = abs(avgDelta) * 0.1f;
+					step = Math::Min(step, abs(timingDelta)) * Math::Sign(timingDelta);
+					m_offsetCorrection += step;
+
+					Logf("Stabilizing timing, delta = %f, %f", Logger::Warning, avgDelta, step);
+				}
 			}
 		}
 
 		m_lock.unlock();
-	}
-
-	void ResyncTiming(double delta)
-	{
-		if(abs(delta) > 1.5)
-			RestartTiming();
-		else
-		{
-			double syncAmount = delta * 0.3;
-			Logf("Resyncing timing, %f", Logger::Warning, syncAmount);
-			m_offsetCorrection += syncAmount;
-		}
 	}
 	void RestartTiming()
 	{
@@ -270,6 +277,8 @@ public:
 		m_samplePos = 0;
 		m_streamTimer.Restart();
 		m_offsetCorrection = 0.0f;
+		m_deltaSum = 0;
+		m_deltaSamples = 0;
 	}
 
 private:

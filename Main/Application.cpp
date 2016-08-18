@@ -21,7 +21,6 @@ Game* g_game = nullptr;
 
 // Tickable queue
 static Vector<IApplicationTickable*> g_tickables;
-static Vector<IApplicationTickable*> g_removalQueue;
 
 // Used to set the initial screen size
 static float g_screenHeight = 1000.0f;
@@ -269,31 +268,9 @@ void Application::m_MainLoop()
 			float deltaTime = g_targetUpdateTime;
 			timeSinceUpdate -= g_targetUpdateTime;
 
-			// Remove remove-queued tickables
-			bool removed = false;
-			for(auto it = g_tickables.begin(); it != g_tickables.end();)
-			{
-				if(g_removalQueue.Contains(*it))
-				{
-					delete *it;
-					if(*it == g_game)
-					{
-						// Game removed
-						g_game = nullptr;
-					}
-					it = g_tickables.erase(it);
-					removed = true;
-					continue;
-				}
-				it++;
-			}
-			g_removalQueue.clear();
-
 			if(!g_tickables.empty())
 			{
 				IApplicationTickable* tickable = g_tickables.back();
-				if(removed)
-					tickable->OnRestore();
 				tickable->Tick(deltaTime);
 			}
 			else
@@ -501,15 +478,24 @@ void Application::Shutdown()
 
 void Application::AddTickable(class IApplicationTickable* tickable)
 {
+	// Suspend existing
 	if(!g_tickables.empty())
 		g_tickables.back()->OnSuspend();
+
 	g_tickables.Add(tickable);
 }
 void Application::RemoveTickable(IApplicationTickable* tickable)
 {
 	if(g_tickables.Contains(tickable))
 	{
-		g_removalQueue.AddUnique(tickable);
+		delete tickable;
+		g_tickables.Remove(tickable);
+
+		// Call restore
+		if(!g_tickables.empty())
+		{
+			g_tickables.back()->OnRestore();
+		}
 	}
 }
 
