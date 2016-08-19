@@ -257,11 +257,11 @@ public:
 			}
 			else
 			{
-				if(abs(avgDelta) > 0.001f)
+				if(fabs(avgDelta) > 0.001f)
 				{
 					// Fine tune timing
 					double step = abs(avgDelta) * 0.1f;
-					step = Math::Min(step, abs(timingDelta)) * Math::Sign(timingDelta);
+					step = Math::Min(step, fabs(timingDelta)) * Math::Sign(timingDelta);
 					m_offsetCorrection += step;
 
 					Logf("Stabilizing timing, delta = %f, %f", Logger::Warning, avgDelta, step);
