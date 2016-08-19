@@ -1,0 +1,14 @@
+Building on linux
+
+Download/install the following libraries/tools:
+- Install CMake (>= 3.4, binary or source from https://cmake.org/download/)
+- Install FreeType(2.6.5, http://download.savannah.gnu.org/releases/freetype/freetype-2.6.5.tar.gz)
+- Install libogg (from package manager or http://downloads.xiph.org/releases/ogg/libogg-1.3.2.tar.gz )
+- Install libvorbis (from package manager or http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.gz )
+- Install SDL2 (2.0.4, https://www.libsdl.org/release/SDL2-2.0.4.tar.gz )
+- Install zlib (from package manager or http://zlib.net/zlib-1.2.8.tar.gz )
+- Install libPNG (1.6, http://download.sourceforge.net/libpng/libpng-1.6.24.tar.gz )
+- Install libjpeg (9b, http://ijg.org/files/jpegsrc.v9b.tar.gz )
+- Get libgl1-mesa-dev (from package manager)
+
+(Versions/Links listed are the ones used for a working build on my machine)

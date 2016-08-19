@@ -27,9 +27,17 @@ Uses OpenGL 4
 - Mouse/Controller input while in game
 - Score screen
 
+### How to build:
+- Install CMake (https://cmake.org/download/)
+- linux> check 'build.linux' for libraries to install
+- Run 'cmake .' from the root of the project
+- windows> build the generated visual studio project 'FX.sln'
+- linux> run 'make' from the project root
+- Binaries get build to the 'bin' folder
+
 ### How to run:
-Run the application
-You can also run the application with the full path to a .ksh file as the first argument to play that map immediatly, this can be combined with any of the additional command line switches below.
+- Run the application
+- You can also run the application with the full path to a .ksh file as the first argument to play that map immediatly, this can be combined with any of the additional command line switches below.
 
 Additional command line parameters:
 - '-mute' mutes all audio output
