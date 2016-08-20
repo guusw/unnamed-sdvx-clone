@@ -3,9 +3,10 @@ Trying to create a game based on [KShoot](http://kshoot.client.jp/)/[SDVX](https
 
 [![Demo Video](http://img.youtube.com/vi/finlBLaO9Fw/0.jpg)](http://tdrz.nl/oo9LIJXk)
 
-Only tested to compile with Visual Studio 2015 / Windows Only (Linux soon).
+![Build](https://ci.appveyor.com/api/projects/status/github/guusw/unnamed-sdvx-clone?branch=master&svg=true&retina=true)
+[Download latest build](tdrz.nl/sdvx-releases/bin/artifacts.zip)
 
-Uses OpenGL 4
+Only tested to compile with Visual Studio 2015 or Linux with gcc 6.0
 
 ### Currently implemented features:
 - Fonts
