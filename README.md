@@ -4,7 +4,7 @@ Trying to create a game based on [KShoot](http://kshoot.client.jp/)/[SDVX](https
 [![Demo Video](http://img.youtube.com/vi/finlBLaO9Fw/0.jpg)](http://tdrz.nl/oo9LIJXk)
 
 [![Build](https://ci.appveyor.com/api/projects/status/github/guusw/unnamed-sdvx-clone?branch=master&svg=true&retina=true)](https://ci.appveyor.com/project/guusw/unnamed-sdvx-clone)
-[Download latest build](tdrz.nl/sdvx-releases/bin/artifacts.zip)
+[Download latest build](http://tdrz.nl/sdvx-releases/bin/artifacts.zip)
 
 Only tested to compile with Visual Studio 2015 or Linux with gcc 6.0
 
