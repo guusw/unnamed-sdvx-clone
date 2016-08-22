@@ -2,6 +2,7 @@
 #include "Log.hpp"
 #include "Path.hpp"
 #include <ctime>
+#include <map>
 
 class Logger_Impl
 {
@@ -60,6 +61,10 @@ Logger::Logger()
 }
 Logger::~Logger()
 {
+#ifndef _WIN32
+	// Reset terminal colors
+	printf("\x1b[39m\x1b[0m");
+#endif
 	delete m_impl;
 }
 Logger& Logger::Get()
@@ -72,7 +77,7 @@ void Logger::SetColor(Color color)
 #ifdef _WIN32
 	if(m_impl->consoleHandle)
 	{
-		uint8 params[] = 
+		static uint8 params[] =
 		{
 			FOREGROUND_INTENSITY | FOREGROUND_RED,
 			FOREGROUND_INTENSITY | FOREGROUND_GREEN,
@@ -86,16 +91,19 @@ void Logger::SetColor(Color color)
 		SetConsoleTextAttribute(m_impl->consoleHandle, params[(size_t)color]);
 	}
 #else
-	int params[] = 
-	{
-		31,32,34,
-		33,36,35,
-		37,37
+	static std::map<Color, const char*> params = {
+		{Color::Red,     "200;0;0"},
+		{Color::Green,   "0;200;0"},
+		{Color::Blue,    "0;70;200"},
+		{Color::Yellow,  "200;180;0"},
+		{Color::Cyan,    "0;200;200"},
+		{Color::Magenta, "200;0;200"},
+		{Color::Gray,    "140;140;140"}
 	};
-	if(color == Color::Gray)
-		printf("\x1b[2;%dm", params[(size_t)color]); // Dim
+	if(color == Color::White)
+		printf("\x1b[39m");
 	else
-		printf("\x1b[1;%dm", params[(size_t)color]); // Bright
+		printf("\x1b[38;2;%sm", params[color]);
 #endif
 }
 void Logger::Log(const String& msg, Logger::Severity severity)
