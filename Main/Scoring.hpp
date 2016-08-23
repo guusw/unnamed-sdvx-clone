@@ -85,6 +85,10 @@ public:
 	// Hold buttons, lasers, etc. give 2 points per tick
 	uint32 CalculateMaxScore() const;
 
+	uint32 CalculateTotalTicks() const;
+
+	uint32 CalculateTotalShort() const;
+
 	// Actual score, in the range 0-10,000,000
 	uint32 CalculateCurrentScore() const;
 
@@ -120,20 +124,27 @@ public:
 	uint32 currentMaxScore = 0;
 	// The total maximum score of a map were all objects to be hit perfectly
 	uint32 totalMaxScore = 0;
+	// The total amount of ticks, from both holds and lasers
+	uint32 totalTicks = 0;
+	// The total amount of short notes
+	uint32 totalShort = 0;
 	// The actual amount of gotten score
 	uint32 currentHitScore = 0;
 
+	// Amount of gauge to gain on a tick
+	float tickGaugeGain = 0.0f;
 	// Hits per type in order:
 	//	0 = Miss
 	//	1 = Good
 	//	2 = Perfect
 	uint32 categorizedHits[3] = { 0 };
 
-	// Amount of gauge to gain on a critical
-	float criticalGaugeGain = 0.0f;
+	// Amount of gauge to gain on a short note
+	float shortGaugeGain = 0.0f;
 
 	// Current gauge 0 to 1
 	float currentGauge = 0.0f;
+
 
 	// Current combo
 	uint32 currentComboCounter;
