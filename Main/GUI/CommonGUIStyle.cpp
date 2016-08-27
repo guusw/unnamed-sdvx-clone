@@ -25,4 +25,7 @@ CommonGUIStyle::CommonGUIStyle(Application* application)
 	textfieldHighlightTexture = application->LoadTexture("ui/textfield_hl.png");
 	textfieldPadding = Margini(10);
 	textfieldBorder = Margini(5);
+
+	spinnerTexture = application->LoadTexture("ui/spinner.png");
+	spinnerTexture->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
 }

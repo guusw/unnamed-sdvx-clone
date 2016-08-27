@@ -30,4 +30,6 @@ public:
 	Margini textfieldBorder = Margini(5);
 	Texture textfieldTexture;
 	Texture textfieldHighlightTexture;
+
+	Texture spinnerTexture;
 };

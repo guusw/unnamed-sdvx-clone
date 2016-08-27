@@ -245,7 +245,7 @@ namespace Graphics
 			m_sizes.Add(nSize, pMap);
 			return pMap;
 		}
-		Ref<TextRes> CreateText(const WString& str, uint32 nFontSize)
+		Ref<TextRes> CreateText(const WString& str, uint32 nFontSize, TextOptions options)
 		{
 			FontSize* size = GetSize(nFontSize);
 
@@ -262,6 +262,8 @@ namespace Graphics
 
 			TextRes* ret = new TextRes();
 			ret->mesh = MeshRes::Create(m_gl);
+
+			float monospaceWidth = size->GetCharInfo(L'_').advance;
 
 			Vector<TextVertex> vertices;
 			Vector2 pen;
@@ -280,6 +282,10 @@ namespace Graphics
 					Vector2 offset = Vector2(pen.x, pen.y);
 					offset.x += info.leftOffset;
 					offset.y += nFontSize - info.topOffset;
+					if((options & TextOptions::Monospace) != 0)
+					{
+						offset.x += (monospaceWidth - info.coords.size.x) * 0.5f;
+					}
 					pen.x = floorf(pen.x);
 					pen.y = floorf(pen.y);
 
@@ -311,7 +317,12 @@ namespace Graphics
 				}
 				else
 				{
-					pen.x += info.advance;
+					if((options & TextOptions::Monospace) != 0)
+					{
+						pen.x += monospaceWidth;
+					}
+					else
+						pen.x += info.advance;
 				}
 				ret->size.x = std::max(ret->size.x, pen.x);
 			}

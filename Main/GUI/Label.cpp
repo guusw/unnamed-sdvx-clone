@@ -40,6 +40,20 @@ void Label::SetText(const WString& text)
 	m_textString = text;
 	m_dirty = true;
 }
+void Label::SetFont(Graphics::Font font)
+{
+	m_font = font;
+}
+void Label::SetTextOptions(FontRes::TextOptions options)
+{
+	if(m_textOptions != options)
+		m_dirty = true;
+	m_textOptions = options;
+}
+Graphics::FontRes::TextOptions Label::GetTextOptions() const
+{
+	return m_textOptions;
+}
 const WString& Label::GetText() const
 {
 	return m_textString;
@@ -58,6 +72,6 @@ void Label::m_UpdateText(class GUIRenderer* renderer)
 	Graphics::Font fontToUse = m_font;
 	if(!fontToUse)
 		fontToUse = renderer->font;
-	m_text = fontToUse->CreateText(m_textString, m_fontSize);
+	m_text = fontToUse->CreateText(m_textString, m_fontSize, m_textOptions);
 	m_dirty = false;
 }

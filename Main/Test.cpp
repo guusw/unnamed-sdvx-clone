@@ -13,6 +13,7 @@
 #include "GUI/Slider.hpp"
 #include "GUI/ScrollBox.hpp"
 #include "GUI/SettingsBar.hpp"
+#include "GUI/Spinner.hpp"
 #include "HealthGauge.hpp"
 #include "Shared/Jobs.hpp"
 
@@ -142,6 +143,16 @@ public:
 			slot->autoSizeY = false;
 		}
 		
+		// Spinner
+		{
+			Spinner* spinner = new Spinner(m_guiStyle);
+			Canvas::Slot* slot = m_canvas->Add(spinner->MakeShared());
+			slot->anchor = Anchor(0.9f, 0.9f);
+			slot->autoSizeX = true;
+			slot->autoSizeY = true;
+			slot->alignment = Vector2(1.0f, 1.0f);
+		}
+
 		return true;
 	}
 	~Test_Impl()

@@ -35,6 +35,8 @@ class Game_Impl : public Game
 	Ref<CommonGUIStyle> m_guiStyle;
 	Ref<Label> m_scoreText;
 
+	Graphics::Font m_fontDivlit;
+
 	// Texture of the map jacket image, if available
 	Texture m_jacketTexture;
 
@@ -194,9 +196,24 @@ public:
 
 		// Draw the base track + time division ticks
 		m_track->DrawBase(renderQueue);
+
+		// Sort objects to draw
+		m_currentObjectSet.Sort([](const TObjectState<void>* a, const TObjectState<void>* b)
+		{
+			auto ObjectRenderPriorty = [](const TObjectState<void>* a)
+			{
+				if(a->type == ObjectType::Single || a->type == ObjectType::Hold)
+					return (((ButtonObjectState*)a)->index < 4) ? 1 : 0;
+				else
+					return 2;
+			};
+			uint32 renderPriorityA = ObjectRenderPriorty(a);
+			uint32 renderPriorityB = ObjectRenderPriorty(b);
+			return renderPriorityA < renderPriorityB;
+		});
+
 		for(auto& object : m_currentObjectSet)
 		{
-			/// #Scoring
 			m_track->DrawObjectState(renderQueue, m_playback, object, m_scoring.IsObjectHeld(object));
 		}
 
@@ -386,6 +403,8 @@ public:
 		if(!m_guiRenderer.Init(g_gl, g_gameWindow))
 			return false;
 
+		CheckedLoad(m_fontDivlit = FontRes::Create(g_gl, "fonts/divlit_custom.ttf"));
+
 		m_guiStyle = Ref<CommonGUIStyle>(new CommonGUIStyle(g_application));
 
 		// Gauge
@@ -431,11 +450,15 @@ public:
 			scoreSlot->autoSizeY = true;
 
 			m_scoreText = Ref<Label>(new Label());
-			m_scoreText->SetFontSize(64);
+			m_scoreText->SetFontSize(75);
 			m_scoreText->SetText(L"0");
+			m_scoreText->SetFont(m_fontDivlit);
+			m_scoreText->SetTextOptions(FontRes::Monospace);
+			// Padding for this specific font
+			Margin textPadding = Margin(0, -20, 0, 0);
 
 			Panel::Slot* slot = scorePanel->SetContent(m_scoreText.As<GUIElementBase>());
-			slot->padding = Margin(30, 0, 30, 30);
+			slot->padding = Margin(30, 0, 30, 30) + textPadding;
 			slot->alignment = Vector2(1.0f, 0.5f);
 		}
 

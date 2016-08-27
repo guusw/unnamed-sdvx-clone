@@ -11,6 +11,12 @@ public:
 	const WString& GetText() const;
 	void SetText(const WString& text);
 
+	// Sets font to use, overriding the default font
+	void SetFont(Graphics::Font font);
+	
+	void SetTextOptions(FontRes::TextOptions options);
+	FontRes::TextOptions GetTextOptions() const;
+
 	// The size(height) of the displayed text
 	uint32 GetFontSize() const;
 	void SetFontSize(uint32 size);
@@ -22,6 +28,8 @@ private:
 	void m_UpdateText(class GUIRenderer* renderer);
 
 	bool m_dirty = true;
+	// Special text options
+	FontRes::TextOptions m_textOptions = FontRes::None;
 	// Text object that is displayed
 	Text m_text;
 	// Text string that is displayed

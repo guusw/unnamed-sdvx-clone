@@ -1,8 +1,6 @@
 #pragma once
 #include <Graphics/ResourceTypes.hpp>
 
-// This is the resource id for the default font on windows embeded into the application resource
-#define IDR_FALLBACKFONT                    101
 
 namespace Graphics
 {
@@ -31,7 +29,16 @@ namespace Graphics
 		virtual ~FontRes() = default;
 		static Ref<FontRes> Create(class OpenGL* gl, const String& assetPath);
 	public:
-		virtual Ref<TextRes> CreateText(const WString& str, uint32 nFontSize) = 0;
+		// Text rendering options
+		enum TextOptions
+		{
+			None = 0,
+			Monospace = 0x1,
+		};
+
+		// Renders the input string into a drawable text object
+		virtual Ref<TextRes> CreateText(const WString& str, uint32 nFontSize, TextOptions options = TextOptions::None) = 0;
+
 	};
 
 	typedef Ref<FontRes> Font;
