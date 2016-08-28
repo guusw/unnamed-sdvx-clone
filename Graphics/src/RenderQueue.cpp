@@ -35,34 +35,75 @@ namespace Graphics
 		assert(m_ogl);
 
 		bool scissorEnabled = false;
+		bool blendEnabled = false;
+		MaterialBlendMode activeBlendMode = (MaterialBlendMode)-1;
+
+		Set<Material> initializedShaders;
+		Mesh currentMesh;
+		Material currentMaterial;
 
 		// Create a new list of items
 		for(RenderQueueItem* item : m_orderedCommands)
 		{
 			auto SetupMaterial = [&](Material& mat, MaterialParameterSet& params)
 			{
-				mat->Bind(m_renderState, params);
+				// Only bind params if material is already bound to context
+				if(currentMaterial == mat)
+					mat->BindParameters(params, m_renderState.worldTransform);
+				else
+				{
+					if(initializedShaders.Contains(mat))
+					{
+						// Only bind params and rebind
+						mat->BindParameters(params, m_renderState.worldTransform);
+						mat->BindToContext();
+						currentMaterial = mat;
+					}
+					else
+					{
+						mat->Bind(m_renderState, params);
+						initializedShaders.Add(mat);
+						currentMaterial = mat;
+					}
+				}
 
 				// Setup Render state for transparent object
 				if(mat->opaque)
 				{
-					glDisable(GL_BLEND);
+					if(blendEnabled)
+						glDisable(GL_BLEND);
 				}
 				else
 				{
-					glEnable(GL_BLEND);
-					switch(mat->blendMode)
+					if(!blendEnabled)
+						glEnable(GL_BLEND);
+					if(activeBlendMode != mat->blendMode)
 					{
-					case MaterialBlendMode::Normal:
-						glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-						break;
-					case MaterialBlendMode::Additive:
-						glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-						break;
-					case MaterialBlendMode::Multiply:
-						glBlendFunc(GL_SRC_ALPHA, GL_SRC_COLOR);
-						break;
+						switch(mat->blendMode)
+						{
+						case MaterialBlendMode::Normal:
+							glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+							break;
+						case MaterialBlendMode::Additive:
+							glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+							break;
+						case MaterialBlendMode::Multiply:
+							glBlendFunc(GL_SRC_ALPHA, GL_SRC_COLOR);
+							break;
+						}
 					}
+				}
+			};
+
+			// Draw mesh helper
+			auto DrawOrRedrawMesh = [&](Mesh& mesh)
+			{
+				if(currentMesh == mesh)
+					mesh->Redraw();
+				else
+				{
+					mesh->Draw();
+					currentMesh = mesh;
 				}
 			};
 
@@ -95,7 +136,7 @@ namespace Graphics
 					}
 				}
 
-				sdc->mesh->Draw();
+				DrawOrRedrawMesh(sdc->mesh);
 			}
 			else if(Cast<PointDrawCall>(item))
 			{
@@ -118,9 +159,14 @@ namespace Graphics
 				{
 					glPointSize(pdc->size);
 				}
-				pdc->mesh->Draw();
+				
+				DrawOrRedrawMesh(pdc->mesh);
 			}
 		}
+
+		// Disable all states that were on
+		if(blendEnabled)
+			glDisable(GL_BLEND);
 
 		glDisable(GL_SCISSOR_TEST);
 

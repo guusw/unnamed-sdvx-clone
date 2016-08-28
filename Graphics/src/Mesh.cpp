@@ -85,6 +85,10 @@ namespace Graphics
 			glBindVertexArray(m_vao);
 			glDrawArrays(m_glType, 0, (int)m_vertexCount);
 		}
+		virtual void Redraw()
+		{
+			glDrawArrays(m_glType, 0, (int)m_vertexCount);
+		}
 
 		virtual void SetPrimitiveType(PrimitiveType pt)
 		{

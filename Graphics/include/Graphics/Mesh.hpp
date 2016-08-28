@@ -39,6 +39,8 @@ namespace Graphics
 		virtual PrimitiveType GetPrimitiveType() const = 0;
 		// Draws the mesh
 		virtual void Draw() = 0;
+		// Draws the mesh after if has already been drawn once, reuse of bound objects
+		virtual void Redraw() = 0;
 
 	private:
 		virtual void SetData(const void* pData, size_t vertexCount, const VertexFormatList& desc) = 0;

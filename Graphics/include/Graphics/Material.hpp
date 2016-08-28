@@ -31,6 +31,15 @@ namespace Graphics
 			assert(sizeof(T) == parameterData.size());
 			return *(T*)parameterData.data();
 		}
+
+		bool operator==(const MaterialParameter& other) const
+		{
+			if(parameterType != other.parameterType)
+				return false;
+			if(parameterData.size() != other.parameterData.size())
+				return false;
+			return memcmp(parameterData.data(), other.parameterData.data(), parameterData.size()) == 0;
+		}
 	};
 
 	/*
@@ -75,6 +84,12 @@ namespace Graphics
 	public:
 		virtual void AssignShader(ShaderType t, Shader shader) = 0;
 		virtual void Bind(const RenderState& rs, const MaterialParameterSet& params = MaterialParameterSet()) = 0;
+
+		// Only binds parameters to the current shader
+		virtual void BindParameters(const MaterialParameterSet& params, const Transform& worldTransform) = 0;
+
+		// Bind only shaders/pipeline to context
+		virtual void BindToContext() = 0;
 	};
 
 	typedef Ref<MaterialRes> Material;

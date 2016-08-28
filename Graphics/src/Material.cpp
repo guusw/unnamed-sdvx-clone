@@ -153,6 +153,7 @@ namespace Graphics
 			glUseProgramStages(m_pipeline, shaderStageMap[(size_t)t], shader->Handle());
 		}
 
+		// Bind render state and params and shaders to context
 		virtual void Bind(const RenderState& rs, const MaterialParameterSet& params) override
 		{
 #if _DEBUG
@@ -183,7 +184,6 @@ namespace Graphics
 #endif
 
 			// Bind renderstate variables
-			BindAll(SV_World, rs.worldTransform);
 			BindAll(SV_Proj, rs.projectionTransform);
 			BindAll(SV_Camera, rs.cameraTransform);
 			BindAll(SV_Viewport, rs.viewportSize);
@@ -191,6 +191,17 @@ namespace Graphics
 			Transform billboard = CameraMatrix::BillboardMatrix(rs.cameraTransform);
 			BindAll(SV_BillboardMatrix, billboard);
 			BindAll(SV_Time, rs.time);
+			
+			// Bind parameters
+			BindParameters(params, rs.worldTransform);
+
+			BindToContext();
+		}
+
+		// Bind only parameters
+		virtual void BindParameters(const MaterialParameterSet& params, const Transform& worldTransform)
+		{
+			BindAll(SV_World, worldTransform);
 			for(auto p : params)
 			{
 				switch(p.second.parameterType)
@@ -242,6 +253,11 @@ namespace Graphics
 					assert(false);
 				}
 			}
+		}
+
+		virtual void BindToContext()
+		{
+			// Bind pipeline to context
 			glBindProgramPipeline(m_pipeline);
 		}
 
