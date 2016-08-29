@@ -1,6 +1,9 @@
 #pragma once
 #include <Graphics/ResourceTypes.hpp>
 
+#ifdef None
+#undef None
+#endif
 
 namespace Graphics
 {
