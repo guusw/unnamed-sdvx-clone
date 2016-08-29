@@ -16,6 +16,10 @@ AudioPlayback::~AudioPlayback()
 }
 bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 {
+	m_CleanupDSP(m_buttonDSPs[0]);
+	m_CleanupDSP(m_buttonDSPs[1]);
+	m_CleanupDSP(m_laserDSP);
+
 	m_laserEffectType = LaserEffectType::PeakingFilter;
 
 	const BeatmapSettings& mapSettings = beatmap.GetMapSettings();
@@ -96,6 +100,11 @@ void AudioPlayback::TogglePause()
 			m_fxtrack->Pause();
 	}
 	m_paused = !m_paused;
+}
+
+bool AudioPlayback::HasEnded() const
+{
+	return m_music->HasEnded();
 }
 
 void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class BeatmapPlayback& playback)

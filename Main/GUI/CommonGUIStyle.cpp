@@ -2,6 +2,11 @@
 #include "CommonGUIStyle.hpp"
 #include "Application.hpp"
 
+Ref<CommonGUIStyle> CommonGUIStyle::instance;
+Ref<CommonGUIStyle> CommonGUIStyle::Get()
+{
+	return instance;
+}
 CommonGUIStyle::CommonGUIStyle(Application* application)
 {
 	buttonTexture = application->LoadTexture("ui/button.png");

@@ -8,6 +8,8 @@ class CommonGUIStyle
 public:
 	CommonGUIStyle() = default;
 	CommonGUIStyle(class Application* application);
+	static Ref<CommonGUIStyle> instance;
+	static Ref<CommonGUIStyle> Get();
 
 	Margini buttonPadding = Margini(5);
 	Margini buttonBorder = Margini(5);

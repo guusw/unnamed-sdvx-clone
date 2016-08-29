@@ -8,6 +8,7 @@
 #include "GUI/SongSelectItem.hpp"
 #include "MapDatabase.hpp"
 #include "Game.hpp"
+#include "TransitionScreen.hpp"
 
 #include "Audio.hpp"
 
@@ -407,7 +408,6 @@ class SongSelect_Impl : public SongSelect
 private:
 	Timer m_dbUpdateTimer;
 	Ref<Canvas> m_canvas;
-	GUIRenderer m_guiRenderer;
 	MapDatabase m_mapDatabase;
 
 	Ref<SongSelectStyle> m_style;
@@ -430,12 +430,9 @@ private:
 	Sample m_selectSound;
 
 public:
-	bool Init()
+	bool Init() override
 	{
-		if(!m_guiRenderer.Init(g_gl, g_gameWindow))
-			return false;
-
-		m_commonGUIStyle = Ref<CommonGUIStyle>(new CommonGUIStyle(g_application));
+		m_commonGUIStyle = CommonGUIStyle::Get();
 
 		m_canvas = Utility::MakeRef(new Canvas());
 
@@ -488,7 +485,6 @@ public:
 			m_searchField = Ref<TextInputField>(new TextInputField(m_commonGUIStyle));
 			LayoutBox::Slot* searchFieldSlot = box->Add(m_searchField.As<GUIElementBase>());
 			searchFieldSlot->fillX = true;
-			m_guiRenderer.SetInputFocus(m_searchField.GetData());
 			m_searchField->OnTextUpdated.Add(this, &SongSelect_Impl::OnSearchTermChanged);
 
 			m_selectionWheel = Ref<SelectionWheel>(new SelectionWheel(m_style));
@@ -593,10 +589,18 @@ public:
 			if(map)
 			{
 				DifficultyIndex* diff = m_selectionWheel->GetSelectedDifficulty();
-				if(g_application->LaunchMap(diff->path))
+
+				Game* game = Game::Create(diff->path);
+				if(!game)
 				{
-					g_game->GetScoring().autoplay = autoplay;
+					Logf("Failed to start game", Logger::Error);
+					return;
 				}
+				game->GetScoring().autoplay = autoplay;
+
+				// Transition to game
+				TransitionScreen* transistion = TransitionScreen::Create(game);
+				g_application->AddTickable(transistion);
 			}
 		}
 		else if(key == Key::F5)
@@ -608,47 +612,37 @@ public:
 	{
 
 	}
-	virtual void Render(float deltaTime) override
+	virtual void Tick(float deltaTime) override
 	{
 		if(m_dbUpdateTimer.Milliseconds() > 500)
 		{
 			m_mapDatabase.Update();
 			m_dbUpdateTimer.Restart();
 		}
-
-		glClearColor(0, 0, 0, 0);
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		Rect viewport(Vector2(), g_gameWindow->GetWindowSize());
-		m_guiRenderer.Render(deltaTime, viewport, m_canvas.As<GUIElementBase>());
-	}
-	virtual void Tick(float deltaTime) override
-	{
 		m_previewPlayer.Update(deltaTime);
 	}
+
 	virtual void OnSuspend()
 	{
 		m_previewPlayer.Pause();
 		m_mapDatabase.StopSearching();
-		m_guiRenderer.SetInputFocus(nullptr);
+
+		g_rootCanvas->Remove(m_canvas.As<GUIElementBase>());
 	}
 	virtual void OnRestore()
 	{
 		m_previewPlayer.Restore();
 		m_mapDatabase.StartSearching();
-		m_guiRenderer.SetInputFocus(m_searchField.GetData());
 
 		OnSearchTermChanged(m_searchField->GetText());
+
+		Canvas::Slot* slot = g_rootCanvas->Add(m_canvas.As<GUIElementBase>());
+		slot->anchor = Anchors::Full;
 	}
 };
 
 SongSelect* SongSelect::Create()
 {
 	SongSelect_Impl* impl = new SongSelect_Impl();
-	if(!impl->Init())
-	{
-		delete impl;
-		return nullptr;
-	}
 	return impl;
 }

@@ -28,6 +28,7 @@ public:
 	// Pause the playback
 	void TogglePause();
 	bool IsPaused() const { return m_paused; }
+	bool HasEnded() const;
 
 	// Sets either button effect 0 or 1
 	void SetEffect(uint32 index, HoldObjectState* object, class BeatmapPlayback& playback);

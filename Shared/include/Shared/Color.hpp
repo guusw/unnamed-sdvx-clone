@@ -31,6 +31,8 @@ public:
 	using Vector4::Vector4;
 	Color() = default;
 	// Constructor with alpha=1
+	Color(float all);
+	// Constructor with alpha=1
 	Color(float r, float g, float b);
 	Color(const VectorMath::VectorBase<uint8, 4>& icolor);
 	Colori ToRGBA8() const;

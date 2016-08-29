@@ -123,6 +123,12 @@ public:
 	// The actual amount of gotten score
 	uint32 currentHitScore = 0;
 
+	// Hits per type in order:
+	//	0 = Miss
+	//	1 = Good
+	//	2 = Perfect
+	uint32 categorizedHits[3] = { 0 };
+
 	// Amount of gauge to gain on a critical
 	float criticalGaugeGain = 0.0f;
 

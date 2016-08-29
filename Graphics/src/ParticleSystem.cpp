@@ -61,6 +61,14 @@ namespace Graphics
 			m_emitters.Add(newEmitter);
 			return newEmitter;
 		}
+		virtual void Reset()
+		{
+			for(auto em : m_emitters)
+			{
+				em.Destroy();
+			}
+			m_emitters.clear();
+		}
 	};
 
 	Ref<ParticleSystemRes> ParticleSystemRes::Create(class OpenGL* gl)
@@ -69,6 +77,7 @@ namespace Graphics
 		impl->gl = gl;
 		return GetResourceManager<ResourceType::ParticleSystem>().Register(impl);
 	}
+
 
 	// Particle instance class
 	class Particle
@@ -152,11 +161,19 @@ namespace Graphics
 		Particle* oldParticles = m_particles;
 		uint32 oldSize = m_poolSize;
 
-		m_particles = new Particle[newCapacity];
+		// Create new pool
 		m_poolSize = newCapacity;
-		memset(m_particles, 0, m_poolSize * sizeof(Particle));
+		if(newCapacity > 0)
+		{
+			m_particles = new Particle[m_poolSize];
+			memset(m_particles, 0, m_poolSize * sizeof(Particle));
+		}
+		else
+		{
+			m_particles = nullptr;
+		}
 
-		if(oldParticles)
+		if(oldParticles && m_particles)
 		{
 			memcpy(m_particles, oldParticles, Math::Min(oldSize, m_poolSize) * sizeof(Particle));
 		}

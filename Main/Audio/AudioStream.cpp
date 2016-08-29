@@ -38,6 +38,7 @@ class AudioStreamOGG_Impl : public AudioStreamRes
 	uint32 m_remainingBufferData = 0;
 
 	int64 m_samplePos = 0;
+	int64 m_samplesTotal = 0; // Total pcm length of audio stream
 
 	// Resampling values
 	uint64 m_sampleStep = 0;
@@ -53,6 +54,7 @@ class AudioStreamOGG_Impl : public AudioStreamRes
 
 	bool m_paused = false;
 	bool m_playing = false;
+	bool m_ended = false;
 
 	float m_volume = 0.8f;
 public:
@@ -89,6 +91,8 @@ public:
 		m_info = ov_info(&m_ovf, 0);
 		if(!m_info)
 			return false;
+
+		m_samplesTotal = ov_pcm_total(&m_ovf, 0);
 
 		// Calculate the sample step if the rate is not the same as the output rate
 		double sampleStep = (double)m_info->rate / (double)audio->GetSampleRate();
@@ -133,6 +137,11 @@ public:
 		}
 	}
 
+	virtual bool HasEnded() const override
+	{
+		return m_ended;
+	}
+
 	uint64 SecondsToSamples(double s) const
 	{
 		return (uint64)(s * (double)m_info->rate);
@@ -158,13 +167,13 @@ public:
 	{
 		return (int32)(GetPositionSeconds() * 1000.0);
 	}
-
 	virtual void SetPosition(int32 pos) override
 	{
 		m_lock.lock();
 		m_remainingBufferData = 0;
 		m_samplePos = SecondsToSamples((double)pos / 1000.0);
 		ov_pcm_seek(&m_ovf, m_samplePos);
+		m_ended = false;
 		m_lock.unlock();
 	}
 
@@ -245,6 +254,16 @@ public:
 		if(m_samplePos > 0)
 		{
 			m_samplePos = (uint32)ov_pcm_tell(&m_ovf) - m_remainingBufferData;
+			if(m_samplePos >= m_samplesTotal)
+			{
+				if(!m_ended)
+				{
+					// Ended
+					Logf("Audio stream ended", Logger::Info);
+					m_ended = true;
+				}
+			}
+
 			double timingDelta = GetPositionSeconds(false) - SamplesToSeconds(m_samplePos);
 			m_deltaSum += timingDelta;
 			m_deltaSamples += 1;

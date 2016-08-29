@@ -11,24 +11,53 @@
 #include "AudioPlayback.hpp"
 #include "Input.hpp"
 #include "SongSelect.hpp"
+#include "ScoreScreen.hpp"
+#include "TransitionScreen.hpp"
+#include "AsyncAssetLoader.hpp"
 
 #include "GUI/GUI.hpp"
 #include "GUI/HealthGauge.hpp"
 #include "GUI/SettingsBar.hpp"
 
+// Try load map helper
+Ref<Beatmap> TryLoadMap(const String& path)
+{
+	// Load map file
+	Beatmap* newMap = new Beatmap();
+	File mapFile;
+	if(!mapFile.OpenRead(path))
+	{
+		delete newMap;
+		return Ref<Beatmap>();
+	}
+	FileReader reader(mapFile);
+	if(!newMap->Load(reader))
+	{
+		delete newMap;
+		return Ref<Beatmap>();
+	}
+	return Ref<Beatmap>(newMap);
+}
+
+/* 
+	Game implementation class
+*/
 class Game_Impl : public Game
 {
+public:
+	// Startup parameters
 	String m_mapPath;
-	Beatmap* m_beatmap;
+	String m_fullMapPath;
+
+private:
 	bool m_playing = true;
 	bool m_started = false;
 	bool m_paused = false;
+	bool m_ended = false;
 
 	bool m_renderDebugHUD = false;
 
-	// GUI
-	GUIRenderer m_guiRenderer;
-	// Main Canvas
+	// Game Canvas
 	Ref<Canvas> m_canvas;
 	Ref<HealthGauge> m_scoringGauge;
 	Ref<SettingsBar> m_settingsBar;
@@ -38,8 +67,11 @@ class Game_Impl : public Game
 	Graphics::Font m_fontDivlit;
 
 	// Texture of the map jacket image, if available
+	Image m_jacketImage;
 	Texture m_jacketTexture;
 
+	// The beatmap
+	Ref<Beatmap> m_beatmap;
 	// Scoring system object
 	Scoring m_scoring;
 	// Beatmap playback manager (object and timing point selector)
@@ -50,7 +82,7 @@ class Game_Impl : public Game
 	int32 m_audioOffset = 0;
 
 	// The play field
-	Track* m_track;
+	Track* m_track = nullptr;
 
 	// Input controller
 	Input m_input;
@@ -59,7 +91,7 @@ class Game_Impl : public Game
 	Camera m_camera;
 
 	// Current background visualization
-	Background* m_background;
+	Background* m_background = nullptr;
 
 	// Currently active timing point
 	const TimingPoint* m_currentTiming;
@@ -85,6 +117,14 @@ class Game_Impl : public Game
 	Ref<ParticleEmitter> m_laserFollowEmitters[2];
 	Ref<ParticleEmitter> m_holdEmitters[6];
 public:
+	Game_Impl(const String& mapPath)
+	{
+		// Store path to map
+		m_fullMapPath = Path::Normalize(mapPath);
+
+		// Get Parent path
+		m_mapPath = Path::RemoveLast(m_fullMapPath, nullptr);
+	}
 	~Game_Impl()
 	{
 		if(m_track)
@@ -93,44 +133,43 @@ public:
 			delete m_background;
 		m_input.Cleanup();
 
-		// Allow frameliming again
-		g_application->SetFrameLimiter(60);
+		g_rootCanvas->Remove(m_canvas.As<GUIElementBase>());
 	}
 
-	// Normal/FX button x placement
-	float GetButtonPlacement(uint32 buttonIdx)
+	AsyncAssetLoader loader;
+	virtual bool AsyncLoad() override
 	{
-		if(buttonIdx < 4)
-			return buttonIdx * m_track->buttonWidth - (m_track->buttonWidth * 1.5f);
-		else
-			return (buttonIdx - 4) * m_track->fxbuttonWidth - (m_track->fxbuttonWidth * 0.5f);
-	}
+		ProfilerScope $("AsyncLoad Game");
 
-	// Main update routine for the game logic
-	virtual bool Init(Beatmap* map, String mapPath) override
-	{
-		ProfilerScope $("Init Game");
+		if(!Path::FileExists(m_fullMapPath))
+		{
+			Logf("Couldn't find map at %s", Logger::Error, m_fullMapPath);
+			return false;
+		}
 
+		m_beatmap = TryLoadMap(m_fullMapPath);
+
+		// Check failure of above loading attempts
+		if(!m_beatmap)
+		{
+			Logf("Failed to load map", Logger::Warning);
+			return false;
+		}
+
+		// Enable debug functionality
 		if(g_application->GetAppCommandLine().Contains("-debug"))
 		{
 			m_renderDebugHUD = true;
 		}
 
-		assert(map);
-		m_mapPath = mapPath;
-		m_beatmap = map;
 		const BeatmapSettings& mapSettings = m_beatmap->GetMapSettings();
 
 		// Try to load beatmap jacket image
-		String jacketPath = mapPath + "/" + mapSettings.jacketPath;
-		Image jacketImage = ImageRes::Create(jacketPath);
-		if(jacketImage)
-		{
-			m_jacketTexture = TextureRes::Create(g_gl, jacketImage);
-		}
+		String jacketPath = m_mapPath + "/" + mapSettings.jacketPath;
+		m_jacketImage = ImageRes::Create(jacketPath);
 
 		// Load beatmap audio
-		if(!m_audioPlayback.Init(*m_beatmap, mapPath))
+		if(!m_audioPlayback.Init(*m_beatmap, m_mapPath))
 			return false;
 
 		if(!InitGameplay())
@@ -139,24 +178,85 @@ public:
 		if(!InitSFX())
 			return false;
 
-
 		// Intialize track graphics
 		m_track = new Track();
-		if(!m_track->Init())
-		{
-			return false;
-		}
+		loader.AddLoadable(*m_track, "Track");
 
-		if(!InitParticles())
-			return false;
-
-		// Background graphics
-		CheckedLoad(m_background = CreateBackground(this));
+		// Load particle textures
+		loader.AddTexture(basicParticleTexture, "particle_flare.png");
+		loader.AddTexture(squareParticleTexture, "particle_square.png");
 
 		if(!InitHUD())
 			return false;
 
+		if(!loader.Load())
+			return false;
+
 		return true;
+	}
+	virtual bool AsyncFinalize() override
+	{
+		if(m_jacketImage)
+		{
+			m_jacketTexture = TextureRes::Create(g_gl, m_jacketImage);
+		}
+
+		if(!loader.Finalize())
+			return false;
+
+		m_scoringGauge->fillMaterial->opaque = false;
+
+		// Load particle material
+		m_particleSystem = ParticleSystemRes::Create(g_gl);
+		CheckedLoad(particleMaterial = g_application->LoadMaterial("particle"));
+		particleMaterial->blendMode = MaterialBlendMode::Additive;
+		particleMaterial->opaque = false;
+
+		// Background 
+		/// TODO: Load this async
+		CheckedLoad(m_background = CreateBackground(this));
+
+		return true;
+	}
+	virtual bool Init() override
+	{
+		// Add to root canvas to be rendered (this makes the HUD visible)
+		Canvas::Slot* rootSlot = g_rootCanvas->Add(m_canvas.As<GUIElementBase>());
+		rootSlot->anchor = Anchors::Full;
+		return true;
+	}
+
+	// Restart map
+	virtual void Restart()
+	{
+		m_camera = Camera();
+
+		bool audioReinit = m_audioPlayback.Init(*m_beatmap, m_mapPath);
+		assert(audioReinit);
+
+		m_paused = false;
+		m_started = false;
+		m_ended = false;
+		m_lastMapTime = 0;
+		m_playback.Reset();
+		m_scoring.Reset();
+
+		for(uint32 i = 0; i < 2; i++)
+		{
+			if(m_laserFollowEmitters[i])
+			{
+				m_laserFollowEmitters[i].Release();
+			}
+		}
+		for(uint32 i = 0; i < 6; i++)
+		{
+			if(m_holdEmitters[i])
+			{
+				m_holdEmitters[i].Release();
+			}
+		}
+		m_track->ClearEffects();
+		m_particleSystem->Reset();
 	}
 	virtual void Tick(float deltaTime) override
 	{
@@ -186,9 +286,6 @@ public:
 		RenderState rs = m_camera.CreateRenderState(true);
 
 		// Draw BG first
-		g_gl->SetViewport(rs.viewportSize);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
 		m_background->Render(deltaTime);
 
 		// Main render queue
@@ -274,7 +371,7 @@ public:
 					Color hitColor = (i < 4) ? Color::White : Color::FromHSV(20, 0.7f, 1.0f);
 					float hitWidth = (i < 4) ? m_track->buttonWidth : m_track->fxbuttonWidth;
 					m_holdEmitters[i] = CreateHoldEmitter(hitColor, hitWidth);
-					m_holdEmitters[i]->position.x = GetButtonPlacement(i);
+					m_holdEmitters[i]->position.x = m_track->GetButtonPlacement(i);
 				}
 			}
 			else
@@ -290,28 +387,235 @@ public:
 		// Render particle effects last
 		RenderParticles(rs, deltaTime);
 
-		RenderHUD(deltaTime);
+		// Render debug hud if enabled
+		if(m_renderDebugHUD)
+		{
+			RenderDebugHUD(deltaTime);
+		}
 	}
 
-	bool InitParticles()
+	// Initialize HUD elements/layout
+	bool InitHUD()
 	{
-		// Load particle effects
-		m_particleSystem = ParticleSystemRes::Create(g_gl);
-		CheckedLoad(particleMaterial = g_application->LoadMaterial("particle"));
-		particleMaterial->blendMode = MaterialBlendMode::Additive;
-		particleMaterial->opaque = false;
-		CheckedLoad(basicParticleTexture = g_application->LoadTexture("particle_flare.png"));
-		CheckedLoad(squareParticleTexture = g_application->LoadTexture("particle_square.png"));
+		CheckedLoad(m_fontDivlit = FontRes::Create(g_gl, "fonts/divlit_custom.ttf"));
+		m_guiStyle = CommonGUIStyle::Get();
 
-		m_laserFollowEmitters[0] = CreateTrailEmitter(m_track->laserColors[0]);
+		// Game GUI canvas
+		m_canvas = Utility::MakeRef(new Canvas());
+
+		{
+			// Gauge
+			m_scoringGauge = Utility::MakeRef(new HealthGauge());
+			loader.AddTexture(m_scoringGauge->fillTexture, "gauge_fill.png");
+			loader.AddTexture(m_scoringGauge->frameTexture, "gauge_frame.png");
+			loader.AddTexture(m_scoringGauge->bgTexture, "gauge_bg.png");
+			loader.AddMaterial(m_scoringGauge->fillMaterial, "gauge");
+			m_scoringGauge->barMargin = Margin(36, 34, 33, 34);
+
+			Canvas::Slot* slot = m_canvas->Add(m_scoringGauge.As<GUIElementBase>());
+			slot->anchor = Anchor(0.0f, 0.5f);
+			slot->alignment = Vector2(0.0f, 0.5f);
+			slot->autoSizeX = true;
+			slot->autoSizeY = true;
+		}
+
+		// Setting bar
+		{
+			SettingsBar* sb = new SettingsBar(m_guiStyle);
+			m_settingsBar = Ref<SettingsBar>(sb);
+			sb->AddSetting(&m_camera.zoomBottom, -1.0f, 1.0f, "Bottom Zoom");
+			sb->AddSetting(&m_camera.zoomTop, -1.0f, 1.0f, "Top Zoom");
+			sb->AddSetting(&m_camera.cameraNearBase, 0.01f, 1.0f, "Camera Near Base");
+			sb->AddSetting(&m_camera.cameraNearMult, 0.0f, 2.0f, "Camera Near Mult");
+			sb->AddSetting(&m_camera.cameraHeightBase, 0.01f, 1.0f, "Camera Height Base");
+			sb->AddSetting(&m_camera.cameraHeightMult, 0.0f, 2.0f, "Camera Height Mult");
+			m_settingsBar->SetShow(false);
+
+			Canvas::Slot* settingsSlot = m_canvas->Add(sb->MakeShared());
+			settingsSlot->anchor = Anchor(0.75f, 0.0f, 1.0f, 1.0f);
+			settingsSlot->autoSizeX = false;
+			settingsSlot->autoSizeY = false;
+			settingsSlot->SetZOrder(2);
+		}
+
+		// Score
+		{
+			Panel* scorePanel = new Panel();
+			loader.AddTexture(scorePanel->texture, "scoring_base.png");
+			scorePanel->color = Color::White;
+
+			Canvas::Slot* scoreSlot = m_canvas->Add(scorePanel->MakeShared());
+			scoreSlot->anchor = Anchors::TopsRight;
+			scoreSlot->alignment = Vector2(1.0f, 0.0f);
+			scoreSlot->autoSizeX = true;
+			scoreSlot->autoSizeY = true;
+
+			m_scoreText = Ref<Label>(new Label());
+			m_scoreText->SetFontSize(75);
+			m_scoreText->SetText(L"0");
+			m_scoreText->SetFont(m_fontDivlit);
+			m_scoreText->SetTextOptions(FontRes::Monospace);
+			// Padding for this specific font
+			Margin textPadding = Margin(0, -20, 0, 0);
+
+			Panel::Slot* slot = scorePanel->SetContent(m_scoreText.As<GUIElementBase>());
+			slot->padding = Margin(30, 0, 30, 30) + textPadding;
+			slot->alignment = Vector2(1.0f, 0.5f);
+		}
 
 		return true;
 	}
+
+	// Loads sound effects
+	bool InitSFX()
+	{
+		CheckedLoad(m_slamSample = g_application->LoadSample("laser_slam"));
+		CheckedLoad(m_clickSamples[0] = g_application->LoadSample("click-01"));
+		CheckedLoad(m_clickSamples[1] = g_application->LoadSample("click-02"));
+		return true;
+	}
+	bool InitGameplay()
+	{
+		// Select the correct first object to set the intial playback position
+		// if it starts before a certain time frame, the song starts at a negative time (lead-in)
+		ObjectState *const* firstObj = &m_beatmap->GetLinearObjects().front();
+		while((*firstObj)->type == ObjectType::Event && firstObj != &m_beatmap->GetLinearObjects().back())
+		{
+			firstObj++;
+		}
+		m_lastMapTime = 0;
+		MapTime firstObjectTime = (*firstObj)->time;
+		if(firstObjectTime < 1000)
+		{
+			// Set start time
+			m_lastMapTime = firstObjectTime - 1000;
+			m_audioPlayback.SetPosition(m_lastMapTime);
+		}
+
+		// Load audio offset
+		Variant* offsetSetting = g_mainConfig.Get("offset");
+		if(offsetSetting)
+			m_audioOffset = offsetSetting->ToInt();
+		g_mainConfig.Add("offset", Variant::Create(m_audioOffset));
+
+		// Playback and timing
+		m_playback = BeatmapPlayback(*m_beatmap);
+		m_playback.OnEventChanged.Add(this, &Game_Impl::OnEventChanged);
+		m_playback.OnFXBegin.Add(this, &Game_Impl::OnFXBegin);
+		m_playback.OnFXEnd.Add(this, &Game_Impl::OnFXEnd);
+		if(!m_playback.Reset(m_lastMapTime)) // Initialize
+			return false;
+
+		m_playback.hittableObjectTreshold = Scoring::goodHitTime;
+
+		// Initialize game input
+		m_input.Init(*g_gameWindow);
+
+		m_scoring.SetPlayback(m_playback);
+		m_scoring.SetInput(&m_input);
+		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
+		m_scoring.OnLaserSlamHit.Add(this, &Game_Impl::OnLaserSlamHit);
+		m_scoring.OnButtonHit.Add(this, &Game_Impl::OnButtonHit);
+		m_scoring.OnComboChanged.Add(this, &Game_Impl::OnComboChanged);
+		m_scoring.OnObjectHold.Add(this, &Game_Impl::OnObjectHold);
+		m_scoring.OnObjectReleased.Add(this, &Game_Impl::OnObjectReleased);
+		m_scoring.OnScoreChanged.Add(this, &Game_Impl::OnScoreChanged);
+		m_scoring.Reset(); // Initialize
+
+		return true;
+	}
+	// Processes input and Updates scoring, also handles audio timing management
+	void TickGameplay(float deltaTime)
+	{
+		if(!m_started)
+		{
+			// Start playback of audio in first gameplay tick
+			m_audioPlayback.Play();
+			m_started = true;
+
+			if(g_application->GetAppCommandLine().Contains("-autoskip"))
+			{
+				SkipIntro();
+			}
+		}
+
+		const BeatmapSettings& beatmapSettings = m_beatmap->GetMapSettings();
+
+		// Update beatmap playback
+		MapTime playbackPositionMs = m_audioPlayback.GetPosition() - m_audioOffset;
+		m_playback.Update(playbackPositionMs);
+
+		MapTime delta = playbackPositionMs - m_lastMapTime;
+		int32 beatStart = 0;
+		uint32 numBeats = m_playback.CountBeats(m_lastMapTime, delta, beatStart, 1);
+		if(numBeats > 0)
+		{
+			// Click Track
+			//uint32 beat = beatStart % m_playback.GetCurrentTimingPoint().measure;
+			//if(beat == 0)
+			//{
+			//	m_clickSamples[0]->Play();
+			//}
+			//else
+			//{
+			//	m_clickSamples[1]->Play();
+			//}
+		}
+
+		/// #Scoring
+		// Update music filter states
+		m_audioPlayback.SetLaserFilterInput(m_scoring.GetLaserOutput(), m_scoring.IsLaserHeld(0, false) || m_scoring.IsLaserHeld(1, false));
+		m_audioPlayback.Tick(m_playback, deltaTime);
+
+		// Link FX track to combo counter for now
+		m_audioPlayback.SetFXTrackEnabled(m_scoring.currentComboCounter > 0);
+
+		// Update scoring
+		m_scoring.Tick(deltaTime);
+
+		// Update scoring gauge
+		m_scoringGauge->rate = m_scoring.currentGauge;
+
+		// Get the current timing point
+		m_currentTiming = &m_playback.GetCurrentTimingPoint();
+
+		// Get objects in range
+		MapTime msViewRange = m_playback.BarDistanceToDuration(m_track->viewRange);
+		m_currentObjectSet = m_playback.GetObjectsInRange(msViewRange);
+
+		m_lastMapTime = playbackPositionMs;
+
+		if(m_audioPlayback.HasEnded())
+		{
+			FinishGame();
+		}
+	}
+
+	// Called when game is finished and the score screen should show up
+	void FinishGame()
+	{
+		if(m_ended)
+			return;
+
+		// Transition to score screen
+		TransitionScreen* transition = TransitionScreen::Create(ScoreScreen::Create(this));
+		transition->OnLoadingComplete.Add(this, &Game_Impl::OnScoreScreenLoaded);
+		g_application->AddTickable(transition);
+
+		m_ended = true;
+	}
+	void OnScoreScreenLoaded(IAsyncLoadableApplicationTickable* tickable)
+	{
+		// Remove self
+		g_application->RemoveTickable(this);
+	}
+
 	void RenderParticles(const RenderState& rs, float deltaTime)
 	{
 		// Render particle effects
 		m_particleSystem->Render(rs, deltaTime);
 	}
+	
 	Ref<ParticleEmitter> CreateTrailEmitter(const Color& color)
 	{
 		Ref<ParticleEmitter> emitter = m_particleSystem->AddEmitter();
@@ -397,91 +701,22 @@ public:
 		return emitter;
 	}
 
-	// Initialize HUD elements/layout
-	bool InitHUD()
-	{
-		if(!m_guiRenderer.Init(g_gl, g_gameWindow))
-			return false;
-
-		CheckedLoad(m_fontDivlit = FontRes::Create(g_gl, "fonts/divlit_custom.ttf"));
-
-		m_guiStyle = Ref<CommonGUIStyle>(new CommonGUIStyle(g_application));
-
-		// Gauge
-		{
-			m_canvas = Utility::MakeRef(new Canvas());
-			m_scoringGauge = Utility::MakeRef(new HealthGauge());
-			Canvas::Slot* slot = m_canvas->Add(m_scoringGauge.As<GUIElementBase>());
-			slot->anchor = Anchor(0.95f, 0.5f);
-			slot->alignment = Vector2(1.0f, 0.5f);
-			slot->autoSizeX = true;
-			slot->autoSizeY = true;
-		}
-
-		// Setting bar
-		{
-			SettingsBar* sb = new SettingsBar(m_guiStyle);
-			m_settingsBar = Ref<SettingsBar>(sb);
-			sb->AddSetting(&m_camera.zoomBottom, -1.0f, 1.0f, "Bottom Zoom");
-			sb->AddSetting(&m_camera.zoomTop, -1.0f, 1.0f, "Top Zoom");
-			sb->AddSetting(&m_camera.cameraNearBase, 0.01f, 1.0f, "Camera Near Base");
-			sb->AddSetting(&m_camera.cameraNearMult, 0.0f, 2.0f, "Camera Near Mult");
-			sb->AddSetting(&m_camera.cameraHeightBase, 0.01f, 1.0f, "Camera Height Base");
-			sb->AddSetting(&m_camera.cameraHeightMult, 0.0f, 2.0f, "Camera Height Mult");
-			m_settingsBar->SetShow(false);
-
-			Canvas::Slot* settingsSlot = m_canvas->Add(sb->MakeShared());
-			settingsSlot->anchor = Anchor(0.75f, 0.0f, 1.0f, 1.0f);
-			settingsSlot->autoSizeX = false;
-			settingsSlot->autoSizeY = false;
-			settingsSlot->SetZOrder(2);
-		}
-
-		// Score
-		{
-			Panel* scorePanel = new Panel();
-			scorePanel->texture = g_application->LoadTexture("scoring_base.png");
-			scorePanel->color = Color::White;
-
-			Canvas::Slot* scoreSlot = m_canvas->Add(scorePanel->MakeShared());
-			scoreSlot->anchor = Anchors::TopsRight;
-			scoreSlot->alignment = Vector2(1.0f, 0.0f);
-			scoreSlot->autoSizeX = true;
-			scoreSlot->autoSizeY = true;
-
-			m_scoreText = Ref<Label>(new Label());
-			m_scoreText->SetFontSize(75);
-			m_scoreText->SetText(L"0");
-			m_scoreText->SetFont(m_fontDivlit);
-			m_scoreText->SetTextOptions(FontRes::Monospace);
-			// Padding for this specific font
-			Margin textPadding = Margin(0, -20, 0, 0);
-
-			Panel::Slot* slot = scorePanel->SetContent(m_scoreText.As<GUIElementBase>());
-			slot->padding = Margin(30, 0, 30, 30) + textPadding;
-			slot->alignment = Vector2(1.0f, 0.5f);
-		}
-
-		return true;
-	}
-
 	// Main GUI/HUD Rendering loop
 	virtual void RenderDebugHUD(float deltaTime)
 	{
 		// Render debug overlay elements
-		RenderQueue& debugRq = m_guiRenderer.Begin();
+		RenderQueue& debugRq = g_guiRenderer->Begin();
 		auto RenderText = [&](const String& text, const Vector2& pos, const Color& color = Color::White)
 		{
-			return m_guiRenderer.RenderText(text, pos, color);
+			return g_guiRenderer->RenderText(text, pos, color);
 		};
 
 		const BeatmapSettings& bms = m_beatmap->GetMapSettings();
 		const TimingPoint& tp = m_playback.GetCurrentTimingPoint();
-		Vector2 textPos = Vector2(10, 10);
+		Vector2 textPos = Vector2(10 + (float)m_scoringGauge->frameTexture->GetSize().x, 10);
 		textPos.y += RenderText(bms.title, textPos).y;
 		textPos.y += RenderText(bms.artist, textPos).y;
-		textPos.y += RenderText(Utility::Sprintf("UpdateTime: %.2f FPS", g_application->GetUpdateFPS()), textPos).y;
-		textPos.y += RenderText(Utility::Sprintf("RenderTime: %.2f FPS", g_application->GetRenderFPS()), textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("%.2f FPS", g_application->GetRenderFPS()), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Audio Offset: %d ms", g_audio->audioLatency), textPos).y;
 
 		float currentBPM = (float)(60000.0 / tp.beatDuration);
@@ -540,19 +775,7 @@ public:
 			textPos.y += RenderText(text, textPos, c).y;
 		}
 
-		m_guiRenderer.End();
-	}
-	virtual void RenderHUD(float deltaTime)
-	{
-		// Render main canvas
-		Rect viewport(Vector2(), g_gameWindow->GetWindowSize());
-		m_guiRenderer.Render(deltaTime, viewport, m_canvas.As<GUIElementBase>());
-
-		// Render debug hud if enabled
-		if(m_renderDebugHUD)
-		{
-			RenderDebugHUD(deltaTime);
-		}
+		g_guiRenderer->End();
 	}
 
 	void OnLaserSlamHit(LaserObjectState* object)
@@ -584,7 +807,7 @@ public:
 			Color hitColor = (buttonIdx < 4) ? Color::White : Color::FromHSV(20, 0.7f, 1.0f);
 			float hitWidth = (buttonIdx < 4) ? m_track->buttonWidth : m_track->fxbuttonWidth;
 			Ref<ParticleEmitter> emitter = CreateHitEmitter(hitColor, hitWidth);
-			emitter->position.x = GetButtonPlacement(buttonIdx);
+			emitter->position.x = m_track->GetButtonPlacement(buttonIdx);
 			emitter->position.z = -0.05f;
 			emitter->position.y = 0.0f;
 		}
@@ -604,7 +827,7 @@ public:
 		// Update score text
 		if(m_scoreText)
 		{
-			m_scoreText->SetText(Utility::WSprintf(L"%d", newScore));
+			m_scoreText->SetText(Utility::WSprintf(L"%07d", newScore));
 		}
 	}
 
@@ -672,129 +895,38 @@ public:
 		m_audioPlayback.ClearEffect(object->index - 4);
 	}
 
-	// Loads sound effects
-	bool InitSFX()
+	virtual void OnKeyPressed(Key key) override
 	{
-		CheckedLoad(m_slamSample = g_application->LoadSample("laser_slam"));
-		CheckedLoad(m_clickSamples[0] = g_application->LoadSample("click-01"));
-		CheckedLoad(m_clickSamples[1] = g_application->LoadSample("click-02"));
-		return true;
+		if(key == Key::Pause)
+		{
+			m_audioPlayback.TogglePause();
+		}
+		else if(key == Key::Return) // Skip intro
+		{
+			if(!SkipIntro())
+				SkipOutro();
+		}
+		else if(key == Key::PageUp)
+		{
+			m_audioPlayback.Advance(5000);
+		}
+		else if(key == Key::Escape)
+		{
+			FinishGame();
+		}
+		else if(key == Key::F5) // Restart map
+		{
+			// Restart
+			Restart();
+		}
+		else if(key == Key::Tab)
+		{
+			m_settingsBar->SetShow(!m_settingsBar->IsShown());
+		}
 	}
-	bool InitGameplay()
-	{
-		// Select the correct first object to set the intial playback position
-		// if it starts before a certain time frame, the song starts at a negative time (lead-in)
-		ObjectState *const* firstObj = &m_beatmap->GetLinearObjects().front();
-		while((*firstObj)->type == ObjectType::Event && firstObj != &m_beatmap->GetLinearObjects().back())
-		{
-			firstObj++;
-		}
-		MapTime firstObjectTime = (*firstObj)->time;
-		if(firstObjectTime < 1000)
-		{
-			// Set start time
-			m_lastMapTime = firstObjectTime - 1000;
-			m_audioPlayback.SetPosition(m_lastMapTime);
-		}
 
-		// Load audio offset
-		Variant* offsetSetting = g_mainConfig.Get("offset");
-		if(offsetSetting)
-            m_audioOffset = offsetSetting->ToInt();
-        g_mainConfig.Add("offset", Variant::Create(m_audioOffset));
-
-		// Playback and timing
-		m_playback = BeatmapPlayback(*m_beatmap);
-		m_playback.OnEventChanged.Add(this, &Game_Impl::OnEventChanged);
-		m_playback.OnFXBegin.Add(this, &Game_Impl::OnFXBegin);
-		m_playback.OnFXEnd.Add(this, &Game_Impl::OnFXEnd);
-		if(!m_playback.Reset(m_lastMapTime)) // Initialize
-			return false;
-
-		m_playback.hittableObjectTreshold = Scoring::goodHitTime;
-
-		// Initialize game input
-		m_input.Init(*g_gameWindow);
-
-		m_scoring.SetPlayback(m_playback);
-		m_scoring.SetInput(&m_input);
-		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
-		m_scoring.OnLaserSlamHit.Add(this, &Game_Impl::OnLaserSlamHit);
-		m_scoring.OnButtonHit.Add(this, &Game_Impl::OnButtonHit);
-		m_scoring.OnComboChanged.Add(this, &Game_Impl::OnComboChanged);
-		m_scoring.OnObjectHold.Add(this, &Game_Impl::OnObjectHold);
-		m_scoring.OnObjectReleased.Add(this, &Game_Impl::OnObjectReleased);
-		m_scoring.OnScoreChanged.Add(this, &Game_Impl::OnScoreChanged);
-		m_scoring.Reset(); // Initialize
-
-		return true;
-	}
-	// Processes input and Updates scoring, also handles audio timing management
-	void TickGameplay(float deltaTime)
-	{
-		if(!m_started)
-		{
-			// Start playback of audio in first gameplay tick
-			m_audioPlayback.Play();
-			m_started = true;
-
-			if(g_application->GetAppCommandLine().Contains("-autoskip"))
-			{
-				SkipIntro();
-			}
-
-			// Disable framerate limiting while playing
-			g_application->SetFrameLimiter(-1);
-		}
-
-		const BeatmapSettings& beatmapSettings = m_beatmap->GetMapSettings();
-
-		// Update beatmap playback
-		MapTime playbackPositionMs = m_audioPlayback.GetPosition() - m_audioOffset;
-		m_playback.Update(playbackPositionMs);
-
-		MapTime delta = playbackPositionMs - m_lastMapTime;
-		int32 beatStart = 0;
-		uint32 numBeats = m_playback.CountBeats(m_lastMapTime, delta, beatStart, 1);
-		if(numBeats > 0)
-		{
-			// Click Track
-			//uint32 beat = beatStart % m_playback.GetCurrentTimingPoint().measure;
-			//if(beat == 0)
-			//{
-			//	m_clickSamples[0]->Play();
-			//}
-			//else
-			//{
-			//	m_clickSamples[1]->Play();
-			//}
-		}
-
-		/// #Scoring
-		// Update music filter states
-		m_audioPlayback.SetLaserFilterInput(m_scoring.GetLaserOutput(), m_scoring.IsLaserHeld(0, false) || m_scoring.IsLaserHeld(1, false));
-		m_audioPlayback.Tick(m_playback, deltaTime);
-
-		// Link FX track to combo counter for now
-		m_audioPlayback.SetFXTrackEnabled(m_scoring.currentComboCounter > 0);
-
-		// Update scoring
-		m_scoring.Tick(deltaTime);
-
-		// Update scoring gauge
-		m_scoringGauge->rate = m_scoring.currentGauge;
-
-		// Get the current timing point
-		m_currentTiming = &m_playback.GetCurrentTimingPoint();
-
-		// Get objects in range
-		MapTime msViewRange = m_playback.BarDistanceToDuration(m_track->viewRange);
-		m_currentObjectSet = m_playback.GetObjectsInRange(msViewRange);
-
-		m_lastMapTime = playbackPositionMs;
-	}
-	// SKips ahead to the right before the first object in the map
-	void SkipIntro()
+	// Skips ahead to the right before the first object in the map
+	bool SkipIntro()
 	{
 		ObjectState *const* firstObj = &m_beatmap->GetLinearObjects().front();
 		while((*firstObj)->type == ObjectType::Event && firstObj != &m_beatmap->GetLinearObjects().back())
@@ -805,53 +937,52 @@ public:
 		if(skipTime > m_lastMapTime)
 		{
 			m_audioPlayback.SetPosition(skipTime);
+			return true;
+		}
+		return false;
+	}
+	// Skips ahead at the end to the score screen
+	void SkipOutro()
+	{
+		// Just to be sure
+		if(m_beatmap->GetLinearObjects().empty())
+		{
+			FinishGame();
+			return;
+		}
+
+		// Check if last object has passed
+		ObjectState *const* lastObj = &m_beatmap->GetLinearObjects().back();
+		MapTime timePastEnd = m_lastMapTime - (*lastObj)->time;
+		if(timePastEnd > 250)
+		{
+			FinishGame();
 		}
 	}
+
 	virtual bool IsPlaying() const override
 	{
 		return m_playing;
 	}
 
-	virtual void OnKeyPressed(Key key) override
+	virtual bool GetTickRate(int32& rate) override
 	{
-		if(key == Key::Pause)
+		if(!m_audioPlayback.IsPaused())
 		{
-			m_audioPlayback.TogglePause();
-			if(m_audioPlayback.IsPaused())
-			{
-				g_application->SetFrameLimiter(60);
-			}
-			else
-			{
-				g_application->SetFrameLimiter(-1);
-			}
+			rate = 0; // Unlimited frames while playing
+			return true;
 		}
-		else if(key == Key::Return) // Skip intro
-		{
-			SkipIntro();
-		}
-		else if(key == Key::PageUp)
-		{
-			m_audioPlayback.Advance(5000);
-		}
-		else if(key == Key::Escape)
-		{
-			g_application->CleanupGame();
-		}
-		else if(key == Key::F5) // Restart map
-		{
-			g_application->CleanupGame();
-			if(!g_application->LaunchMap(g_application->GetCurrentMapPath()))
-			{
-				g_application->Shutdown();
-			}
-		}
-		else if(key == Key::Tab)
-		{
-			m_settingsBar->SetShow(!m_settingsBar->IsShown());
-		}
+		return false; // Default otherwise
 	}
 
+	virtual Texture GetJacketImage() override
+	{
+		return m_jacketTexture;
+	}
+	virtual Ref<Beatmap> GetBeatmap() override
+	{
+		return m_beatmap;
+	}
 	virtual class Track& GetTrack() override
 	{
 		return *m_track;
@@ -871,14 +1002,8 @@ public:
 
 };
 
-Game* Game::Create(Beatmap* map, String mapPath)
+Game* Game::Create(const String& mapPath)
 {
-	Game_Impl* impl = new Game_Impl();
-	if(!impl->Init(map, mapPath))
-	{
-		Log("Game initialization failed", Logger::Error);
-		delete impl;
-		return nullptr;
-	}
+	Game_Impl* impl = new Game_Impl(mapPath);
 	return impl;
 }

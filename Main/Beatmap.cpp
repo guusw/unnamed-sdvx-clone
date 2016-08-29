@@ -222,6 +222,13 @@ TObjectState<ObjectTypeData_Laser>* ObjectTypeData_Laser::GetRoot()
 		ptr = ptr->prev;
 	return ptr;
 }
+TObjectState<ObjectTypeData_Laser>* ObjectTypeData_Laser::GetTail()
+{
+	TObjectState<ObjectTypeData_Laser>* ptr = (TObjectState<ObjectTypeData_Laser>*)this;
+	while(ptr->next)
+		ptr = ptr->next;
+	return ptr;
+}
 float ObjectTypeData_Laser::GetDirection() const
 {
 	return Math::Sign(points[1] - points[0]);

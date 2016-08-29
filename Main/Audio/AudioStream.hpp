@@ -15,6 +15,8 @@ public:
 	virtual void Play() = 0;
 	virtual void Pause() = 0;
 
+	virtual bool HasEnded() const = 0;
+
 	// Gets the playback position in millisecond
 	virtual int32 GetPosition() const = 0;
 	// Sets the playback position in milliseconds

@@ -5,6 +5,7 @@
 #include "LaserTrackBuilder.hpp"
 #include "BeatmapPlayback.hpp"
 #include "BeatmapObjects.hpp"
+#include "AsyncAssetLoader.hpp"
 
 const float Track::trackWidth = 1.0f;
 const float Track::trackLength = 6.0f;
@@ -16,6 +17,9 @@ const float Track::viewRange = .7f;
 
 Track::~Track()
 {
+	if(loader)
+		delete loader;
+
 	for(uint32 i = 0; i < 2; i++)
 	{
 		if(m_laserTrackBuilder[i])
@@ -26,8 +30,10 @@ Track::~Track()
 		delete *it;
 	}
 }
-bool Track::Init()
+bool Track::AsyncLoad()
 {
+	loader = new AsyncAssetLoader();
+
 	// Load laser colors
 	Image laserColorPalette;
 	CheckedLoad(laserColorPalette = ImageRes::Create("textures/lasercolors.png"));
@@ -43,71 +49,83 @@ bool Track::Init()
 		hitColors[i] = hitColorPalette->GetBits()[i];
 
 	// mip-mapped and anisotropicaly filtered track textures
-	CheckedLoad(trackTexture = g_application->LoadTexture("track.png"));
+	loader->AddTexture(trackTexture, "track.png");
+	loader->AddTexture(trackTickTexture, "tick.png");
+
+	// Scoring texture
+	loader->AddTexture(scoreBarTexture, "scorebar.png");
+	loader->AddTexture(scoreHitTexture, "scorehit.png");
+
+	loader->AddTexture(laserPointerTexture, "pointer.png"); 
+
+	for(uint32 i = 0; i < 3; i++)
+	{
+		loader->AddTexture(scoreHitTextures[i], Utility::Sprintf("score%d.png", i));
+	}
+
+	// Load Button object
+	loader->AddTexture(buttonTexture, "button.png");
+	loader->AddTexture(buttonHoldTexture, "buttonhold.png");
+
+	// Load FX object
+	loader->AddTexture(fxbuttonTexture, "fxbutton.png");
+	loader->AddTexture(fxbuttonHoldTexture, "fxbuttonhold.png");
+
+	// Load Laser object
+	loader->AddTexture(laserTexture, "laser.png");
+
+	// Entry and exit textures for laser
+	loader->AddTexture(laserTailTextures[0], "laser_entry.png");
+	loader->AddTexture(laserTailTextures[1], "laser_exit.png");
+
+	loader->AddTexture(comboSpriteSheet, "combo.png");
+
+	// Track materials
+	loader->AddMaterial(trackMaterial, "track");
+	loader->AddMaterial(spriteMaterial, "sprite"); // General purpose material
+	loader->AddMaterial(holdButtonMaterial, "holdbutton");
+	loader->AddMaterial(laserMaterial, "laser");
+	loader->AddMaterial(trackOverlay, "overlay");
+
+	return loader->Load();
+}
+bool Track::AsyncFinalize()
+{
+	// Finalizer loading textures/material/etc.
+	bool success = loader->Finalize();
+	delete loader;
+	loader = nullptr;
+
+	// Set Texture states
 	trackTexture->SetMipmaps(false);
 	trackTexture->SetFilter(true, true, 16.0f);
-	CheckedLoad(trackTickTexture = g_application->LoadTexture("tick.png"));
 	trackTickTexture->SetMipmaps(true);
 	trackTickTexture->SetFilter(true, true, 16.0f);
 	trackTickTexture->SetWrap(TextureWrap::Repeat, TextureWrap::Clamp);
 	trackTickLength = trackTickTexture->CalculateHeight(buttonTrackWidth);
-
-	// Material used for buttons, lines and other simple track elements
-	CheckedLoad(trackMaterial = g_application->LoadMaterial("track"));
-	trackMaterial->opaque = false;
-
-	// Generate simple planes for the playfield track and elements
-	trackMesh = MeshGenerators::Quad(g_gl, Vector2(-trackWidth * 0.5f, 0.0f), Vector2(trackWidth, trackLength));
-	trackTickMesh = MeshGenerators::Quad(g_gl, Vector2(-buttonTrackWidth * 0.5f, 0.0f), Vector2(buttonTrackWidth, trackTickLength));
-	centeredTrackMesh = MeshGenerators::Quad(g_gl, Vector2(-0.5f, -0.5f), Vector2(1.0f, 1.0f));
-
-	// Scoring texture
-	CheckedLoad(scoreBarTexture = g_application->LoadTexture("scorebar.png"));
-	CheckedLoad(scoreHitTexture = g_application->LoadTexture("scorehit.png"));
 	scoreHitTexture->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
-	CheckedLoad(laserPointerTexture = g_application->LoadTexture("pointer.png"));
 
-	for(uint32 i = 0; i < 3; i++)
-	{
-		CheckedLoad(scoreHitTextures[i] = g_application->LoadTexture(Utility::Sprintf("score%d.png", i)));
-	}
-
-	// Sprite material
-	CheckedLoad(spriteMaterial = g_application->LoadMaterial("sprite"));
-	spriteMaterial->opaque = false;
-
-	// Load Button object
-	CheckedLoad(buttonTexture = g_application->LoadTexture("button.png"));
 	buttonTexture->SetMipmaps(true);
 	buttonTexture->SetFilter(true, true, 16.0f);
-	CheckedLoad(buttonHoldTexture = g_application->LoadTexture("buttonhold.png"));
 	buttonHoldTexture->SetMipmaps(true);
 	buttonHoldTexture->SetFilter(true, true, 16.0f);
 	buttonLength = buttonTexture->CalculateHeight(buttonWidth);
 	buttonMesh = MeshGenerators::Quad(g_gl, Vector2(0.0f, 0.0f), Vector2(buttonWidth, buttonLength));
 
-	// Load FX object
-	CheckedLoad(fxbuttonTexture = g_application->LoadTexture("fxbutton.png"));
 	fxbuttonTexture->SetMipmaps(true);
 	fxbuttonTexture->SetFilter(true, true, 16.0f);
-	CheckedLoad(fxbuttonHoldTexture = g_application->LoadTexture("fxbuttonhold.png"));
 	fxbuttonHoldTexture->SetMipmaps(true);
 	fxbuttonHoldTexture->SetFilter(true, true, 16.0f);
 	fxbuttonLength = fxbuttonTexture->CalculateHeight(fxbuttonWidth);
 	fxbuttonMesh = MeshGenerators::Quad(g_gl, Vector2(0.0f, 0.0f), Vector2(fxbuttonWidth, fxbuttonLength));
 
-	CheckedLoad(holdButtonMaterial = g_application->LoadMaterial("holdbutton"));
 	holdButtonMaterial->opaque = false;
 	holdButtonMaterial->blendMode = MaterialBlendMode::Additive;
 
-	// Load Laser object
-	CheckedLoad(laserTexture = g_application->LoadTexture("laser.png"));
 	laserTexture->SetMipmaps(true);
 	laserTexture->SetFilter(true, true, 16.0f);
 	laserTexture->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
 
-	CheckedLoad(laserTailTextures[0] = g_application->LoadTexture("laser_entry.png"));
-	CheckedLoad(laserTailTextures[1] = g_application->LoadTexture("laser_exit.png"));
 	for(uint32 i = 0; i < 2; i++)
 	{
 		laserTailTextures[i]->SetMipmaps(true);
@@ -115,16 +133,18 @@ bool Track::Init()
 		laserTailTextures[i]->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
 	}
 
+	// Track and sprite material (all transparent)
+	trackMaterial->opaque = false;
+	spriteMaterial->opaque = false;
+
 	// Laser object material, allows coloring and sampling laser edge texture
-	CheckedLoad(laserMaterial = g_application->LoadMaterial("laser"));
 	laserMaterial->blendMode = MaterialBlendMode::Additive;
 	laserMaterial->opaque = false;
 
 	// Overlay shader
-	CheckedLoad(trackOverlay = g_application->LoadMaterial("overlay"));
 	trackOverlay->opaque = false;
 
-	CheckedLoad(comboSpriteSheet = g_application->LoadTexture("combo.png"));
+	// Combo number meshes for the combo sprite sheet
 	Vector2i comboFontSize = comboSpriteSheet->GetSize();
 	Vector2i comboFontSizePerCharacter = comboFontSize / Vector2i(10, 1);
 	Vector2 comboFontTexCoordSize = Vector2(1.0f / 10.0f, 1.0f);
@@ -151,7 +171,12 @@ bool Track::Init()
 		m_laserTrackBuilder[i]->Reset(); // Also initializes the track builder
 	}
 
-	return true;
+	// Generate simple planes for the playfield track and elements
+	trackMesh = MeshGenerators::Quad(g_gl, Vector2(-trackWidth * 0.5f, 0.0f), Vector2(trackWidth, trackLength));
+	trackTickMesh = MeshGenerators::Quad(g_gl, Vector2(-buttonTrackWidth * 0.5f, 0.0f), Vector2(buttonTrackWidth, trackTickLength));
+	centeredTrackMesh = MeshGenerators::Quad(g_gl, Vector2(-0.5f, -0.5f), Vector2(1.0f, 1.0f));
+
+	return success;
 }
 void Track::Tick(class BeatmapPlayback& playback, float deltaTime)
 {
@@ -400,5 +425,21 @@ TimedEffect* Track::AddEffect(TimedEffect* effect)
 	m_hitEffects.Add(effect);
 	effect->track = this;
 	return effect;
+}
+void Track::ClearEffects()
+{
+	for(auto it = m_hitEffects.begin(); it != m_hitEffects.end(); it++)
+	{
+		delete *it;
+	}
+	m_hitEffects.clear();
+}
+
+float Track::GetButtonPlacement(uint32 buttonIdx)
+{
+	if(buttonIdx < 4)
+		return buttonIdx * buttonWidth - (buttonWidth * 1.5f);
+	else
+		return (buttonIdx - 4) * fxbuttonWidth - (fxbuttonWidth * 0.5f);
 }
 

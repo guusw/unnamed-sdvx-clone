@@ -13,6 +13,7 @@
 #include "Framebuffer.hpp"
 #include "ParticleSystem.hpp"
 #include "Window.hpp"
+#include <Shared/Thread.hpp>
 
 namespace Graphics
 {
@@ -20,6 +21,7 @@ namespace Graphics
 	{
 	public:
 		SDL_GLContext context;
+		std::thread::id threadId;
 	};
 
 	OpenGL::OpenGL()
@@ -63,6 +65,9 @@ namespace Graphics
 	{
 		if(m_impl->context)
 			return true; // Already initialized
+
+		// Store the thread ID that the OpenGL context runs on
+		m_impl->threadId = std::this_thread::get_id();
 
 		m_window = &window;
 		SDL_Window* sdlWnd = (SDL_Window*)m_window->Handle();
@@ -138,6 +143,11 @@ namespace Graphics
 	void OpenGL::SetViewport(Vector2i size)
 	{
 		glViewport(0, 0, size.x, size.y);
+	}
+
+	bool OpenGL::IsOpenGLThread() const
+	{
+		return m_impl->threadId == std::this_thread::get_id();
 	}
 
 	void OpenGL::SwapBuffers()

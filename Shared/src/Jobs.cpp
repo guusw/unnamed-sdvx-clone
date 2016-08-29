@@ -222,6 +222,7 @@ void JobBase::Terminate()
 		{
 			sheduler->m_jobQueue.erase(it);
 			m_sheduler = nullptr;
+			m_sheduler->m_lock.unlock();
 			return; // Ok
 		}
 	}
@@ -233,7 +234,7 @@ void JobBase::Terminate()
 		if(t->activeJob == this)
 		{
 			// Wait for job to complete
-			while(t->activeJob != this)
+			while(t->activeJob == this)
 			{
 				std::this_thread::yield();
 			}
@@ -248,6 +249,7 @@ void JobBase::Terminate()
 		if(*it == this)
 		{
 			m_sheduler->m_finishedJobs.erase(--(it.base()));
+			m_sheduler->m_lock.unlock();
 			return;
 		}
 	}

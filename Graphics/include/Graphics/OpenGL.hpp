@@ -38,6 +38,9 @@ namespace Graphics
 		void SetViewport(Vector2i size);
 		void SetViewport(Recti vp);
 
+		// Check if the calling thread is the thread that runs this OpenGL context
+		bool IsOpenGLThread() const;
+
 		virtual void SwapBuffers();
 	};
 }

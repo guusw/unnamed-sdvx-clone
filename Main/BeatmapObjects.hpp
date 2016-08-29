@@ -122,6 +122,8 @@ struct ObjectTypeData_Laser
 {
 	// Retrieves the starting laser point
 	TObjectState<ObjectTypeData_Laser>* GetRoot();
+	// Ending point of laser
+	TObjectState<ObjectTypeData_Laser>* GetTail();
 	float GetDirection() const;
 	float SamplePosition(MapTime time) const;
 

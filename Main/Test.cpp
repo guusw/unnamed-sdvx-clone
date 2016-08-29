@@ -16,13 +16,11 @@
 #include "GUI/Spinner.hpp"
 #include "HealthGauge.hpp"
 #include "Shared/Jobs.hpp"
+#include "ScoreScreen.hpp"
 
 class Test_Impl : public Test
 {
 private:
-	Ref<Canvas> m_canvas;
-	GUIRenderer m_guiRenderer;
-
 	Ref<CommonGUIStyle> m_guiStyle;
 	Ref<SettingsBar> m_settings;
 
@@ -34,20 +32,21 @@ private:
 	float d = 0.0f; // -2 - 2
 
 public:
+	bool Init0()
+	{
+		
+
+		return true;
+	}
 	bool Init()
 	{
-		if(!m_guiRenderer.Init(g_gl, g_gameWindow))
-			return false;
-
-		m_guiStyle = Ref<CommonGUIStyle>(new CommonGUIStyle(g_application));
-		
-		m_canvas = Utility::MakeRef(new Canvas());
+		m_guiStyle = CommonGUIStyle::Get();
 
 		{
 			ScrollBox* box0 = new ScrollBox(m_guiStyle);
-			Canvas::Slot* slot = m_canvas->Add(box0->MakeShared());
+			Canvas::Slot* slot = g_rootCanvas->Add(box0->MakeShared());
 			slot->anchor = Anchor(0.0f, 0.0f);
-			slot->offset = Rect(Vector2(10.0f, 10.0f), Vector2(500,500.0f));
+			slot->offset = Rect(Vector2(10.0f, 10.0f), Vector2(500, 500.0f));
 			slot->autoSizeX = false;
 			slot->autoSizeY = false;
 
@@ -137,22 +136,21 @@ public:
 			sb->AddSetting(&c, 0.0f, 5.0f, "C");
 			sb->AddSetting(&d, -2.0f, 2.0f, "D");
 
-			Canvas::Slot* slot = m_canvas->Add(sb->MakeShared());
+			Canvas::Slot* slot = g_rootCanvas->Add(sb->MakeShared());
 			slot->anchor = Anchor(0.75f, 0.0f, 1.0f, 1.0f);
 			slot->autoSizeX = false;
 			slot->autoSizeY = false;
 		}
-		
+
 		// Spinner
 		{
 			Spinner* spinner = new Spinner(m_guiStyle);
-			Canvas::Slot* slot = m_canvas->Add(spinner->MakeShared());
+			Canvas::Slot* slot = g_rootCanvas->Add(spinner->MakeShared());
 			slot->anchor = Anchor(0.9f, 0.9f);
 			slot->autoSizeX = true;
 			slot->autoSizeY = true;
 			slot->alignment = Vector2(1.0f, 1.0f);
 		}
-
 		return true;
 	}
 	~Test_Impl()
@@ -170,10 +168,6 @@ public:
 	}
 	virtual void Render(float deltaTime) override
 	{
-		glClearColor(0, 0, 0, 0);
-		glClear(GL_COLOR_BUFFER_BIT);
-		Rect viewport(Vector2(), g_gameWindow->GetWindowSize());
-		m_guiRenderer.Render(deltaTime, viewport, m_canvas.As<GUIElementBase>());
 	}
 	virtual void Tick(float deltaTime) override
 	{
@@ -183,10 +177,5 @@ public:
 Test* Test::Create()
 {
 	Test_Impl* impl = new Test_Impl();
-	if(!impl->Init())
-	{
-		delete impl;
-		return nullptr;
-	}
 	return impl;
 }

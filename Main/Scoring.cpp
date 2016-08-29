@@ -61,6 +61,8 @@ void Scoring::Reset()
 	laserPositions[0] = 0.0f;
 	laserPositions[1] = 1.0f;
 
+	memset(categorizedHits, 0, sizeof(categorizedHits));
+
 	// Clear hit statistics
 	hitStats.clear();
 
@@ -70,6 +72,10 @@ void Scoring::Reset()
 	// Recalculate gauge gain
 	criticalGaugeGain = 3.5f / totalMaxScore;
 	currentGauge = 0.0f;
+
+	m_heldObjects.clear();
+	memset(m_holdObjects, 0, sizeof(m_holdObjects));
+	memset(m_currentLaserSegments, 0, sizeof(m_currentLaserSegments));
 
 	m_CleanupHitStats();
 	m_CleanupTicks();
@@ -518,10 +524,14 @@ void Scoring::m_TickHit(ScoreTick* tick, uint32 index, MapTime delta /*= 0*/)
 		stat->rating = tick->GetHitRatingFromDelta(delta);
 		OnButtonHit.Call((Input::Button)index, stat->rating, tick->object);
 		m_AddScore((uint32)stat->rating);
+
+		categorizedHits[(uint32)stat->rating]++;
 	}
 	else if(tick->HasFlag(TickFlags::Hold))
 	{
-		m_SetHoldObject(tick->object, index);
+		HoldObjectState* hold = (HoldObjectState*)tick->object;
+		if(hold->time + hold->duration > m_playback->GetLastTime()) // Only set active hold object if object hasn't passed yet
+			m_SetHoldObject(tick->object, index);
 
 		stat->rating = ScoreHitRating::Perfect;
 		stat->hold++;
@@ -539,7 +549,14 @@ void Scoring::m_TickHit(ScoreTick* tick, uint32 index, MapTime delta /*= 0*/)
 			laserTargetPositions[object->index] = object->points[1];
 			laserPositions[object->index] = object->points[1];
 		}
-		m_SetHoldObject(*rootObject, index);
+		if(m_holdObjects[object->index + 6] != *rootObject)
+		{
+			// Only set active hold object if object hasn't passed yet
+			LaserObjectState* endObject = ((LaserObjectState*)tick->object)->GetTail();
+			if(endObject->time + endObject->duration > m_playback->GetLastTime())
+				m_SetHoldObject(*rootObject, index);
+		}
+
 		m_AddScore(2);
 
 		stat->rating = ScoreHitRating::Perfect;
@@ -557,6 +574,8 @@ void Scoring::m_TickMiss(ScoreTick* tick, uint32 index, MapTime delta)
 		stat->rating = ScoreHitRating::Miss;
 		stat->delta = delta;
 		currentGauge -= 0.02f;
+
+		categorizedHits[0]++;
 	}
 	else if(tick->HasFlag(TickFlags::Hold))
 	{
@@ -635,9 +654,6 @@ void Scoring::m_ReleaseHoldObject(ObjectState* obj)
 				return;
 			}
 		}
-
-		// Should never get here
-		assert(false);
 	}
 }
 void Scoring::m_ReleaseHoldObject(uint32 index)

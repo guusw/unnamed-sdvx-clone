@@ -15,14 +15,6 @@ void Panel::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 {
 	m_TickAnimations(rd.deltaTime);
 
-	Rect imageSize = rd.area;
-	if(texture)
-	{
-		imageSize = GUISlotBase::ApplyFill(imageFillMode, texture->GetSize(), rd.area);
-		imageSize = GUISlotBase::ApplyAlignment(imageAlignment, imageSize, rd.area);
-	}
-	rd.guiRenderer->RenderRect(imageSize, color, texture);
-
 	if(m_content)
 	{
 		m_content->PreRender(rd, inputElement);
@@ -33,6 +25,14 @@ void Panel::Render(GUIRenderData rd)
 {
 	if(visibility != Visibility::Visible)
 		return;
+
+	Rect imageSize = rd.area;
+	if(texture)
+	{
+		imageSize = GUISlotBase::ApplyFill(imageFillMode, texture->GetSize(), rd.area);
+		imageSize = GUISlotBase::ApplyAlignment(imageAlignment, imageSize, rd.area);
+	}
+	rd.guiRenderer->RenderRect(imageSize, color, texture);
 
 	if(m_content)
 	{

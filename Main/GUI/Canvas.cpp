@@ -51,6 +51,7 @@ void Canvas::Remove(GUIElement element)
 	{
 		if((*it)->element == element)
 		{
+			delete *it;
 			it = m_children.erase(it);
 			return;
 		}

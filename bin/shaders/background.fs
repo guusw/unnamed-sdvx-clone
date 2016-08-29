@@ -28,4 +28,5 @@ void main()
 	
 	// Intensity fade towards bottom
 	target.xyz *= vec3(1.0-0.7 * (texVp.y/viewport.y)) * 0.3;
+	target.a = 1;
 }

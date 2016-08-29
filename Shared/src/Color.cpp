@@ -11,6 +11,9 @@ Color::Color(float r, float g, float b) : Color(r,g,b,1.0f)
 {
 }
 
+Color::Color(float all) : Color(all, all, all, 1.0f)
+{
+}
 Colori Color::ToRGBA8() const
 {
 	return Colori(*this * 255.0f);

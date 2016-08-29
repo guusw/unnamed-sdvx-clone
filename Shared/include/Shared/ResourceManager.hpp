@@ -5,6 +5,7 @@
 #include "Shared/TypeInfo.hpp"
 #include "Shared/Unique.hpp"
 #include "Shared/Log.hpp"
+#include "Shared/Thread.hpp"
 
 class IResourceManager
 {
@@ -25,6 +26,7 @@ class ResourceManager : public IResourceManager, Unique
 {
 	// List of managed object
 	Vector<Ref<T>> m_objects;
+	Mutex m_lock;
 public:
 	ResourceManager()
 	{
@@ -37,12 +39,15 @@ public:
 	const Ref<T> Register(T* pObject)
 	{
 		Ref<T> ret = Utility::MakeRef(pObject);
+		m_lock.lock();
 		m_objects.push_back(ret);
+		m_lock.unlock();
 		return ret;
 	}
 	virtual void GarbageCollect() override
 	{
 		size_t numCleanedUp = 0;
+		m_lock.lock();
 		for(auto it = m_objects.begin(); it != m_objects.end();)
 		{
 			if(it->GetRefCount() <= 1)
@@ -53,6 +58,7 @@ public:
 			}
 			it++;
 		}
+		m_lock.unlock();
 		if(numCleanedUp > 0)
 		{
 			//Logf("Cleaned up %d resource(s) of %s", Logger::Info, numCleanedUp, Utility::TypeInfo<T>::name);
@@ -60,6 +66,7 @@ public:
 	}
 	virtual void ReleaseAll()
 	{
+		m_lock.lock();
 		size_t numCleanedUp = m_objects.size();
 		for(auto it = m_objects.begin(); it != m_objects.end(); it++)
 		{
@@ -67,6 +74,7 @@ public:
 				it->Destroy();
 		}
 		m_objects.clear();
+		m_lock.unlock();
 		if(numCleanedUp > 0)
 		{
 			Logf("Cleaned up %d resource(s) of %s", Logger::Info, numCleanedUp, Utility::TypeInfo<T>::name);

@@ -1,10 +1,11 @@
 #pragma once
 #include "Scoring.hpp"
+#include "AsyncLoadable.hpp"
 
 /*
 	The object responsible for drawing the track.
 */
-class Track : Unique
+class Track : Unique, public IAsyncLoadable
 {
 public:
 	// Size constants of various elements
@@ -32,9 +33,12 @@ public:
 	// 3 = Idle
 	Color hitColors[4] = {};
 
+	class AsyncAssetLoader* loader = nullptr;
+
 public:
 	~Track();
-	bool Init();
+	virtual bool AsyncLoad() override;
+	virtual bool AsyncFinalize() override;
 	void Tick(class BeatmapPlayback& playback, float deltaTime);
 
 	// Just the board with tick lines
@@ -51,6 +55,10 @@ public:
 
 	// Adds a sprite effect to the track
 	struct TimedEffect* AddEffect(struct TimedEffect* effect);
+	void ClearEffects();
+
+	// Normal/FX button X-axis placement
+	float GetButtonPlacement(uint32 buttonIdx);
 
 	// Laser positions, as shown on the overlay
 	float laserPositions[2];

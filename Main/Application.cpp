@@ -10,6 +10,10 @@
 #include "Shared/Jobs.hpp"
 #include "Profiling.hpp"
 #include "Scoring.hpp"
+#include "GUIRenderer.hpp"
+#include "GUI/Canvas.hpp"
+#include "GUI/CommonGUIStyle.hpp"
+#include "TransitionScreen.hpp"
 
 Config g_mainConfig;
 OpenGL* g_gl = nullptr;
@@ -17,10 +21,26 @@ Graphics::Window* g_gameWindow = nullptr;
 Application* g_application = nullptr;
 JobSheduler* g_jobSheduler = nullptr;
 
-Game* g_game = nullptr;
+GUIRenderer* g_guiRenderer = nullptr;
+Ref<Canvas> g_rootCanvas;
 
 // Tickable queue
 static Vector<IApplicationTickable*> g_tickables;
+
+struct TickableChange
+{
+	enum Mode
+	{
+		Added,
+		Removed,
+	};
+	Mode mode;
+	IApplicationTickable* tickable;
+	IApplicationTickable* insertBefore;
+};
+// List of changes applied to the collection of tickables
+// Applied at the end of each main loop
+static Vector<TickableChange> g_tickableChanges;
 
 // Used to set the initial screen size
 static float g_screenHeight = 1000.0f;
@@ -29,13 +49,6 @@ static float g_screenHeight = 1000.0f;
 float g_aspectRatio = (16.0f / 9.0f);
 Vector2i g_resolution;
 
-// Render FPS cap
-static int32 g_fpsCap = 60;
-static float g_targetRenderTime = 0.1f;
-// Update target FPS
-static float g_targetUpdateTime = 1.0f / 240.0f;
-
-static float g_avgUpdateDelta = 0.0f;
 static float g_avgRenderDelta = 0.0f;
 
 Application::Application()
@@ -43,9 +56,6 @@ Application::Application()
 	// Enforce single instance
 	assert(!g_application);
 	g_application = this;
-
-	// Init FPS cap
-	SetFrameLimiter(g_fpsCap);
 }
 Application::~Application()
 {
@@ -84,9 +94,10 @@ int32 Application::Run()
 	{
 		bool mapLaunched = false;
 		// Play the map specified in the command line
-		if(m_commandLine.size() > 1)
+		if(m_commandLine.size() > 1 && m_commandLine[1].front() != '-')
 		{
-			if(!LaunchMap(m_commandLine[1]))
+			Game* game = LaunchMap(m_commandLine[1]);
+			if(!game)
 			{
 				Logf("LaunchMap(%s) failed", Logger::Error, m_commandLine[1]);
 			}
@@ -94,7 +105,7 @@ int32 Application::Run()
 			{
 				if(g_application->GetAppCommandLine().Contains("-autoplay"))
 				{
-					g_game->GetScoring().autoplay = true;
+					game->GetScoring().autoplay = true;
 				}
 				mapLaunched = true;
 			}
@@ -103,7 +114,7 @@ int32 Application::Run()
 		if(!mapLaunched)
 		{
 			// Start regular game, goto song select
-			g_tickables.Add(SongSelect::Create());
+			AddTickable(SongSelect::Create());
 		}
 	}
 
@@ -234,87 +245,119 @@ bool Application::m_Init()
 			return false;
 		}
 	}
+
+	// GUI Rendering
+	g_guiRenderer = new GUIRenderer();
+	if(!g_guiRenderer->Init(g_gl, g_gameWindow))
+	{
+		Logf("Failed to initialize GUI renderer", Logger::Error);
+		return false;
+	}
+
+	// Load GUI style for common elements
+	CommonGUIStyle::instance = Ref<CommonGUIStyle>(new CommonGUIStyle(this));
+
+	// Create root canvas
+	g_rootCanvas = Ref<Canvas>(new Canvas());
+
 	return true;
 }
 void Application::m_MainLoop()
 {
-	Timer dumpFrameRate;
 	Timer appTimer;
 	m_lastRenderTime = 0.0f;
-	m_lastUpdateTime = 0.0f;
 	while(true)
 	{
-		// Gameplay loop
+		// Process changes in the list of items
+		bool restoreTop = false;
+		for(auto& ch : g_tickableChanges)
+		{
+			if(ch.mode == TickableChange::Added)
+			{
+				assert(ch.tickable);
+				if(!ch.tickable->DoInit())
+				{
+					Logf("Failed to add IApplicationTickable", Logger::Error);
+					delete ch.tickable;
+					continue;
+				}
+
+				if(!g_tickables.empty())
+					g_tickables.back()->m_Suspend();
+
+				auto insertionPoint = g_tickables.end();
+				if(ch.insertBefore)
+				{
+					// Find insertion point
+					for(insertionPoint = g_tickables.begin(); insertionPoint != g_tickables.end(); insertionPoint++)
+					{
+						if(*insertionPoint == ch.insertBefore)
+							break;
+					}
+				}
+				g_tickables.insert(insertionPoint, ch.tickable);
+				
+				restoreTop = true;
+			}
+			else if(ch.mode == TickableChange::Removed)
+			{
+				// Remove focus
+				ch.tickable->m_Suspend();
+
+				assert(!g_tickables.empty());
+				if(g_tickables.back() == ch.tickable)
+					restoreTop = true;
+				g_tickables.Remove(ch.tickable);
+				delete ch.tickable;
+			}
+		}
+		if(restoreTop && !g_tickables.empty())
+			g_tickables.back()->m_Restore();
+
+		// Application should end, no more active screens
+		if(!g_tickableChanges.empty() && g_tickables.empty())
+		{
+			Logf("No more IApplicationTickables, shutting down", Logger::Warning);
+			return;
+		}
+		g_tickableChanges.clear();
+
+		// Determine target tick rates for update and render
+		int32 targetFPS = 120; // Default to 120 FPS
+		float targetRenderTime = 0.0f;
+		for(auto tickable : g_tickables)
+		{
+			int32 tempTarget = 0;
+			if(tickable->GetTickRate(tempTarget))
+			{
+				targetFPS = tempTarget;
+			}
+		}
+		if(targetFPS > 0)
+			targetRenderTime = 1.0f / (float)targetFPS;
+			
+
+		// Main loop
 		float currentTime = appTimer.SecondsAsFloat();
-		float timeSinceUpdate = currentTime - m_lastUpdateTime;
-		if(timeSinceUpdate > 1.0f) // Should only happen when game freezes / Debugger paused
-		{
-			timeSinceUpdate = g_targetUpdateTime;
-			m_lastUpdateTime = currentTime - g_targetUpdateTime;
-		}
-		while(timeSinceUpdate >= g_targetUpdateTime)
-		{
-			// Input update
-			if(!g_gameWindow->Update())
-				return;
-
-			// Calculate actual deltatime for timing calculations
-			currentTime = appTimer.SecondsAsFloat();
-			float actualDeltaTime = currentTime - m_lastUpdateTime;
-			g_avgUpdateDelta = g_avgUpdateDelta * 0.99f + actualDeltaTime * 0.01f; // Calculate avg
-			m_lastUpdateTime = currentTime;
-
-			// Fixed DeltaTime
-			float deltaTime = g_targetUpdateTime;
-			timeSinceUpdate -= g_targetUpdateTime;
-
-			if(!g_tickables.empty())
-			{
-				IApplicationTickable* tickable = g_tickables.back();
-				tickable->Tick(deltaTime);
-			}
-			else
-			{
-				// Shutdown when all menus are gone
-				Logf("No more application windows, shutting down", Logger::Warning);
-				Shutdown();
-			}
-		}
-
-		// Render loop
-		currentTime = appTimer.SecondsAsFloat();
 		float timeSinceRender = currentTime - m_lastRenderTime;
-		if(timeSinceRender > g_targetRenderTime)
+		if(timeSinceRender > targetRenderTime)
 		{
-			// Also update window in render loop
-			if(!g_gameWindow->Update())
-				return;
-
 			// Calculate actual deltatime for timing calculations
 			currentTime = appTimer.SecondsAsFloat();
 			float actualDeltaTime = currentTime - m_lastRenderTime;
 			g_avgRenderDelta = g_avgRenderDelta * 0.99f + actualDeltaTime * 0.01f; // Calculate avg
 
-			// Fixed DeltaTime
-			float deltaTime = g_targetRenderTime;
-			if(g_fpsCap <= 0)
-				deltaTime = actualDeltaTime;
+			m_deltaTime = actualDeltaTime;
 			m_lastRenderTime = currentTime;
 
 			// Set time in render state
 			m_renderStateBase.time = currentTime;
 
-			// Not minimized / Valid resolution
-			if(g_resolution.x > 0 && g_resolution.y > 0)
-			{
-				if(!g_tickables.empty())
-				{
-					IApplicationTickable* tickable = g_tickables.back();
+			// Also update window in render loop
+			if(!g_gameWindow->Update())
+				return;
 
-					tickable->Render(deltaTime);
-					g_gl->SwapBuffers();
-				}
-			}
+			m_Tick();
 
 			// Garbage collect resources
 			ResourceManagers::TickAll();
@@ -325,6 +368,35 @@ void Application::m_MainLoop()
 		g_jobSheduler->Update();
 	}
 }
+
+void Application::m_Tick()
+{
+	// Tick all items
+	for(auto& tickable : g_tickables)
+	{
+		tickable->Tick(m_deltaTime);
+	}
+
+	// Not minimized / Valid resolution
+	if(g_resolution.x > 0 && g_resolution.y > 0)
+	{
+		glClearColor(0, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		// Render all items
+		for(auto& tickable : g_tickables)
+		{
+			tickable->Render(m_deltaTime);
+		}
+
+		// Time to render GUI
+		g_guiRenderer->Render(m_deltaTime, Rect(Vector2(0, 0), g_resolution), g_rootCanvas.As<GUIElementBase>());
+
+		// Swap buffers
+		g_gl->SwapBuffers();
+	}
+}
+
 void Application::m_Cleanup()
 {
 	ProfilerScope $("Application Cleanup");
@@ -334,9 +406,6 @@ void Application::m_Cleanup()
 		delete it;
 	}
 	g_tickables.clear();
-	g_game = nullptr;
-
-	CleanupMap();
 
 	if(g_audio)
 	{
@@ -366,137 +435,30 @@ void Application::m_Cleanup()
 	m_SaveConfig();
 }
 
-// Try load map helper
-Beatmap* TryLoadMap(const String& path)
+class Game* Application::LaunchMap(const String& mapPath)
 {
-	// Load map file
-	Beatmap* newMap = new Beatmap();
-	File mapFile;
-	if(!mapFile.OpenRead(path))
-	{
-		delete newMap;
-		return nullptr;
-	}
-	FileReader reader(mapFile);
-	if(!newMap->Load(reader))
-	{
-		delete newMap;
-		return nullptr;
-	}
-	return newMap;
-}
-
-bool Application::LaunchMap(const String& mapPath)
-{
-	String actualMapPath = mapPath;
-
-	if(g_game)
-	{
-		Log("Game already in progress", Logger::Warning);
-		return false;
-	}
-
-	CleanupMap();
-
-	if(!Path::FileExists(actualMapPath))
-	{
-		Logf("Couldn't find map at %s", Logger::Error, actualMapPath);
-		return false;
-	}
-
-	// Check if converted map exists
-	String currentExtension = Path::GetExtension(actualMapPath);
-	String convertedPath = Path::ReplaceExtension(actualMapPath, ".fxm");
-	bool loadedConvertedMap = false;
-	if(m_allowMapConversion && currentExtension == "ksh" && Path::FileExists(convertedPath))
-	{
-		// Try loading converted map
-		actualMapPath = convertedPath;
-		if(m_currentMap = TryLoadMap(convertedPath))
-		{
-			loadedConvertedMap = true;
-		}
-	}
-
-	// Load original map
-	if(!loadedConvertedMap)
-	{
-		m_currentMap = TryLoadMap(actualMapPath);
-	}
-	
-	// Check failure of above loading attempts
-	if(!m_currentMap)
-	{
-		Logf("Failed to load map", Logger::Warning);
-		return false;
-	}
-
-	// Loaded successfully
-	m_lastMapPath = actualMapPath;
-
-	// Save converted map
-	if(m_allowMapConversion && !loadedConvertedMap)
-	{
-		File mapFile;
-		mapFile.OpenWrite(convertedPath);
-		FileWriter writer(mapFile);
-		m_currentMap->Save(writer);
-	}
-
-	// Acquire map base path
-	String pathNormalized = Path::Normalize(actualMapPath);
-	String mapBasePath = Path::RemoveLast(pathNormalized);
-
-	g_game = Game::Create(m_currentMap, mapBasePath);
-	if(!g_game)
-		return false;
-
-	AddTickable(g_game);
-
-	return true;
-}
-void Application::CleanupMap()
-{
-	if(m_currentMap)
-	{
-		delete m_currentMap;
-		m_currentMap = nullptr;
-	}
-}
-void Application::CleanupGame()
-{
-	if(g_game)
-	{
-		RemoveTickable(g_game);
-		g_game = nullptr;
-	}
+	Game* game = Game::Create(mapPath);
+	TransitionScreen* screen = TransitionScreen::Create(game);
+	AddTickable(screen);
+	return game;
 }
 void Application::Shutdown()
 {
 	g_gameWindow->Close();
 }
 
-void Application::AddTickable(class IApplicationTickable* tickable)
+void Application::AddTickable(class IApplicationTickable* tickable, class IApplicationTickable* insertBefore)
 {
-	// Suspend existing
-	if(!g_tickables.empty())
-		g_tickables.back()->OnSuspend();
-
-	g_tickables.Add(tickable);
+	TickableChange& change = g_tickableChanges.Add();
+	change.mode = TickableChange::Added;
+	change.tickable = tickable;
+	change.insertBefore = insertBefore;
 }
 void Application::RemoveTickable(IApplicationTickable* tickable)
 {
-	if(g_tickables.Contains(tickable))
-	{
-		delete tickable;
-		g_tickables.Remove(tickable);
-
-		// Call restore
-		if(!g_tickables.empty())
-		{
-			g_tickables.back()->OnRestore();
-		}
-	}
+	TickableChange& change = g_tickableChanges.Add();
+	change.mode = TickableChange::Removed;
+	change.tickable = tickable;
 }
 
 String Application::GetCurrentMapPath()
@@ -513,21 +475,14 @@ RenderState Application::GetRenderStateBase() const
 	return m_renderStateBase;
 }
 
-void Application::SetFrameLimiter(int32 fpsCap)
-{
-	g_fpsCap = fpsCap;
-	if(fpsCap <= 0)
-		g_targetRenderTime = 0.0f;
-	else
-		g_targetRenderTime = 1.0f / (float)fpsCap;
-	Logf("FPS cap set to %d", Logger::Info, fpsCap);
-}
-
-Texture Application::LoadTexture(const String& name)
+Graphics::Image Application::LoadImage(const String& name)
 {
 	String path = String("textures/") + name;
-	Image img = ImageRes::Create(path);
-	Texture ret = TextureRes::Create(g_gl, img);
+	return ImageRes::Create(path);
+}
+Texture Application::LoadTexture(const String& name)
+{
+	Texture ret = TextureRes::Create(g_gl, LoadImage(name));
 	return ret;
 }
 Material Application::LoadMaterial(const String& name)
@@ -554,10 +509,6 @@ Sample Application::LoadSample(const String& name)
 	return ret;
 }
 
-float Application::GetUpdateFPS() const
-{
-	return 1.0f / g_avgUpdateDelta;
-}
 float Application::GetRenderFPS() const
 {
 	return 1.0f / g_avgRenderDelta;

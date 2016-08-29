@@ -11,9 +11,11 @@ public:
 	// The fill rate of the gauge
 	float rate = 0.5f;
 
-private:
-	Material m_fillMaterial;
-	Texture m_fill;
-	Texture m_frame;
-	Texture m_bg;
+	// Offset in frame where the fill is drawn to
+	Margin barMargin;
+
+	Material fillMaterial;
+	Texture frameTexture;
+	Texture fillTexture;
+	Texture bgTexture;
 };
