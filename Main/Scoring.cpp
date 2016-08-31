@@ -62,21 +62,32 @@ void Scoring::Reset()
 	laserPositions[1] = 1.0f;
 
 	memset(categorizedHits, 0, sizeof(categorizedHits));
-
 	// Clear hit statistics
 	hitStats.clear();
 
 	// Recalculate maximum score
-	totalMaxScore = CalculateMaxScore();
+	mapTotals = CalculateMapTotals();
 
 	// Recalculate gauge gain
-	criticalGaugeGain = 3.5f / totalMaxScore;
+	// TODO: change variables to depend on the "total" variable in the chart.
+	if (mapTotals.numTicks == 0 && mapTotals.numSingles != 0)
+	{
+		shortGaugeGain = 2.1f / (float)mapTotals.numSingles;
+	}
+	else if (mapTotals.numSingles == 0 && mapTotals.numTicks != 0)
+	{
+		tickGaugeGain = 2.1f / (float)mapTotals.numTicks;
+	}
+	else
+	{
+		shortGaugeGain = 42.0f / (5.0f * ((float)mapTotals.numTicks + (4.0f *(float)mapTotals.numSingles)));
+		tickGaugeGain = shortGaugeGain / 4.0f;
+	}
 	currentGauge = 0.0f;
 
 	m_heldObjects.clear();
 	memset(m_holdObjects, 0, sizeof(m_holdObjects));
 	memset(m_currentLaserSegments, 0, sizeof(m_currentLaserSegments));
-
 	m_CleanupHitStats();
 	m_CleanupTicks();
 
@@ -523,19 +534,26 @@ void Scoring::m_TickHit(ScoreTick* tick, uint32 index, MapTime delta /*= 0*/)
 		stat->delta = delta;
 		stat->rating = tick->GetHitRatingFromDelta(delta);
 		OnButtonHit.Call((Input::Button)index, stat->rating, tick->object);
+		if (stat->rating == ScoreHitRating::Perfect)
+		{
+			currentGauge += shortGaugeGain;
+		}
+		else
+		{
+			currentGauge += shortGaugeGain / 3.0f;
+		}
 		m_AddScore((uint32)stat->rating);
-
 		categorizedHits[(uint32)stat->rating]++;
 	}
 	else if(tick->HasFlag(TickFlags::Hold))
 	{
 		HoldObjectState* hold = (HoldObjectState*)tick->object;
 		if(hold->time + hold->duration > m_playback->GetLastTime()) // Only set active hold object if object hasn't passed yet
-			m_SetHoldObject(tick->object, index);
+		m_SetHoldObject(tick->object, index);
 
 		stat->rating = ScoreHitRating::Perfect;
 		stat->hold++;
-
+		currentGauge += tickGaugeGain;
 		m_AddScore(2);
 	}
 	else if(tick->HasFlag(TickFlags::Laser))
@@ -556,7 +574,8 @@ void Scoring::m_TickHit(ScoreTick* tick, uint32 index, MapTime delta /*= 0*/)
 			if(endObject->time + endObject->duration > m_playback->GetLastTime())
 				m_SetHoldObject(*rootObject, index);
 		}
-
+		m_SetHoldObject(*rootObject, index);
+		currentGauge += tickGaugeGain;
 		m_AddScore(2);
 
 		stat->rating = ScoreHitRating::Perfect;
@@ -574,7 +593,6 @@ void Scoring::m_TickMiss(ScoreTick* tick, uint32 index, MapTime delta)
 		stat->rating = ScoreHitRating::Miss;
 		stat->delta = delta;
 		currentGauge -= 0.02f;
-
 		categorizedHits[0]++;
 	}
 	else if(tick->HasFlag(TickFlags::Hold))
@@ -609,14 +627,6 @@ void Scoring::m_AddScore(uint32 score)
 {
 	assert(score > 0 && score <= 2);
 	currentHitScore += score;
-	if (score == 2)
-	{
-		currentGauge += criticalGaugeGain;
-	}
-	else
-	{
-		currentGauge += criticalGaugeGain / 3.0f;
-	}
 	currentGauge = std::min(1.0f, currentGauge);
 	currentComboCounter += 1;
 	OnComboChanged.Call(currentComboCounter);
@@ -795,28 +805,30 @@ void Scoring::m_OnButtonReleased(Input::Button buttonCode)
 {
 }
 
-uint32 Scoring::CalculateMaxScore() const
+MapTotals Scoring::CalculateMapTotals() const
 {
+	MapTotals ret = { 0 };
 	const Beatmap& map = m_playback->GetBeatmap();
 
 	Set<LaserObjectState*> processedLasers;
 
 	assert(m_playback);
 	auto& objects = map.GetLinearObjects();
-	uint32 maxScore = 0;
 	for(auto& _obj : objects)
 	{
 		MultiObjectState* obj = *_obj;
 		const TimingPoint* tp = m_playback->GetTimingPointAt(obj->time);
 		if(obj->type == ObjectType::Single)
 		{
-			maxScore += (uint32)ScoreHitRating::Perfect;
+			ret.maxScore += (uint32)ScoreHitRating::Perfect;
+			ret.numSingles += 1;
 		}
 		else if(obj->type == ObjectType::Hold)
 		{
 			Vector<MapTime> holdTicks;
 			m_CalculateHoldTicks((HoldObjectState*)obj, holdTicks);
-			maxScore += (uint32)ScoreHitRating::Perfect * (uint32)holdTicks.size();
+			ret.maxScore += (uint32)ScoreHitRating::Perfect * (uint32)holdTicks.size();
+			ret.numTicks += (uint32)holdTicks.size();
 		}
 		else if(obj->type == ObjectType::Laser)
 		{
@@ -827,19 +839,35 @@ uint32 Scoring::CalculateMaxScore() const
 			{
 				Vector<ScoreTick> laserTicks;
 				m_CalculateLaserTicks((LaserObjectState*)obj, laserTicks);
-				maxScore += (uint32)ScoreHitRating::Perfect * (uint32)laserTicks.size();
+				ret.maxScore += (uint32)ScoreHitRating::Perfect * (uint32)laserTicks.size();
+				ret.numTicks += (uint32)laserTicks.size();
 				processedLasers.Add(laserRoot);
 			}
 		}
 	}
-	return maxScore;
+
+	return ret;
 }
 
 uint32 Scoring::CalculateCurrentScore() const
 {
-	// Final Score = Score * 0.9 + Gauge * 0.1
-	return (uint32)((double)currentHitScore / (double)totalMaxScore * 900000 +
-		currentGauge * 100000.0);
+	return (uint32)(((double)currentHitScore / (double)mapTotals.maxScore) * 10000000.0);
+}
+
+uint32 Scoring::CalculateCurrentGrade() const
+{
+	uint32 value = (uint32)((double)CalculateCurrentScore() * (double)0.9 + currentGauge * 1000000.0);
+	if(value > 9800000) // AAA
+		return 0;
+	if(value > 9400000) // AA
+		return 1;
+	if(value > 8900000) // A
+		return 2;
+	if(value > 8000000) // B
+		return 3;
+	if(value > 7000000) // C
+		return 4;
+	return 5; // D
 }
 
 MapTime ScoreTick::GetHitWindow() const

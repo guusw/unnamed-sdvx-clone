@@ -42,6 +42,19 @@ public:
 	ObjectState* object = nullptr;
 };
 
+// Various information about all the objects in a map
+struct MapTotals
+{
+	// Number of single notes
+	uint32 numSingles;
+	// Number of laser/hold ticks
+	uint32 numTicks;
+	// The maximum possible score a map can give
+	// The score is calculated per 2 (2 = critical, 1 = near)
+	// Hold buttons, lasers, etc. give 2 points per tick
+	uint32 maxScore;
+};
+
 /*
 	Calculates game score and checks which objects are hit
 	also keeps track of laser positions
@@ -81,12 +94,14 @@ public:
 	bool IsLaserIdle(uint32 index) const;
 
 	// Calculates the maximum score of the current map
-	// The score is calculated per 2 (2 = critical, 1 = near)
-	// Hold buttons, lasers, etc. give 2 points per tick
-	uint32 CalculateMaxScore() const;
+	MapTotals CalculateMapTotals() const;
 
 	// Actual score, in the range 0-10,000,000
 	uint32 CalculateCurrentScore() const;
+
+	// Calculates the grade connected to the current score
+	// Ranges from 0 to 5 (AAA,AA,A,B,C,D) in that order
+	uint32 CalculateCurrentGrade() const;
 
 	// Called when a hit is recorded on a given button index (excluding hold notes)
 	// (Hit Button, Score, Hit Object(optional))
@@ -115,25 +130,28 @@ public:
 	static const MapTime perfectHitTime;
 	static const float idleLaserSpeed;
 
+	// Map total infos
+	MapTotals mapTotals;
 	// Maximum accumulated score of object that have been hit or missed
 	// used to calculate accuracy up to a give point
 	uint32 currentMaxScore = 0;
-	// The total maximum score of a map were all objects to be hit perfectly
-	uint32 totalMaxScore = 0;
 	// The actual amount of gotten score
 	uint32 currentHitScore = 0;
 
+	// Amount of gauge to gain on a tick
+	float tickGaugeGain = 0.0f;
 	// Hits per type in order:
 	//	0 = Miss
 	//	1 = Good
 	//	2 = Perfect
 	uint32 categorizedHits[3] = { 0 };
 
-	// Amount of gauge to gain on a critical
-	float criticalGaugeGain = 0.0f;
+	// Amount of gauge to gain on a short note
+	float shortGaugeGain = 0.0f;
 
 	// Current gauge 0 to 1
 	float currentGauge = 0.0f;
+
 
 	// Current combo
 	uint32 currentComboCounter;
