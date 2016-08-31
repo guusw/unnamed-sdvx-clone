@@ -235,6 +235,9 @@ Vector2i GUIRenderer::GetTextSize(const String& str, uint32 fontSize /*= 16*/)
 }
 Vector2i GUIRenderer::RenderText(const WString& str, const Vector2& position, const Color& color /*= Color(1.0f)*/, uint32 fontSize /*= 16*/)
 {
+	if(m_scissorRect.size.x == 0 || m_scissorRect.size.y == 0)
+		return Vector2i(0, 0);
+
 	Text text = font->CreateText(str, fontSize);
 	Transform textTransform;
 	textTransform *= Transform::Translation(position);
@@ -249,6 +252,9 @@ Vector2i GUIRenderer::RenderText(const String& str, const Vector2& position, con
 }
 void GUIRenderer::RenderText(Text& text, const Vector2& position, const Color& color /*= Color(1.0f)*/)
 {
+	if(m_scissorRect.size.x == 0 || m_scissorRect.size.y == 0)
+		return;
+
 	Transform textTransform;
 	textTransform *= Transform::Translation(position);
 	MaterialParameterSet params;
@@ -257,6 +263,9 @@ void GUIRenderer::RenderText(Text& text, const Vector2& position, const Color& c
 }
 void GUIRenderer::RenderRect(const Rect& rect, const Color& color /*= Color(1.0f)*/, Texture texture /*= Texture()*/)
 {
+	if(m_scissorRect.size.x == 0 || m_scissorRect.size.y == 0)
+		return;
+
 	Transform transform;
 	transform *= Transform::Translation(rect.pos);
 	transform *= Transform::Scale(Vector3(rect.size.x, rect.size.y, 1.0f));
@@ -274,6 +283,9 @@ void GUIRenderer::RenderRect(const Rect& rect, const Color& color /*= Color(1.0f
 }
 void GUIRenderer::RenderButton(const Rect& rect, Texture texture, Margini border, const Color& color /*= Color::White*/)
 {
+	if(m_scissorRect.size.x == 0 || m_scissorRect.size.y == 0)
+		return;
+
 	Transform transform;
 	transform *= Transform::Translation(rect.pos);
 	MaterialParameterSet params;

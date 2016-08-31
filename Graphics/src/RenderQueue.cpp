@@ -71,12 +71,18 @@ namespace Graphics
 				if(mat->opaque)
 				{
 					if(blendEnabled)
+					{
 						glDisable(GL_BLEND);
+						blendEnabled = false;
+					}
 				}
 				else
 				{
 					if(!blendEnabled)
+					{
 						glEnable(GL_BLEND);
+						blendEnabled = true;
+					}
 					if(activeBlendMode != mat->blendMode)
 					{
 						switch(mat->blendMode)
@@ -165,9 +171,7 @@ namespace Graphics
 		}
 
 		// Disable all states that were on
-		if(blendEnabled)
-			glDisable(GL_BLEND);
-
+		glDisable(GL_BLEND);
 		glDisable(GL_SCISSOR_TEST);
 
 		if(clearQueue)
