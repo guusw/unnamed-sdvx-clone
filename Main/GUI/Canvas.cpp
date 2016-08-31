@@ -120,7 +120,7 @@ void Canvas::Slot::Render(GUIRenderData rd)
 {
 	rd.area = m_cachedArea;
 	if(!allowOverflow)
-		rd.guiRenderer->PushScissorRect(rd.area);
+		rd.guiRenderer->PushScissorRect(m_cachedArea);
 	element->Render(rd);
 	if(!allowOverflow)
 		rd.guiRenderer->PopScissorRect();

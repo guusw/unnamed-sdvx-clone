@@ -94,6 +94,10 @@ public:
 		float bottom = Math::Min(other.Bottom(), Bottom());
 		float left = Math::Max(other.Left(), Left());
 		float right = Math::Min(other.Right(), Right());
+		if(right < left)
+			right = left;
+		if(bottom < top)
+			bottom = top;
 		return RectangleBase(left, top, right, bottom);
 	}
 };

@@ -748,7 +748,11 @@ void Scoring::m_UpdateLasers(float deltaTime)
 				}
 				float inputDir = Math::Sign(input);
 
-				if(inputDir != 0.0f)
+				// Always snap laser to start sections if they are completely vertical
+				// Check Yggdrasil_ch.ksh for a part that starts of with vertical lasers and then curve towards the other side (46500 ms in)
+				if(laserDir == 0 && currentSegment->prev == nullptr)
+					laserPositions[i] = laserTargetPositions[i]; 
+				else if(inputDir != 0.0f)
 				{
 					// Snap to laser if laser is on the wrong side
 					if(moveDir != laserDir && inputDir == laserDir)

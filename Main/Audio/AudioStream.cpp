@@ -282,8 +282,6 @@ public:
 					double step = abs(avgDelta) * 0.1f;
 					step = Math::Min(step, fabs(timingDelta)) * Math::Sign(timingDelta);
 					m_offsetCorrection += step;
-
-					Logf("Stabilizing timing, delta = %f, %f", Logger::Warning, avgDelta, step);
 				}
 			}
 		}
