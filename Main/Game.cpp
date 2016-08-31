@@ -452,15 +452,15 @@ public:
 
 			m_scoreText = Ref<Label>(new Label());
 			m_scoreText->SetFontSize(75);
-			m_scoreText->SetText(L"0");
+			m_scoreText->SetText(Utility::WSprintf(L"%08d", 0));
 			m_scoreText->SetFont(m_fontDivlit);
 			m_scoreText->SetTextOptions(FontRes::Monospace);
 			// Padding for this specific font
 			Margin textPadding = Margin(0, -20, 0, 0);
 
 			Panel::Slot* slot = scorePanel->SetContent(m_scoreText.As<GUIElementBase>());
-			slot->padding = Margin(30, 0, 30, 30) + textPadding;
-			slot->alignment = Vector2(1.0f, 0.5f);
+			slot->padding = Margin(30, 0, 10, 30) + textPadding;
+			slot->alignment = Vector2(0.5f, 0.5f);
 		}
 
 		return true;
@@ -725,7 +725,7 @@ public:
 		textPos.y += RenderText(Utility::Sprintf("Laser Effect Mix: %f", m_audioPlayback.GetLaserEffectMix()), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Laser Filter Input: %f", m_scoring.GetLaserOutput()), textPos).y;
 
-		textPos.y += RenderText(Utility::Sprintf("Score: %d (Max: %d)", m_scoring.currentHitScore, m_scoring.totalMaxScore), textPos).y;
+		textPos.y += RenderText(Utility::Sprintf("Score: %d (Max: %d)", m_scoring.currentHitScore, m_scoring.mapTotals), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Actual Score: %d", m_scoring.CalculateCurrentScore()), textPos).y;
 
 		textPos.y += RenderText(Utility::Sprintf("Health Gauge: %f", m_scoring.currentGauge), textPos).y;
@@ -827,7 +827,7 @@ public:
 		// Update score text
 		if(m_scoreText)
 		{
-			m_scoreText->SetText(Utility::WSprintf(L"%07d", newScore));
+			m_scoreText->SetText(Utility::WSprintf(L"%08d", newScore));
 		}
 	}
 

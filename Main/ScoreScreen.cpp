@@ -123,7 +123,7 @@ public:
 		Label* scoreNumber = new Label();
 		scoreNumber->SetFont(m_specialFont);
 		scoreNumber->SetFontSize(80);
-		scoreNumber->SetText(Utility::WSprintf(L"%07d", m_score));
+		scoreNumber->SetText(Utility::WSprintf(L"%08d", m_score));
 		scoreNumber->SetTextOptions(FontRes::Monospace);
 		LayoutBox::Slot* scoreSlot = m_itemBox->Add(scoreNumber->MakeShared());
 		scoreSlot->padding = Margin(0, -20, 0, 20);
