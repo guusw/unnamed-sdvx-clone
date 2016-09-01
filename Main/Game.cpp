@@ -291,6 +291,10 @@ public:
 		// Main render queue
 		RenderQueue renderQueue(g_gl, rs);
 
+		// Get objects in range
+		MapTime msViewRange = m_playback.BarDistanceToDuration(m_track->viewRange);
+		m_currentObjectSet = m_playback.GetObjectsInRange(msViewRange);
+
 		// Draw the base track + time division ticks
 		m_track->DrawBase(renderQueue);
 
@@ -578,10 +582,6 @@ public:
 
 		// Get the current timing point
 		m_currentTiming = &m_playback.GetCurrentTimingPoint();
-
-		// Get objects in range
-		MapTime msViewRange = m_playback.BarDistanceToDuration(m_track->viewRange);
-		m_currentObjectSet = m_playback.GetObjectsInRange(msViewRange);
 
 		m_lastMapTime = playbackPositionMs;
 

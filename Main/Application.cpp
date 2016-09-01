@@ -88,7 +88,7 @@ int32 Application::Run()
 	if(m_commandLine.Contains("-test")) 
 	{
 		// Create test scene
-		g_tickables.Add(Test::Create());
+		AddTickable(Test::Create());
 	}
 	else
 	{

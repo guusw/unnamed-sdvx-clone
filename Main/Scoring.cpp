@@ -249,10 +249,11 @@ bool Scoring::IsLaserIdle(uint32 index) const
 void Scoring::m_CalculateHoldTicks(HoldObjectState* hold, Vector<MapTime>& ticks) const
 {
 	const TimingPoint* tp = m_playback->GetTimingPointAt(hold->time);
-	// Get the amount of ticks in this hold note by taking the length 
-	// ticks at 1/16
-	const double tickRate = (tp->GetBPM() >= 250) ? 8 : 16;
-	double tickInterval = Math::Floor(tp->GetBarDuration() / tickRate);
+
+	// Tick at 8th or 16th notes based on BPM
+	const double tickNoteValue = (tp->GetBPM() >= 250) ? 8 : 16;
+	const double tickInterval = tp->GetWholeNoteLength() / tickNoteValue;
+
 	uint32 numTicks = (uint32)Math::Floor((double)hold->duration / tickInterval);
 	if(numTicks < 1)
 		numTicks = 1; // At least 1 tick at the start
@@ -266,15 +267,14 @@ void Scoring::m_CalculateLaserTicks(LaserObjectState* laserRoot, Vector<ScoreTic
 {
 	assert(laserRoot->prev == nullptr);
 	const TimingPoint* tp = m_playback->GetTimingPointAt(laserRoot->time);
-	// Get the amount of ticks in this laser by taking the length 
-	// ticks at 1/16
-	const double tickRate = (tp->GetBPM() >= 250) ? 8 : 16;
-	double tickInterval = Math::Floor(tp->GetBarDuration() / 16.0);
+
+	// Tick at 8th or 16th notes based on BPM
+	const double tickNoteValue = (tp->GetBPM() >= 250) ? 8 : 16;
+	const double tickInterval = tp->GetWholeNoteLength() / tickNoteValue;
 
 	LaserObjectState* sectionStart = laserRoot;
 	MapTime sectionStartTime = laserRoot->time;
 	MapTime combinedDuration = 0;
-	//float lastDelta = laserRoot->points[1] - laserRoot->points[1];
 	LaserObjectState* lastSlam = nullptr;
 	auto AddTicks = [&]()
 	{
@@ -324,14 +324,6 @@ void Scoring::m_CalculateLaserTicks(LaserObjectState* laserRoot, Vector<ScoreTic
 		}
 		else
 		{
-			/// TODO
-			// New tick sequence when switching directions?
-			//float currentDelta = it->points[1] - it->points[0];
-			//if(Math::Sign(currentDelta) != Math::Sign(lastDelta)) 
-			//{
-			//
-			//}
-
 			combinedDuration += it->duration;
 		}
 	}
