@@ -221,19 +221,22 @@ struct TimingPoint
 {
 	static bool StaticSerialize(BinaryStream& stream, TimingPoint*& out);
 
-	double GetBarDuration() const { return numerator * beatDuration / (denominator / 4); }
+	double GetWholeNoteLength() const { return beatDuration * 4; }
+	double GetBarDuration() const { return GetWholeNoteLength() * ((double)numerator / (double)denominator); }
 	double GetBPM() const { return 60000.0 / beatDuration; }
 
 	// Position in ms when this timing point appears
 	MapTime time;
-	// Beat duration in milliseconds
+	// Beat duration of a 4th note in milliseconds
 	//	this is a double so the least precision is lost
 	//	can be cast back to integer format once is has been multiplied by the amount of beats you want the length of.
 	// Calculated by taking (60000.0 / BPM)
 	double beatDuration;
 	// Upper part of the time signature
+	// how many beats per bar
 	uint8 numerator;
 	// Lower part of the time signature
+	// the note value (4th, 3th, 8th notes, etc.) for a beat
 	uint8 denominator = 4;
 };
 

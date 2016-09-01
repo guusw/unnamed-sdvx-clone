@@ -242,6 +242,11 @@ void AudioPlayback::SetLaserFilterInput(float input, bool active)
 				return;
 
 			m_laserDSP = m_InitDSP(m_laserEffectType);
+			if(!m_laserDSP)
+			{
+				Logf("Failed to create laser DSP with type %d", Logger::Warning, m_laserEffectType);
+				return;
+			}
 		}
 
 		// Set params
