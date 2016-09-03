@@ -10,20 +10,20 @@ file(GLOB C_src "*.c" "Audio/minimp3.c")
 file(GLOB Audio_include "Audio/*.hpp")
 file(GLOB Audio_src "Audio/*.cpp")
 file(GLOB GUI_include "GUI/*.hpp")
-file(GLOB GUI_src "GUI/*.cpp")
+file(GLOB GUI_src "GUI/*.cpp" "Audio/minimp3.c")
 source_group("Header Files\\Audio" FILES ${Audio_include})
 source_group("Source Files\\Audio" FILES ${Audio_src})
 source_group("Header Files\\GUI" FILES ${GUI_include})
 source_group("Source Files\\GUI" FILES ${GUI_src})
 
 include_directories(Audio GUI .)
-add_executable(Main ${Main_src} ${C_src} ${MP3_src})
+add_executable(Main ${Main_src} ${C_src})
 set_output_postfixes(Main)
 
 # Compiler stuff
 enable_cpp11()
 enable_precompiled_headers(${Main_src} src/stdafx.cpp)	
-precompiled_header_exclude(${C_src} ${MP3_src})
+precompiled_header_exclude(${C_src})
 
 if(UNIX)
 	# use SDL audio engine
