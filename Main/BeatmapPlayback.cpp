@@ -265,19 +265,19 @@ MapTime BeatmapPlayback::ViewDistanceToDuration(float distance)
 {
 	TimingPoint** tp = m_SelectTimingPoint(m_playbackTime, true);
 
-	MapTime time = 0;
+	double time = 0;
 
 	MapTime currentTime = m_playbackTime;
 	while(true)
 	{
 		if(!IsEndTiming(tp + 1))
 		{
-			float maxDist = (tp[1]->time - currentTime) / tp[0]->beatDuration;
+			double maxDist = (tp[1]->time - (double)currentTime) / tp[0]->beatDuration;
 			if(maxDist < distance)
 			{
 				// Split up
 				time += maxDist * tp[0]->beatDuration;
-				distance -= maxDist;
+				distance -= (float)maxDist;
 				tp++;
 				continue;
 			}
@@ -285,7 +285,7 @@ MapTime BeatmapPlayback::ViewDistanceToDuration(float distance)
 		time += distance * tp[0]->beatDuration;
 		break;
 	}
-	return time;
+	return (MapTime)time;
 }
 float BeatmapPlayback::DurationToViewDistance(MapTime duration)
 {
@@ -297,7 +297,7 @@ float BeatmapPlayback::DurationToViewDistanceAtTime(MapTime time, MapTime durati
 	MapTime endTime = time + duration;
 
 	// Accumulated value
-	float barTime = 0.0f;
+	double barTime = 0.0f;
 
 	// Split up to see if passing other timing points on the way
 	TimingPoint** tp = m_SelectTimingPoint(time, true);
