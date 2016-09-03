@@ -4,7 +4,7 @@
 class LaserTrackBuilder
 {
 public:
-	LaserTrackBuilder(class OpenGL* gl, uint32 laserIndex, float trackWidth, float laserWidth);
+	LaserTrackBuilder(class OpenGL* gl, class Track* track, uint32 laserIndex);
 	void Reset();
 	void Update(MapTime newTime);
 
@@ -15,6 +15,9 @@ public:
 	Mesh GenerateTrackEntry(class BeatmapPlayback& playback, LaserObjectState* laser);
 	// Generate the ending segment of a laser
 	Mesh GenerateTrackExit(class BeatmapPlayback& playback, LaserObjectState* laser);
+
+	// Laser length scale at a given position
+	float GetLaserLengthScaleAt(MapTime time);
 
 	// Used to generate larges meshes but allow the texture to match the actual laser width
 	uint32 laserBorderPixels;
@@ -52,6 +55,7 @@ private:
 	void m_RecalculateConstants();
 	void m_Cleanup(MapTime newTime, Map<LaserObjectState*, Mesh>& arr);
 	class OpenGL* m_gl;
+	class Track* m_track;
 
 	float m_trackWidth;
 	float m_laserWidth;

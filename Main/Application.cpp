@@ -138,6 +138,7 @@ void Application::m_LoadDefaultConfig()
 {
 	g_mainConfig.Clear();
 	g_mainConfig.Add("songfolder", Variant::Create("songs"));
+	g_mainConfig.Add("hispeed", Variant::Create(1.0f));
 }
 void Application::m_SaveConfig()
 {

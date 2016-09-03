@@ -16,9 +16,6 @@ public:
 	static const float fxbuttonWidth;
 	static const float buttonTrackWidth;
 
-	/// TODO: Use BPM scale for view range
-	static const float viewRange;
-
 	float trackTickLength;
 	float buttonLength;
 	float fxbuttonLength;
@@ -36,6 +33,7 @@ public:
 	class AsyncAssetLoader* loader = nullptr;
 
 public:
+	Track();
 	~Track();
 	virtual bool AsyncLoad() override;
 	virtual bool AsyncFinalize() override;
@@ -56,6 +54,9 @@ public:
 	// Adds a sprite effect to the track
 	struct TimedEffect* AddEffect(struct TimedEffect* effect);
 	void ClearEffects();
+
+	void SetViewRange(float newRange);
+	float GetViewRange() const;
 
 	// Normal/FX button X-axis placement
 	float GetButtonPlacement(uint32 buttonIdx);
@@ -110,8 +111,14 @@ private:
 
 	const TimingPoint* m_lastTimingPoint;
 
+	// Bar tick locations
+	Vector<float> m_barTicks;
+
 	// Active effects
 	Vector<struct TimedEffect*> m_hitEffects;
+
+	// Distance of seen objects on the track
+	float m_viewRange;
 
 	MapTime m_lastMapTime = 0;
 }; 

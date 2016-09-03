@@ -45,13 +45,12 @@ public:
 	//	with a multiplier of 2 a 4/4 signature would tick twice as fast
 	uint32 CountBeats(MapTime start, MapTime range, int32& startIndex, uint32 multiplier = 1) const;
 
-	// Bar calculations using the current timing point
-	// A single bar is the duration of the amount of beats in the current time signature.
-	MapTime BarDistanceToDuration(float distance);
-	float DurationToBarDistance(MapTime time);
-	float DurationToBarDistanceAtTime(MapTime time, MapTime duration);
-
-	float TimeToBarDistance(MapTime time);
+	// View coordinate conversions
+	// the input duration is looped throught the timing points that affect it and the resulting float is the number of 4th note offets
+	MapTime ViewDistanceToDuration(float distance);
+	float DurationToViewDistance(MapTime time);
+	float DurationToViewDistanceAtTime(MapTime time, MapTime duration);
+	float TimeToViewDistance(MapTime time);
 
 	// Current map time in ms as last passed to Update
 	MapTime GetLastTime() const;

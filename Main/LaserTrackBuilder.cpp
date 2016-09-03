@@ -1,14 +1,19 @@
 #include "stdafx.h"
 #include "LaserTrackBuilder.hpp"
 #include "BeatmapPlayback.hpp"
+#include "Track.hpp"
 #include <algorithm>
 
-LaserTrackBuilder::LaserTrackBuilder(class OpenGL* gl, uint32 laserIndex, float trackWidth, float laserWidth)
+LaserTrackBuilder::LaserTrackBuilder(class OpenGL* gl, class Track* track, uint32 laserIndex)
 {
 	m_gl = gl;
+	m_track = track;
 	m_laserIndex = laserIndex;
-	m_trackWidth = trackWidth;
-	m_laserWidth = laserWidth;
+	m_trackWidth = track->trackWidth;
+	m_laserWidth = track->laserWidth;
+	laserTextureSize = track->laserTexture->GetSize();
+	laserEntryTextureSize = track->laserTailTextures[0]->GetSize();
+	laserExitTextureSize = track->laserTailTextures[1]->GetSize();
 }
 Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, LaserObjectState* laser)
 {
@@ -17,7 +22,7 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 
 	Mesh newMesh = MeshRes::Create(m_gl);
 
-	float length = playback.DurationToBarDistance(laser->duration);
+	float length = playback.DurationToViewDistanceAtTime(laser->time, laser->duration);
 
 	if((laser->flags & LaserObjectState::flag_Instant) != 0) // Slam segment
 	{
@@ -46,7 +51,7 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 		Rect centerLowerUv = Rect(textureBorder, invTextureBorder, invTextureBorder, 1.0f);
 
 		// Generate positions for middle top and bottom
-		float slamLength = playback.DurationToBarDistanceAtTime(laser->time, slamDuration) * laserLengthScale;
+		float slamLength = playback.DurationToViewDistanceAtTime(laser->time, slamDuration) * laserLengthScale;
 		Rect3D centerMiddle = Rect3D(left, slamLength, right, 0.0f);
 		Rect3D centerBottom = centerMiddle;
 		centerBottom.size.y = realBorderSize;
@@ -123,7 +128,7 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 		if(laser->prev && (laser->prev->flags & LaserObjectState::flag_Instant) != 0)
 		{
 			// Previous slam length
-			prevLength = playback.DurationToBarDistanceAtTime(laser->prev->time, slamDuration) * laserLengthScale;
+			prevLength = playback.DurationToViewDistanceAtTime(laser->prev->time, slamDuration) * laserLengthScale;
 		}
 
 		// Connecting center points
@@ -207,11 +212,11 @@ Mesh LaserTrackBuilder::GenerateTrackExit(class BeatmapPlayback& playback, Laser
 	float prevLength = 0.0f;
 	if((laser->flags & LaserObjectState::flag_Instant) != 0)
 	{
-		prevLength = playback.DurationToBarDistanceAtTime(laser->time, slamDuration) * laserLengthScale;
+		prevLength = playback.DurationToViewDistanceAtTime(laser->time, slamDuration) * laserLengthScale;
 	}
 	else
 	{
-		prevLength = playback.DurationToBarDistance(laser->duration) * laserLengthScale;
+		prevLength = playback.DurationToViewDistanceAtTime(laser->time, laser->duration) * laserLengthScale;
 	}
 
 	float halfWidth = actualLaserWidth * 0.5f;
@@ -226,6 +231,12 @@ Mesh LaserTrackBuilder::GenerateTrackExit(class BeatmapPlayback& playback, Laser
 	// Cache this mesh
 	m_cachedExits.Add(laser, newMesh);
 	return newMesh;
+}
+
+float LaserTrackBuilder::GetLaserLengthScaleAt(MapTime time)
+{
+	/// TODO: return scale based on speed of timing point to change horizontal laser thickness
+	return 1.0f;
 }
 
 void LaserTrackBuilder::m_RecalculateConstants()
