@@ -14,6 +14,7 @@
 #include "ScoreScreen.hpp"
 #include "TransitionScreen.hpp"
 #include "AsyncAssetLoader.hpp"
+#include "Shared/Config.hpp"
 
 #include "GUI/GUI.hpp"
 #include "GUI/HealthGauge.hpp"
@@ -56,6 +57,9 @@ private:
 	bool m_ended = false;
 
 	bool m_renderDebugHUD = false;
+
+	// Map object approach speed, scaled by BPM
+	float m_hispeed = 1.0f;
 
 	// Game Canvas
 	Ref<Canvas> m_canvas;
@@ -124,6 +128,9 @@ public:
 
 		// Get Parent path
 		m_mapPath = Path::RemoveLast(m_fullMapPath, nullptr);
+
+		Variant* hispeedSetting = g_mainConfig.Get("hispeed");
+		m_hispeed = hispeedSetting ? hispeedSetting->ToFloat() : 1.0f;
 	}
 	~Game_Impl()
 	{
@@ -132,6 +139,9 @@ public:
 		if(m_background)
 			delete m_background;
 		m_input.Cleanup();
+
+		// Save hispeed
+		g_mainConfig.Add("hispeed", Variant::Create(m_hispeed));
 
 		g_rootCanvas->Remove(m_canvas.As<GUIElementBase>());
 	}
@@ -234,11 +244,13 @@ public:
 		bool audioReinit = m_audioPlayback.Init(*m_beatmap, m_mapPath);
 		assert(audioReinit);
 
+		// Audio leadin
+		ApplyAudioLeadin();
+
 		m_paused = false;
 		m_started = false;
 		m_ended = false;
-		m_lastMapTime = 0;
-		m_playback.Reset();
+		m_playback.Reset(m_lastMapTime);
 		m_scoring.Reset();
 
 		for(uint32 i = 0; i < 2; i++)
@@ -264,10 +276,7 @@ public:
 	}
 	virtual void Render(float deltaTime) override
 	{
-		// The amount of bars visible on the track at one time
-		m_track->trackViewRange = Vector2(m_playback.GetBarTime(), 0.0f);
-		m_track->trackViewRange.y = m_track->trackViewRange.x + m_track->viewRange;
-
+		m_track->SetViewRange((1.0f / m_hispeed) * 4.0f);
 		m_track->Tick(m_playback, deltaTime);
 
 		// Get render state from the camera
@@ -292,7 +301,7 @@ public:
 		RenderQueue renderQueue(g_gl, rs);
 
 		// Get objects in range
-		MapTime msViewRange = m_playback.BarDistanceToDuration(m_track->viewRange);
+		MapTime msViewRange = m_playback.ViewDistanceToDuration(m_track->GetViewRange());
 		m_currentObjectSet = m_playback.GetObjectsInRange(msViewRange);
 
 		// Draw the base track + time division ticks
@@ -433,6 +442,7 @@ public:
 			sb->AddSetting(&m_camera.cameraNearMult, 0.0f, 2.0f, "Camera Near Mult");
 			sb->AddSetting(&m_camera.cameraHeightBase, 0.01f, 1.0f, "Camera Height Base");
 			sb->AddSetting(&m_camera.cameraHeightMult, 0.0f, 2.0f, "Camera Height Mult");
+			sb->AddSetting(&m_hispeed, 0.25f, 16.0f, "HiSpeed multiplier");
 			m_settingsBar->SetShow(false);
 
 			Canvas::Slot* settingsSlot = m_canvas->Add(sb->MakeShared());
@@ -470,15 +480,8 @@ public:
 		return true;
 	}
 
-	// Loads sound effects
-	bool InitSFX()
-	{
-		CheckedLoad(m_slamSample = g_application->LoadSample("laser_slam"));
-		CheckedLoad(m_clickSamples[0] = g_application->LoadSample("click-01"));
-		CheckedLoad(m_clickSamples[1] = g_application->LoadSample("click-02"));
-		return true;
-	}
-	bool InitGameplay()
+	// Wait before start of map
+	void ApplyAudioLeadin()
 	{
 		// Select the correct first object to set the intial playback position
 		// if it starts before a certain time frame, the song starts at a negative time (lead-in)
@@ -495,6 +498,18 @@ public:
 			m_lastMapTime = firstObjectTime - 1000;
 			m_audioPlayback.SetPosition(m_lastMapTime);
 		}
+	}
+	// Loads sound effects
+	bool InitSFX()
+	{
+		CheckedLoad(m_slamSample = g_application->LoadSample("laser_slam"));
+		CheckedLoad(m_clickSamples[0] = g_application->LoadSample("click-01"));
+		CheckedLoad(m_clickSamples[1] = g_application->LoadSample("click-02"));
+		return true;
+	}
+	bool InitGameplay()
+	{
+		ApplyAudioLeadin();
 
 		// Load audio offset
 		Variant* offsetSetting = g_mainConfig.Get("offset");

@@ -21,6 +21,9 @@ bool BeatmapPlayback::Reset(MapTime startTime)
 	m_currentTiming = &m_timingPoints.front();
 	m_currentZoomPoint = m_zoomPoints.empty() ? nullptr : &m_zoomPoints.front();
 
+	m_hittableObjects.clear();
+	m_holdObjects.clear();
+
 	m_barTime = 0;
 	m_initialEffectStateSent = false;
 	return true;
@@ -258,28 +261,72 @@ uint32 BeatmapPlayback::CountBeats(MapTime start, MapTime range, int32& startInd
 	startIndex = (int32)beatStart + 1;
 	return (uint32)Math::Max<int64>(beatEnd - beatStart, 0);
 }
-MapTime BeatmapPlayback::BarDistanceToDuration(float distance)
+MapTime BeatmapPlayback::ViewDistanceToDuration(float distance)
 {
-	const TimingPoint& tp = GetCurrentTimingPoint();
-	return (MapTime)(distance * tp.beatDuration * tp.numerator);
+	TimingPoint** tp = m_SelectTimingPoint(m_playbackTime, true);
+
+	MapTime time = 0;
+
+	MapTime currentTime = m_playbackTime;
+	while(true)
+	{
+		if(!IsEndTiming(tp + 1))
+		{
+			float maxDist = (tp[1]->time - currentTime) / tp[0]->beatDuration;
+			if(maxDist < distance)
+			{
+				// Split up
+				time += maxDist * tp[0]->beatDuration;
+				distance -= maxDist;
+				tp++;
+				continue;
+			}
+		}
+		time += distance * tp[0]->beatDuration;
+		break;
+	}
+	return time;
 }
-float BeatmapPlayback::DurationToBarDistance(MapTime duration)
+float BeatmapPlayback::DurationToViewDistance(MapTime duration)
 {
-	const TimingPoint& tp = GetCurrentTimingPoint();
-	return (float)((double)duration / (tp.beatDuration * (double)tp.numerator));
+	return DurationToViewDistanceAtTime(m_playbackTime, duration);
 }
 
-float BeatmapPlayback::DurationToBarDistanceAtTime(MapTime time, MapTime duration)
+float BeatmapPlayback::DurationToViewDistanceAtTime(MapTime time, MapTime duration)
 {
-	const TimingPoint* tp = GetTimingPointAt(time);
-	return (float)((double)duration / (tp->beatDuration * (double)tp->numerator));
+	MapTime endTime = time + duration;
+
+	// Accumulated value
+	float barTime = 0.0f;
+
+	// Split up to see if passing other timing points on the way
+	TimingPoint** tp = m_SelectTimingPoint(time, true);
+	while(true)
+	{
+		if(!IsEndTiming(tp + 1))
+		{
+			if(tp[1]->time < endTime)
+			{
+				// Split up
+				MapTime myDuration = tp[1]->time - time;
+				barTime += (double)myDuration / tp[0]->beatDuration;
+				duration -= myDuration;
+				time = tp[1]->time;
+				tp++;
+				continue;
+			}
+		}
+		// Whole
+		barTime += (double)duration / tp[0]->beatDuration;
+		break;
+	}
+
+ 	return (float)barTime;
 }
 
-float BeatmapPlayback::TimeToBarDistance(MapTime time)
+float BeatmapPlayback::TimeToViewDistance(MapTime time)
 {
-	const TimingPoint& tp = GetCurrentTimingPoint();
-	int64 delta = time - m_playbackTime;
-	return (float)((double)delta / (tp.beatDuration * (double)tp.numerator));
+	return DurationToViewDistanceAtTime(m_playbackTime, time - m_playbackTime);
 }
 
 float BeatmapPlayback::GetBarTime() const
@@ -320,7 +367,7 @@ TimingPoint** BeatmapPlayback::m_SelectTimingPoint(MapTime time, bool allowReset
 	// Keep advancing the start pointer while the next object's starting time lies before the input time
 	while(true)
 	{
-		if(!IsEndTiming(objStart+1) && objStart[1]->time < time)
+		if(!IsEndTiming(objStart+1) && objStart[1]->time <= time)
 		{
 			objStart = objStart + 1;
 		}
