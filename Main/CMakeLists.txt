@@ -4,7 +4,7 @@
 file(GLOB Main_src "*.cpp" "*.hpp"  "Resource.rc" 
 	"Audio/*.cpp" "Audio/*.hpp"
 	"GUI/*.cpp" "GUI/*.hpp")
-file(GLOB C_src "*.c")
+file(GLOB C_src "*.c" "Audio/minimp3.c")
 
 # Project filters
 file(GLOB Audio_include "Audio/*.hpp")
@@ -17,13 +17,13 @@ source_group("Header Files\\GUI" FILES ${GUI_include})
 source_group("Source Files\\GUI" FILES ${GUI_src})
 
 include_directories(Audio GUI .)
-add_executable(Main ${Main_src} ${C_src})
+add_executable(Main ${Main_src} ${C_src} ${MP3_src})
 set_output_postfixes(Main)
 
 # Compiler stuff
 enable_cpp11()
 enable_precompiled_headers(${Main_src} src/stdafx.cpp)	
-precompiled_header_exclude(${C_src})
+precompiled_header_exclude(${C_src} ${MP3_src})
 
 if(UNIX)
 	# use SDL audio engine

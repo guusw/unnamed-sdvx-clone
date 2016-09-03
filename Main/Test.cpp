@@ -25,7 +25,6 @@ private:
 	Ref<SettingsBar> m_settings;
 
 	WString m_currentText;
-
 	float a = 0.1f; // 0 - 1
 	float b = 2.0f; // 0 - 10
 	float c = 1.0f; // 0 - 5
