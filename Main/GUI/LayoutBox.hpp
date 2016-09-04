@@ -31,6 +31,10 @@ public:
 		//	otherwise they will get put after each other
 		bool fillX = false;
 		bool fillY = false;
+		// The amount of space to fill
+		//	0.5 would take up half of what it would normally
+		//	this only works if this slot is set to fill in the container's direction
+		float fillAmount = 1.0f;
 
 		Vector2 alignment = Vector2(0.0f, 0.0f);
 

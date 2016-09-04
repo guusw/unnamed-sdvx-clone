@@ -433,31 +433,10 @@ public:
 	bool Init() override
 	{
 		m_commonGUIStyle = CommonGUIStyle::Get();
-
 		m_canvas = Utility::MakeRef(new Canvas());
 
 		// Load textures for song select
-		m_style = Ref<SongSelectStyle>(new SongSelectStyle);
-		m_style->frameSub = g_application->LoadTexture("song_select/sub.png");
-		m_style->frameSub->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
-		m_style->frameMain = g_application->LoadTexture("song_select/main.png");
-		m_style->frameMain->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
-		m_style->loadingJacketImage = g_application->LoadTexture("song_select/loading.png");
-		static const char* diffTextures[] =
-		{
-			"song_select/nov.png",
-			"song_select/adv.png",
-			"song_select/exh.png",
-			"song_select/grv.png",
-			"song_select/inf.png",
-		};
-		for(uint32 i = 0; i < 5; i++)
-		{
-			m_style->diffFrames[i] = g_application->LoadTexture(diffTextures[i]);
-			m_style->diffFrames[i]->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
-		}
-		m_style->diffFrameMaterial = g_application->LoadMaterial("diffFrame");
-		m_style->diffFrameMaterial->opaque = false;
+		m_style = SongSelectStyle::Get(g_application);
 
 		// Split between statistics and selection wheel (in percentage)
 		const float screenSplit = 0.4f;

@@ -54,6 +54,7 @@ void Scoring::Reset()
 	currentMaxScore = 0;
 	currentHitScore = 0;
 	currentComboCounter = 0;
+	maxComboCounter = 0;
 
 	// Reset laser positions
 	laserTargetPositions[0] = 0.0f;
@@ -621,6 +622,7 @@ void Scoring::m_AddScore(uint32 score)
 	currentHitScore += score;
 	currentGauge = std::min(1.0f, currentGauge);
 	currentComboCounter += 1;
+	maxComboCounter = Math::Max(maxComboCounter, currentComboCounter);
 	OnComboChanged.Call(currentComboCounter);
 }
 void Scoring::m_ResetCombo()

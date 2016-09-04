@@ -47,8 +47,8 @@ class Game_Impl : public Game
 {
 public:
 	// Startup parameters
+	String m_mapRootPath;
 	String m_mapPath;
-	String m_fullMapPath;
 
 private:
 	bool m_playing = true;
@@ -124,10 +124,10 @@ public:
 	Game_Impl(const String& mapPath)
 	{
 		// Store path to map
-		m_fullMapPath = Path::Normalize(mapPath);
+		m_mapPath = Path::Normalize(mapPath);
 
 		// Get Parent path
-		m_mapPath = Path::RemoveLast(m_fullMapPath, nullptr);
+		m_mapRootPath = Path::RemoveLast(m_mapPath, nullptr);
 
 		Variant* hispeedSetting = g_mainConfig.Get("hispeed");
 		m_hispeed = hispeedSetting ? hispeedSetting->ToFloat() : 1.0f;
@@ -151,13 +151,13 @@ public:
 	{
 		ProfilerScope $("AsyncLoad Game");
 
-		if(!Path::FileExists(m_fullMapPath))
+		if(!Path::FileExists(m_mapPath))
 		{
-			Logf("Couldn't find map at %s", Logger::Error, m_fullMapPath);
+			Logf("Couldn't find map at %s", Logger::Error, m_mapPath);
 			return false;
 		}
 
-		m_beatmap = TryLoadMap(m_fullMapPath);
+		m_beatmap = TryLoadMap(m_mapPath);
 
 		// Check failure of above loading attempts
 		if(!m_beatmap)
@@ -175,11 +175,11 @@ public:
 		const BeatmapSettings& mapSettings = m_beatmap->GetMapSettings();
 
 		// Try to load beatmap jacket image
-		String jacketPath = m_mapPath + "/" + mapSettings.jacketPath;
+		String jacketPath = m_mapRootPath + "/" + mapSettings.jacketPath;
 		m_jacketImage = ImageRes::Create(jacketPath);
 
 		// Load beatmap audio
-		if(!m_audioPlayback.Init(*m_beatmap, m_mapPath))
+		if(!m_audioPlayback.Init(*m_beatmap, m_mapRootPath))
 			return false;
 
 		if(!InitGameplay())
@@ -241,7 +241,7 @@ public:
 	{
 		m_camera = Camera();
 
-		bool audioReinit = m_audioPlayback.Init(*m_beatmap, m_mapPath);
+		bool audioReinit = m_audioPlayback.Init(*m_beatmap, m_mapRootPath);
 		assert(audioReinit);
 
 		// Audio leadin
@@ -1015,6 +1015,14 @@ public:
 		return m_scoring;
 	}
 
+	virtual const String& GetMapRootPath() const
+	{
+		return m_mapRootPath;
+	}
+	virtual const String& GetMapPath() const
+	{
+		return m_mapPath;
+	}
 };
 
 Game* Game::Create(const String& mapPath)

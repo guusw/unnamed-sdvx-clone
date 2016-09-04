@@ -152,9 +152,11 @@ public:
 	// Current gauge 0 to 1
 	float currentGauge = 0.0f;
 
-
 	// Current combo
 	uint32 currentComboCounter;
+
+	// Highest combo in current run
+	uint32 maxComboCounter;
 
 	// The timings of hit objects, sorted by time hit
 	// these are used for debugging

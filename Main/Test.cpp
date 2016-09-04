@@ -31,11 +31,16 @@ private:
 	float d = 0.0f; // -2 - 2
 
 public:
-	bool Init0()
+	static void StaticFunc(int32 arg)
 	{
-		
-
-		return true;
+	}
+	static int32 StaticFunc1(int32 arg)
+	{
+		return arg * 2;
+	}
+	static int32 StaticFunc2(int32 arg)
+	{
+		return arg * 2;
 	}
 	bool Init()
 	{
