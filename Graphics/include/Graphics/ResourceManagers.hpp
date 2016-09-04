@@ -1,5 +1,6 @@
 #pragma once
 #include <Graphics/ResourceTypes.hpp>
+#include <Shared/ResourceManager.hpp>
 
 namespace Graphics
 {

@@ -14,12 +14,12 @@ else(WIN32)
 	file(GLOB Platform_src "src/Linux/*.cpp")
 endif(WIN32)
 
+# Compiler stuff
+enable_cpp11()
+enable_precompiled_headers("${Shared_src}" src/stdafx.cpp)
+
 include_directories(include include/Shared src)
 add_library(Shared ${Shared_src} ${Shared_include} ${Platform_src})
 
 # Public include paths for library
 target_include_directories(Shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-# Compiler stuff
-enable_cpp11()
-enable_precompiled_headers(${Shared_src} src/stdafx.cpp)

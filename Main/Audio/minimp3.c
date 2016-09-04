@@ -23,6 +23,7 @@
 
 #include "libc.h"
 #include "minimp3.h"
+#pragma warning(disable:4244)
 
 #define MP3_FRAME_SIZE 1152
 #define MP3_MAX_CODED_FRAME_SIZE 1792
@@ -2654,3 +2655,5 @@ int mp3_decode(mp3_decoder_t *dec, void *buf, int bytes, signed short *out, mp3_
     }
     return s->frame_size;
 }
+
+#pragma warning(default:4244)

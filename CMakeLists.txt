@@ -29,10 +29,12 @@ add_definitions(-DUNICODE -D_UNICODE)
 #	pchSrc 	= Path to precompiled header source file
 macro(enable_precompiled_headers src pchSrc)
 	if(MSVC)
-	   # Set precompiled header usage
-	   set_source_files_properties(src PROPERTIES COMPILE_FLAGS "/Yu")
-	   # Set precompiled header
-	   set_source_files_properties(pchSrc PROPERTIES COMPILE_FLAGS "/Yc")
+		message("Enabling precompiled header generated from source file ${pchSrc}")
+		message("Files using precompiled headers => ${src}")
+		# Set precompiled header usage
+		set_source_files_properties(${src} PROPERTIES COMPILE_FLAGS "/Yu")
+		# Set precompiled header
+		set_source_files_properties(${pchSrc} PROPERTIES COMPILE_FLAGS "/Yc")
 	endif(MSVC)
 endmacro(enable_precompiled_headers)
 
@@ -40,7 +42,7 @@ endmacro(enable_precompiled_headers)
 macro(precompiled_header_exclude exclude)
 	if(MSVC)
 		# Excluded files
-	   set_source_files_properties(exclude PROPERTIES COMPILE_FLAGS "")
+		set_source_files_properties(${exclude} PROPERTIES COMPILE_FLAGS "")
 	endif(MSVC)
 endmacro(precompiled_header_exclude)
 

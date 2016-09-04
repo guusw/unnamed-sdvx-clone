@@ -16,14 +16,14 @@ source_group("Source Files\\Audio" FILES ${Audio_src})
 source_group("Header Files\\GUI" FILES ${GUI_include})
 source_group("Source Files\\GUI" FILES ${GUI_src})
 
+# Compiler stuff
+enable_cpp11()
+enable_precompiled_headers("${Main_src}" stdafx.cpp)	
+precompiled_header_exclude("${C_src}")
+
 include_directories(Audio GUI .)
 add_executable(Main ${Main_src} ${C_src})
 set_output_postfixes(Main)
-
-# Compiler stuff
-enable_cpp11()
-enable_precompiled_headers(${Main_src} src/stdafx.cpp)	
-precompiled_header_exclude(${C_src})
 
 if(UNIX)
 	# use SDL audio engine

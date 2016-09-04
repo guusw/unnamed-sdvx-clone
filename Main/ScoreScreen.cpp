@@ -55,7 +55,6 @@ public:
 		// Font
 		CheckedLoad(m_specialFont = FontRes::Create(g_gl, "fonts/divlit_custom.ttf"));
 		CheckedLoad(m_applause = g_audio->CreateSample("audio/applause.wav"));
-		m_applause->Play();
 
 		LayoutBox* scoreContainer = new LayoutBox();
 		scoreContainer->layoutDirection = LayoutBox::Vertical;
@@ -175,6 +174,10 @@ public:
 		// Add to screen
 		Canvas::Slot* rootSlot = g_rootCanvas->Add(m_canvas.As<GUIElementBase>());
 		rootSlot->anchor = Anchors::Full;
+
+		// Play score screen sound
+		m_applause->Play();
+
 		return true;
 	}
 

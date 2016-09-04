@@ -9,8 +9,7 @@
 
 // Minimal windows headers
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <tchar.h>
+#include <minwindef.h>
 
 // Windows max macro nonsense
 #ifdef max
@@ -20,14 +19,9 @@
 
 #endif
 
-
 // C RunTime Header Files
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
 #include <cinttypes>
 #include <assert.h>
-#include <cmath>
 
 // Convenient basic integer types without _t postfix
 typedef int8_t int8;
