@@ -536,7 +536,6 @@ void Scoring::m_TickHit(ScoreTick* tick, uint32 index, MapTime delta /*= 0*/)
 			currentGauge += shortGaugeGain / 3.0f;
 		}
 		m_AddScore((uint32)stat->rating);
-		categorizedHits[(uint32)stat->rating]++;
 	}
 	else if(tick->HasFlag(TickFlags::Hold))
 	{
@@ -575,6 +574,9 @@ void Scoring::m_TickHit(ScoreTick* tick, uint32 index, MapTime delta /*= 0*/)
 		stat->hold++;
 	}
 	m_OnTickProcessed(tick, index);
+
+	// Count hits per category (miss,perfect,etc.)
+	categorizedHits[(uint32)stat->rating]++;
 }
 void Scoring::m_TickMiss(ScoreTick* tick, uint32 index, MapTime delta)
 {
@@ -586,7 +588,6 @@ void Scoring::m_TickMiss(ScoreTick* tick, uint32 index, MapTime delta)
 		stat->rating = ScoreHitRating::Miss;
 		stat->delta = delta;
 		currentGauge -= 0.02f;
-		categorizedHits[0]++;
 	}
 	else if(tick->HasFlag(TickFlags::Hold))
 	{
@@ -600,10 +601,14 @@ void Scoring::m_TickMiss(ScoreTick* tick, uint32 index, MapTime delta)
 		currentGauge -= 0.005f;
 		stat->rating = ScoreHitRating::Miss;
 	}
+
 	// All misses reset combo
 	currentGauge = std::max(0.0f, currentGauge);
 	m_ResetCombo();
 	m_OnTickProcessed(tick, index);
+
+	// All ticks count towards the 'miss' counter
+	categorizedHits[0]++;
 }
 
 void Scoring::m_CleanupTicks()
