@@ -1,4 +1,5 @@
 #pragma once
+#include "Shared/Math.hpp"
 #include <type_traits>
 
 namespace VectorMath

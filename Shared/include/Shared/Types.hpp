@@ -16,12 +16,16 @@
 #undef max
 #undef min
 #endif
-
 #endif
 
-// C RunTime Header Files
+// for int8_t,int16_t,etc.
 #include <cinttypes>
+// for assert()
 #include <assert.h>
+// for size_t
+#include <stdlib.h>
+// for memcpy()
+#include <cstring>
 
 // Convenient basic integer types without _t postfix
 typedef int8_t int8;
