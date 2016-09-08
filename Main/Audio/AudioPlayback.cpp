@@ -341,7 +341,8 @@ void AudioPlayback::m_SetLaserEffectParameter(float input)
 	{
 	case LaserEffectType::Bitcrush:
 	{
-		((BitCrusherDSP*)m_laserDSP)->SetPeriod(input * 64 * m_laserEffectMix);
+		((BitCrusherDSP*)m_laserDSP)->SetPeriod(input * 32
+		);
 		((BitCrusherDSP*)m_laserDSP)->mix = 1.0f;
 		break;
 	}
@@ -361,7 +362,6 @@ void AudioPlayback::m_SetLaserEffectParameter(float input)
 		float v = LaserSlope(1.0f - input);
 		float freq = 100.0f + 10000 * v;
 		((BQFDSP*)m_laserDSP)->SetLowPass(2.0f + 4.0f * (1-v), freq);
-		((BQFDSP*)m_laserDSP)->mix = m_laserEffectMix;
 		break;
 	}
 	case LaserEffectType::HighPassFilter:
@@ -369,7 +369,6 @@ void AudioPlayback::m_SetLaserEffectParameter(float input)
 		float v = LaserSlope(input);
 		float freq =  100.0f + 4000 * v;
 		((BQFDSP*)m_laserDSP)->SetHighPass(2.0f + 4.0f * v, freq);
-		((BQFDSP*)m_laserDSP)->mix = m_laserEffectMix;
 		break;
 	}
 	}

@@ -201,6 +201,10 @@ void Track::Tick(class BeatmapPlayback& playback, float deltaTime)
 
 	MapTime currentTime = playback.GetLastTime();
 
+	// Set the view range of the track
+	trackViewRange = Vector2((float)currentTime, 0.0f);
+	trackViewRange.y = trackViewRange.x + GetViewRange();
+
 	// Update ticks separating bars to draw
 	double tickTime = (double)currentTime;
 	MapTime rangeEnd = currentTime + playback.ViewDistanceToDuration(m_viewRange);
@@ -213,6 +217,10 @@ void Track::Tick(class BeatmapPlayback& playback, float deltaTime)
 		tickTime -= firstOverflow;
 
 	m_barTicks.clear();
+
+	// Add first tick
+	m_barTicks.Add(playback.TimeToViewDistance((MapTime)tickTime));
+
 	while(tickTime < rangeEnd)
 	{
 		double next = tickTime + stepTime;
@@ -232,10 +240,6 @@ void Track::Tick(class BeatmapPlayback& playback, float deltaTime)
 		// Add tick
 		m_barTicks.Add(playback.TimeToViewDistance((MapTime)tickTime));
 	}
-
-	// Set the view range of the track
-	trackViewRange = Vector2((float)currentTime, 0.0f);
-	trackViewRange.y = trackViewRange.x + GetViewRange();
 
 	// Set Object glow
 	int32 startBeat = 0;

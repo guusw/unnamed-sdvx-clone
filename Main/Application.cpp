@@ -103,7 +103,8 @@ int32 Application::Run()
 			}
 			else
 			{
-				if(g_application->GetAppCommandLine().Contains("-autoplay"))
+				auto& cmdLine = g_application->GetAppCommandLine();
+				if(cmdLine.Contains("-autoplay") || cmdLine.Contains("-auto"))
 				{
 					game->GetScoring().autoplay = true;
 				}

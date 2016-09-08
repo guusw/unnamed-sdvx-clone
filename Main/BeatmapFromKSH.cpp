@@ -49,7 +49,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input, bool metadataOnly)
 		{
 			type = LaserEffectType::LowPassFilter;
 		}
-		else if(str == "fx;bitc")
+		else if(str == "fx;bitc" || str == "bitc")
 		{
 			type = LaserEffectType::Bitcrush;
 		}
