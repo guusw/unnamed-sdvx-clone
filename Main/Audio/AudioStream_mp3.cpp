@@ -80,6 +80,14 @@ public:
 			}
 			i++;
 		}
+
+		// No mp3 frames found
+		if(m_frameIndices.empty())
+		{
+			Logf("No valid mp3 frames found in file \"%s\"", Logger::Warning, path);
+			return false;
+		}
+
 		SetPosition_Internal(0);
 
 		// Total sample
@@ -96,7 +104,10 @@ public:
 	{
 		auto it = m_frameIndices.lower_bound(pos);
 		if(it == m_frameIndices.end())
-			it = std::prev(m_frameIndices.end());
+		{
+			it = m_frameIndices.end();
+			--it;
+		}
 		if(it != m_frameIndices.end())
 		{
 			m_mp3samplePosition = it->first;
