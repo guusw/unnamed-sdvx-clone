@@ -17,6 +17,7 @@
 #include "HealthGauge.hpp"
 #include "Shared/Jobs.hpp"
 #include "ScoreScreen.hpp"
+#include "Shared/Enum.hpp"
 
 class Test_Impl : public Test
 {

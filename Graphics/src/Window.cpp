@@ -418,12 +418,5 @@ namespace Graphics
 
 namespace Graphics
 {
-	ModifierKeys operator&(ModifierKeys l, ModifierKeys r)
-	{
-		return (ModifierKeys)((uint8)l & (uint8)r);
-	}
-	ModifierKeys operator|(ModifierKeys l, ModifierKeys r)
-	{
-		return (ModifierKeys)((uint8)l | (uint8)r);
-	}
+	ImplementBitflagEnum(ModifierKeys);
 }
