@@ -172,9 +172,9 @@ bool Application::m_Init()
 	uint32 fullscreenMonitor = -1;
 
 	// Fullscreen settings from config
-	if(g_gameConfig.Get<bool>(GameConfigKeys::Fullscreen))
+	if(g_gameConfig.GetBool(GameConfigKeys::Fullscreen))
 		startFullscreen = true;
-	fullscreenMonitor = g_gameConfig.Get<int32>(GameConfigKeys::FullscreenMonitorIndex);
+	fullscreenMonitor = g_gameConfig.GetInt(GameConfigKeys::FullscreenMonitorIndex);
 
 	for(auto& cl : m_commandLine)
 	{
@@ -205,8 +205,8 @@ bool Application::m_Init()
 
 	// Create the game window
 	g_resolution = Vector2i(
-		g_gameConfig.Get<int32>(GameConfigKeys::ScreenWidth),
-		g_gameConfig.Get<int32>(GameConfigKeys::ScreenHeight));
+		g_gameConfig.GetInt(GameConfigKeys::ScreenWidth),
+		g_gameConfig.GetInt(GameConfigKeys::ScreenHeight));
 	g_aspectRatio = (float)g_resolution.x / (float)g_resolution.y;
 	g_gameWindow = new Graphics::Window(g_resolution);
 	g_gameWindow->Show();

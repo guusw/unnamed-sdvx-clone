@@ -486,7 +486,7 @@ public:
 		m_selectSound = g_audio->CreateSample("audio/menu_click.wav");
 
 		// Setup the map database
-		m_mapDatabase.AddSearchPath(g_gameConfig.Get<String>(GameConfigKeys::SongFolder));
+		m_mapDatabase.AddSearchPath(g_gameConfig.GetString(GameConfigKeys::SongFolder));
 
 		m_mapDatabase.OnMapsAdded.Add(m_selectionWheel.GetData(), &SelectionWheel::OnMapsAdded);
 		m_mapDatabase.OnMapsUpdated.Add(m_selectionWheel.GetData(), &SelectionWheel::OnMapsUpdated);

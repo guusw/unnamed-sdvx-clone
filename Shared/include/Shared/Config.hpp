@@ -57,20 +57,19 @@ public:
 		return it != m_entries.end();
 	}
 
-	template<typename T> T Get(KeyType key) const;
-	template<> int32 Get<int32>(KeyType key) const
+	int32 GetInt(KeyType key) const
 	{
 		return GetEnsure<IntConfigEntry>(key)->data;
 	}
-	template<> float Get<float>(KeyType key) const
+	float GetFloat(KeyType key) const
 	{
 		return GetEnsure<FloatConfigEntry>(key)->data;
 	}
-	template<> String Get<String>(KeyType key)const
+	String GetString(KeyType key) const
 	{
 		return GetEnsure<StringConfigEntry>(key)->data;
 	}
-	template<> bool Get<bool>(KeyType key)const
+	bool GetBool(KeyType key) const
 	{
 		return GetEnsure<BoolConfigEntry>(key)->data;
 	}

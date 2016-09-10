@@ -128,7 +128,7 @@ public:
 		// Get Parent path
 		m_mapRootPath = Path::RemoveLast(m_mapPath, nullptr);
 
-		m_hispeed = g_gameConfig.Get<float>(GameConfigKeys::HiSpeed);
+		m_hispeed = g_gameConfig.GetFloat(GameConfigKeys::HiSpeed);
 	}
 	~Game_Impl()
 	{
@@ -529,7 +529,7 @@ public:
 		ApplyAudioLeadin();
 
 		// Load audio offset
-		m_audioOffset = g_gameConfig.Get<int32>(GameConfigKeys::GlobalOffset);
+		m_audioOffset = g_gameConfig.GetInt(GameConfigKeys::GlobalOffset);
 
 		// Playback and timing
 		m_playback = BeatmapPlayback(*m_beatmap);

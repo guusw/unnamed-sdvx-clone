@@ -51,21 +51,21 @@ void Input::Init(Graphics::Window& wnd)
 	m_laserDevice = g_gameConfig.GetEnum<Enum_InputDevice>(GameConfigKeys::LaserInputDevice);
 	m_buttonDevice = g_gameConfig.GetEnum<Enum_InputDevice>(GameConfigKeys::ButtonInputDevice);
 
-	m_mouseAxisMapping[0] = g_gameConfig.Get<int32>(GameConfigKeys::Mouse_Laser0Axis);
-	m_mouseAxisMapping[1] = g_gameConfig.Get<int32>(GameConfigKeys::Mouse_Laser1Axis);
-	m_mouseSensitivity = g_gameConfig.Get<float>(GameConfigKeys::Mouse_Sensitivity);
+	m_mouseAxisMapping[0] = g_gameConfig.GetInt(GameConfigKeys::Mouse_Laser0Axis);
+	m_mouseAxisMapping[1] = g_gameConfig.GetInt(GameConfigKeys::Mouse_Laser1Axis);
+	m_mouseSensitivity = g_gameConfig.GetFloat(GameConfigKeys::Mouse_Sensitivity);
 
-	m_controllerAxisMapping[0] = g_gameConfig.Get<int32>(GameConfigKeys::Controller_Laser0Axis);
-	m_controllerAxisMapping[1] = g_gameConfig.Get<int32>(GameConfigKeys::Controller_Laser1Axis);
-	m_controllerSensitivity = g_gameConfig.Get<float>(GameConfigKeys::Controller_Sensitivity);
-	m_controllerDeadzone = g_gameConfig.Get<float>(GameConfigKeys::Controller_Deadzone);
+	m_controllerAxisMapping[0] = g_gameConfig.GetInt(GameConfigKeys::Controller_Laser0Axis);
+	m_controllerAxisMapping[1] = g_gameConfig.GetInt(GameConfigKeys::Controller_Laser1Axis);
+	m_controllerSensitivity = g_gameConfig.GetFloat(GameConfigKeys::Controller_Sensitivity);
+	m_controllerDeadzone = g_gameConfig.GetFloat(GameConfigKeys::Controller_Deadzone);
 
 	// Init controller mapping
 	if(m_laserDevice == InputDevice::Controller || m_buttonDevice == InputDevice::Controller)
 	{
 		int32 numControllers = SDL_NumJoysticks();
 
-		int32 deviceIndex = g_gameConfig.Get<int32>(GameConfigKeys::Controller_DeviceID);
+		int32 deviceIndex = g_gameConfig.GetInt(GameConfigKeys::Controller_DeviceID);
 		if(deviceIndex >= numControllers)
 		{
 			Logf("Out of range controller [%d], number of available controllers is %d", Logger::Error, deviceIndex, numControllers);
@@ -212,12 +212,12 @@ void Input::m_InitControllerMapping()
 {
 	if(m_buttonDevice == InputDevice::Controller)
 	{
-		m_controllerMap.Add(g_gameConfig.Get<int32>(GameConfigKeys::Controller_BT0), Button::BT_0);
-		m_controllerMap.Add(g_gameConfig.Get<int32>(GameConfigKeys::Controller_BT1), Button::BT_1);
-		m_controllerMap.Add(g_gameConfig.Get<int32>(GameConfigKeys::Controller_BT2), Button::BT_2);
-		m_controllerMap.Add(g_gameConfig.Get<int32>(GameConfigKeys::Controller_BT3), Button::BT_3);
-		m_controllerMap.Add(g_gameConfig.Get<int32>(GameConfigKeys::Controller_FX0), Button::FX_0);
-		m_controllerMap.Add(g_gameConfig.Get<int32>(GameConfigKeys::Controller_FX1), Button::FX_1);
+		m_controllerMap.Add(g_gameConfig.GetInt(GameConfigKeys::Controller_BT0), Button::BT_0);
+		m_controllerMap.Add(g_gameConfig.GetInt(GameConfigKeys::Controller_BT1), Button::BT_1);
+		m_controllerMap.Add(g_gameConfig.GetInt(GameConfigKeys::Controller_BT2), Button::BT_2);
+		m_controllerMap.Add(g_gameConfig.GetInt(GameConfigKeys::Controller_BT3), Button::BT_3);
+		m_controllerMap.Add(g_gameConfig.GetInt(GameConfigKeys::Controller_FX0), Button::FX_0);
+		m_controllerMap.Add(g_gameConfig.GetInt(GameConfigKeys::Controller_FX1), Button::FX_1);
 	}
 }
 
