@@ -105,8 +105,7 @@ public:
 		auto it = m_frameIndices.lower_bound(pos);
 		if(it == m_frameIndices.end())
 		{
-			it = m_frameIndices.end();
-			--it;
+			--it; // Take the last frame
 		}
 		if(it != m_frameIndices.end())
 		{
