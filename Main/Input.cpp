@@ -1,8 +1,13 @@
 #include "stdafx.h"
 #include "Input.hpp"
 #include "GameConfig.hpp"
+#ifdef _WIN32
 #include "SDL_joystick.h"
 #include "SDL_gamecontroller.h"
+#else 
+#include "SDL2/SDL_joystick.h"
+#include "SDL2/SDL_gamecontroller.h"
+#endif
 
 /* 
 	Wrapper around SDL_GameController 

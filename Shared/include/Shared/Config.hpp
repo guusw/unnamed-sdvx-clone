@@ -17,8 +17,10 @@ public:
 
 	// Load from text file
 	bool Load(BinaryStream& stream);
+	bool Load(const String& path);
 	// Save to text file
 	void Save(BinaryStream& stream);
+	bool Save(const String& path);
 
 	bool IsDirty() const;
 
@@ -35,7 +37,7 @@ protected:
 	bool m_dirty = false;
 };
 
-/* 
+/*
 	Template config class, specify the type Enum_<enum name> as the key enum for config entries
 */
 template<typename EnumClass>

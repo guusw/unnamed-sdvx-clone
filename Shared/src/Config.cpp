@@ -2,6 +2,8 @@
 #include "Config.hpp"
 #include "TextStream.hpp"
 #include "Set.hpp"
+#include "File.hpp"
+#include "FileStream.hpp"
 #include <sstream>
 
 ConfigBase::~ConfigBase()
@@ -10,6 +12,14 @@ ConfigBase::~ConfigBase()
 	{
 		delete e.second;
 	}
+}
+bool ConfigBase::Load(const String& path)
+{
+    File file;
+    if(!file.OpenRead(path))
+        return false;
+    FileReader reader(file);
+    return Load(reader);
 }
 bool ConfigBase::Load(BinaryStream& stream)
 {
@@ -57,6 +67,15 @@ bool ConfigBase::Load(BinaryStream& stream)
 		m_dirty = false;
 	}
 	return true;
+}
+bool ConfigBase::Save(const String& path)
+{
+    File file;
+    if(!file.OpenWrite(path))
+        return false;
+    FileWriter reader(file);
+    Save(reader);
+    return true;
 }
 void ConfigBase::Save(BinaryStream& stream)
 {

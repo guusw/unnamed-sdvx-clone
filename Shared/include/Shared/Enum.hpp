@@ -9,30 +9,30 @@
 template<typename EnumType>
 class EnumStringMap
 {
-	Map<EnumType, String> names; 
-	Map<String, EnumType> rev; 
+	Map<EnumType, String> names;
+	Map<String, EnumType> rev;
 
 public:
 	EnumStringMap(const char* enumInit)
 	{
-		String src = enumInit; 
-		size_t split = 0; 
-		size_t idLast = 0; 
-		EnumType e; 
+		String src = enumInit;
+		size_t split = 0;
+		size_t idLast = 0;
+		EnumType e;
 		for(uint32_t i = 0; split != -1 && !src.empty(); i++)
 		{
-			split = src.find(','); 
-			String seg = (split == -1) ? src : src.substr(0, split); 
-			size_t assignment = seg.find("="); 
-			if(assignment != -1) 
+			split = src.find(',');
+			String seg = (split == -1) ? src : src.substr(0, split);
+			size_t assignment = seg.find("=");
+			if(assignment != -1)
 			{
-					String valueStr = seg.substr(assignment + 1); 
-					seg = seg.substr(0, assignment); 
+					String valueStr = seg.substr(assignment + 1);
+					seg = seg.substr(0, assignment);
 					size_t charValue = valueStr.find('\'');
 					if(charValue != -1) // Probably a char value
 						idLast = (size_t)valueStr[charValue + 1];
 					else // Hex or decimal value
-						idLast = strtol(*valueStr, NULL, 0); 
+						idLast = strtol(*valueStr, NULL, 0);
 			}
 			e = (EnumType)idLast++;
 			seg.Trim();
@@ -108,7 +108,7 @@ public:
 };
 
 // Convers a macro argument list to a string
-#define Enum_ArgsToString(_v, ...) #_v
+#define Enum_ArgsToString(_v, ...) #_v","#__VA_ARGS__
 
 // Declares bitwise oprations on the given enum type
 #define DeclareBitwiseEnumOps(_n)\
