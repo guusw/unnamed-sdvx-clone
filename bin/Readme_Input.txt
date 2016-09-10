@@ -24,27 +24,6 @@ The default mapping for mouse maps Laser0(Blue) to the X-Axis and Laser1(Red) to
 	
 If you have more that 1 controller on your system you can change <Controller_DeviceID> to pick the controller that you want.
 
-Controller button and axis ID's (Taken from the way SDL maps controller buttons by default):
-Axes:
-	SDL_CONTROLLER_AXIS_LEFTX 			= 0,
-    SDL_CONTROLLER_AXIS_LEFTY 			= 1,
-    SDL_CONTROLLER_AXIS_RIGHTX 			= 2,
-    SDL_CONTROLLER_AXIS_RIGHTY 			= 3,
-    SDL_CONTROLLER_AXIS_TRIGGERLEFT 	= 4,
-    SDL_CONTROLLER_AXIS_TRIGGERRIGHT 	= 5,
-Buttons:
-	SDL_CONTROLLER_BUTTON_A 			= 0,
-    SDL_CONTROLLER_BUTTON_B 			= 1,
-    SDL_CONTROLLER_BUTTON_X 			= 2,
-    SDL_CONTROLLER_BUTTON_Y 			= 3,
-    SDL_CONTROLLER_BUTTON_BACK 			= 4,
-    SDL_CONTROLLER_BUTTON_GUIDE 		= 5,
-    SDL_CONTROLLER_BUTTON_START 		= 6,
-    SDL_CONTROLLER_BUTTON_LEFTSTICK 	= 7,
-    SDL_CONTROLLER_BUTTON_RIGHTSTICK 	= 8,
-    SDL_CONTROLLER_BUTTON_LEFTSHOULDER 	= 9,
-    SDL_CONTROLLER_BUTTON_RIGHTSHOULDER = 10,
-    SDL_CONTROLLER_BUTTON_DPAD_UP 		= 11,
-    SDL_CONTROLLER_BUTTON_DPAD_DOWN 	= 12,
-    SDL_CONTROLLER_BUTTON_DPAD_LEFT 	= 13,
-    SDL_CONTROLLER_BUTTON_DPAD_RIGHT 	= 14,
+If you want to find out the button/axis id's for your controller 
+press F8 while playing a map with the correct controller ID set to see the buttons 
+on the right side which are pressed.

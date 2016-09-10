@@ -289,7 +289,8 @@ public:
 			}
 		}
 
-		TickGameplay(deltaTime);
+		if(!m_paused)
+			TickGameplay(deltaTime);
 	}
 	virtual void Render(float deltaTime) override
 	{
@@ -762,6 +763,9 @@ public:
 		textPos.y += RenderText(Utility::Sprintf("Track Zoom Top: %f", m_camera.zoomTop), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Track Zoom Bottom: %f", m_camera.zoomBottom), textPos).y;
 
+		Vector2 buttonStateTextPos = Vector2(g_resolution.x - 200.0f, 100.0f);
+		RenderText(g_input.GetControllerStateString(), buttonStateTextPos);
+
 		if(m_scoring.autoplay)
 			textPos.y += RenderText("Autoplay enabled", textPos, Color::Blue).y;
 
@@ -945,6 +949,10 @@ public:
 		{
 			// Restart
 			Restart();
+		}
+		else if(key == Key::F8)
+		{
+			m_renderDebugHUD = !m_renderDebugHUD;
 		}
 		else if(key == Key::Tab)
 		{

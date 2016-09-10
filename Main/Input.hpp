@@ -36,6 +36,10 @@ public:
 
 	bool GetButton(Button button) const;
 
+	// Controller state as a string
+	// Primarily used for debugging
+	String GetControllerStateString() const;
+
 	// Returns a handle to a mouse lock, release it to unlock the mouse
 	MouseLockHandle LockMouse();
 
@@ -54,6 +58,9 @@ private:
 	void m_InitKeyboardMapping();
 	void m_InitControllerMapping();
 	void m_OnButtonInput(Button b, bool pressed);
+
+	void m_OnGamepadButtonPressed(uint8 button);
+	void m_OnGamepadButtonReleased(uint8 button);
 
 	int32 m_mouseLockIndex = 0;
 	Vector<MouseLockHandle> m_mouseLocks;
@@ -78,7 +85,7 @@ private:
 	float m_controllerSensitivity;
 	float m_controllerDeadzone;
 
-	class Controller_Impl* m_controller = nullptr;
+	Ref<Gamepad> m_gamepad;
 
 	Graphics::Window* m_window = nullptr;
 };

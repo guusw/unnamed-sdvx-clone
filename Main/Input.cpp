@@ -1,46 +1,11 @@
 #include "stdafx.h"
 #include "Input.hpp"
 #include "GameConfig.hpp"
-#ifdef _WIN32
-#include "SDL_joystick.h"
-#include "SDL_gamecontroller.h"
-#else 
-#include "SDL2/SDL_joystick.h"
-#include "SDL2/SDL_gamecontroller.h"
-#endif
-
-/* 
-	Wrapper around SDL_GameController 
-*/
-class Controller_Impl : Unique
-{
-private:
-	SDL_GameController* m_controller;
-public:
-	Controller_Impl(SDL_GameController* controller) : m_controller(controller)
-	{
-	}
-	~Controller_Impl()
-	{
-		if(m_controller)
-			SDL_GameControllerClose(m_controller);
-	}
-	bool GetButton(uint32 idx)
-	{
-		uint8 state = SDL_GameControllerGetButton(m_controller, (SDL_GameControllerButton)idx);
-		return state != 0;
-	}
-	float GetAxis(uint32 idx)
-	{
-		float val = (float)SDL_GameControllerGetAxis(m_controller, (SDL_GameControllerAxis)idx) / 0x7fff;
-		return val;
-	}
-};
 
 Input::~Input()
 {
 	// Shoud be set to null by Cleanup
-	assert(!m_controller);
+	assert(!m_gamepad);
 	assert(!m_window);
 }
 
@@ -68,17 +33,19 @@ void Input::Init(Graphics::Window& wnd)
 	// Init controller mapping
 	if(m_laserDevice == InputDevice::Controller || m_buttonDevice == InputDevice::Controller)
 	{
-		int32 numControllers = SDL_NumJoysticks();
-
 		int32 deviceIndex = g_gameConfig.GetInt(GameConfigKeys::Controller_DeviceID);
-		if(deviceIndex >= numControllers)
+		if(deviceIndex >= m_window->GetNumGamepads())
 		{
-			Logf("Out of range controller [%d], number of available controllers is %d", Logger::Error, deviceIndex, numControllers);
+			Logf("Out of range controller [%d], number of available controllers is %d", Logger::Error, deviceIndex, m_window->GetNumGamepads());
 		}
 		else
 		{
-			SDL_GameController* controller = SDL_GameControllerOpen(deviceIndex);
-			m_controller = new Controller_Impl(controller);
+			m_gamepad = m_window->OpenGamepad(deviceIndex);
+			if(m_gamepad)
+			{
+				m_gamepad->OnButtonPressed.Add(this, &Input::m_OnGamepadButtonPressed);
+				m_gamepad->OnButtonReleased.Add(this, &Input::m_OnGamepadButtonReleased);
+			}
 		}
 		m_InitControllerMapping();
 	}
@@ -88,10 +55,11 @@ void Input::Init(Graphics::Window& wnd)
 }
 void Input::Cleanup()
 {
-	if(m_controller)
+	if(m_gamepad)
 	{
-		delete m_controller;
-		m_controller = nullptr;
+		m_gamepad->OnButtonPressed.RemoveAll(this);
+		m_gamepad->OnButtonReleased.RemoveAll(this);
+		m_gamepad.Release();
 	}
 	if(m_window)
 	{
@@ -142,21 +110,14 @@ void Input::Update(float deltaTime)
 	}
 
 
-	if(m_controller)
+	if(m_gamepad)
 	{
-		// Poll controller button input
-		for(auto m : m_controllerMap)
-		{
-			bool newState = m_controller->GetButton(m.first);
-			m_OnButtonInput(m.second, newState);
-		}
-
 		// Poll controller laser input
 		if(m_laserDevice == InputDevice::Controller)
 		{
 			for(uint32 i = 0; i < 2; i++)
 			{
-				m_laserStates[i] = m_controller->GetAxis(m_controllerAxisMapping[i]) * m_controllerSensitivity;
+				m_laserStates[i] = m_gamepad->GetAxis(m_controllerAxisMapping[i]) * m_controllerSensitivity;
 				if(abs(m_laserStates[i]) < m_controllerDeadzone)
 					m_laserStates[i] = 0.0f;
 			}
@@ -167,6 +128,25 @@ void Input::Update(float deltaTime)
 bool Input::GetButton(Button button) const
 {
 	return m_buttonStates[(size_t)button];
+}
+
+String Input::GetControllerStateString() const
+{
+	if(m_gamepad)
+	{
+		String s = "Buttons\n";
+		for(uint32 i = 0; i < m_gamepad->NumButtons(); i++)
+		{
+			s += Utility::Sprintf("  [%d]%d\n", i, m_gamepad->GetButton(i));
+		}
+		s += "\nAxes\n";
+		for(uint32 i = 0; i < m_gamepad->NumAxes(); i++)
+		{
+			s += Utility::Sprintf("  [%d]%.2f\n", i, m_gamepad->GetAxis(i));
+		}
+		return s;
+	}
+	return String();
 }
 
 Ref<int32> Input::LockMouse()
@@ -260,6 +240,21 @@ void Input::m_OnButtonInput(Button b, bool pressed)
 				m_laserStates[laserIdx] = 0;
 		}
 	}
+}
+
+void Input::m_OnGamepadButtonPressed(uint8 button)
+{
+	// Handle button mappings
+	auto it = m_controllerMap.equal_range(button);
+	for(auto it1 = it.first; it1 != it.second; it1++)
+		m_OnButtonInput(it1->second, true);
+}
+void Input::m_OnGamepadButtonReleased(uint8 button)
+{
+	// Handle button mappings
+	auto it = m_controllerMap.equal_range(button);
+	for(auto it1 = it.first; it1 != it.second; it1++)
+		m_OnButtonInput(it1->second, false);
 }
 
 void Input::OnKeyPressed(Key key)

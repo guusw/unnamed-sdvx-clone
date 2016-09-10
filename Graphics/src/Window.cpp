@@ -2,6 +2,8 @@
 #include "Window.hpp"
 #include "KeyMap.hpp"
 #include "Image.hpp"
+#include "Gamepad_Impl.hpp"
+
 
 namespace Graphics
 {
@@ -69,6 +71,12 @@ namespace Graphics
 		}
 		~Window_Impl()
 		{
+			// Release gamepads
+			for(auto it : m_gamepads)
+			{
+				it.second.Destroy();
+			}
+
 			SDL_DestroyWindow(m_window);
 		}
 
@@ -198,6 +206,22 @@ namespace Graphics
 				{
 					HandleKeyEvent(evt.key.keysym.sym, 0, 0);
 				}
+				else if(evt.type == SDL_EventType::SDL_JOYBUTTONDOWN)
+				{
+					m_joystickMap[evt.jbutton.which]->HandleInputEvent(evt.jbutton.button, true);
+				}
+				else if(evt.type == SDL_EventType::SDL_JOYBUTTONUP)
+				{
+					m_joystickMap[evt.jbutton.which]->HandleInputEvent(evt.jbutton.button, false);
+				}
+				else if(evt.type == SDL_EventType::SDL_JOYAXISMOTION)
+				{
+					m_joystickMap[evt.jbutton.which]->HandleAxisEvent(evt.jaxis.axis, evt.jaxis.value);
+				}
+				else if(evt.type == SDL_EventType::SDL_JOYHATMOTION)
+				{
+					m_joystickMap[evt.jbutton.which]->HandleHatEvent(evt.jhat.hat, evt.jhat.value);
+				}
 				else if(evt.type == SDL_EventType::SDL_MOUSEBUTTONDOWN)
 				{
 					switch(evt.button.button)
@@ -302,6 +326,10 @@ namespace Graphics
 		KeyMap m_keyMapping;
 		ModifierKeys m_modKeys = ModifierKeys::None;
 
+		// Gamepad input
+		Map<int32, Ref<Gamepad_Impl>> m_gamepads;
+		Map<SDL_JoystickID, Gamepad_Impl*> m_joystickMap;
+
 		// Text input / IME stuff
 		TextComposition m_textComposition;
 
@@ -313,6 +341,7 @@ namespace Graphics
 		Vector2i m_clntSize;
 		WString m_caption;
 	};
+
 	Window::Window(Vector2i size)
 	{
 		m_impl = new Window_Impl(*this, size);
@@ -421,6 +450,38 @@ namespace Graphics
 		SDL_free(utf8Clipboard);
 
 		return ret;
+	}
+
+	int32 Window::GetNumGamepads() const
+	{
+		return SDL_NumJoysticks();
+	}
+	Ref<Gamepad> Window::OpenGamepad(int32 deviceIndex)
+	{
+		Ref<Gamepad_Impl>* openGamepad = m_impl->m_gamepads.Find(deviceIndex);
+		if(openGamepad)
+			return openGamepad->As<Gamepad>();
+		Ref<Gamepad_Impl> newGamepad;
+
+		Gamepad_Impl* gamepadImpl = new Gamepad_Impl();
+		// Try to initialize new device
+		if(gamepadImpl->Init(this, deviceIndex))
+		{
+			newGamepad = Ref<Gamepad_Impl>(gamepadImpl);
+
+			// Receive joystick events
+			SDL_JoystickEventState(SDL_ENABLE);
+		}
+		else
+		{
+			delete gamepadImpl;
+		}
+		if(newGamepad)
+		{
+			m_impl->m_gamepads.Add(deviceIndex, newGamepad);
+			m_impl->m_joystickMap.Add(SDL_JoystickInstanceID(gamepadImpl->m_joystick), gamepadImpl);
+		}
+		return newGamepad.As<Gamepad>();
 	}
 
 	void Window::SetMousePos(const Vector2i& pos)

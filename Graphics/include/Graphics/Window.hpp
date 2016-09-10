@@ -1,5 +1,6 @@
 #pragma once
 #include <Graphics/Keys.hpp>
+#include <Graphics/Gamepad.hpp>
 
 namespace Graphics
 {
@@ -77,6 +78,11 @@ namespace Graphics
 
 		// Get the text currently in the clipboard
 		WString GetClipboard() const;
+
+		// The number of available gamepad devices
+		int32 GetNumGamepads() const;
+		// Open a gamepad within the range of the number of gamepads
+		Ref<Gamepad> OpenGamepad(int32 deviceIndex);
 
 		Delegate<Key> OnKeyPressed;
 		Delegate<Key> OnKeyReleased;
