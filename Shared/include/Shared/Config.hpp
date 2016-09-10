@@ -73,10 +73,10 @@ public:
 	{
 		return GetEnsure<BoolConfigEntry>(key)->data;
 	}
-	template<typename EnumClass>
-	typename EnumClass::EnumType GetEnum(KeyType key) const
+	template<typename EnumClass1>
+	typename EnumClass1::EnumType GetEnum(KeyType key) const
 	{
-		return GetEnsure<EnumConfigEntry<EnumClass>>(key)->data;
+		return GetEnsure<EnumConfigEntry<EnumClass1>>(key)->data;
 	}
 
 	void Set(KeyType key, const int32& value)
@@ -124,10 +124,10 @@ public:
 			m_dirty = true;
 		}
 	}
-	template<typename EnumClass>
-	void SetEnum(KeyType key, typename EnumClass::EnumType value)
+	template<typename EnumClass1>
+	void SetEnum(KeyType key, typename EnumClass1::EnumType value)
 	{
-		typename EnumClass::EnumType& dst = SetEnsure<EnumConfigEntry<EnumClass>>(key)->data;
+		typename EnumClass1::EnumType& dst = SetEnsure<EnumConfigEntry<EnumClass1>>(key)->data;
 		if(dst != value)
 		{
 			dst = value;
