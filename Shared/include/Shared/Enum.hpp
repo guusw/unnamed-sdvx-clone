@@ -69,7 +69,7 @@ template<typename EnumType>
 class BitflagEnumConversion
 {
 public:
-	static String ToString(EnumStringMap<EnumType>& stringMap, typename EnumType e)
+	static String ToString(EnumStringMap<EnumType>& stringMap, EnumType e)
 	{
 		String result;
 		uint32 mask = 1;
@@ -85,7 +85,7 @@ public:
 		}
 		return result;
 	}
-	static typename EnumType FromString(EnumStringMap<EnumType>& stringMap, String str)
+	static EnumType FromString(EnumStringMap<EnumType>& stringMap, String str)
 	{
 		uint32 result = 0;
 		size_t next = 0;
