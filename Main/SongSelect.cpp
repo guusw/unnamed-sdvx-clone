@@ -97,7 +97,6 @@ class SelectionWheel : public Canvas
 {
 	Map<MapIndex*, Ref<SongSelectItem>> m_guiElements;
 
-	Vector<MapIndex*> m_mapRange;
 	Map<int32, MapIndex*> m_maps;
 
 	Map<int32, MapIndex*> m_mapFilter;
@@ -176,6 +175,15 @@ public:
 		{
 			AdvanceSelection(0);
 		}
+	}
+	void SelectRandom()
+	{
+		if(m_SourceCollection().empty())
+			return;
+		uint32 selection = Random::IntRange(0, (int32)m_SourceCollection().size() - 1);
+		auto it = m_SourceCollection().begin();
+		std::advance(it, selection);
+		SelectMap(it->first);
 	}
 	void SelectMap(int32 newIndex)
 	{
@@ -585,6 +593,10 @@ public:
 		else if(key == Key::F5)
 		{
 			m_mapDatabase.StartSearching();
+		}
+		else if(key == Key::F2)
+		{
+			m_selectionWheel->SelectRandom();
 		}
 	}
 	virtual void OnKeyReleased(Key key)
