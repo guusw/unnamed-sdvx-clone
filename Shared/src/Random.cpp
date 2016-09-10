@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Random.hpp"
 #include <random>
+#include <ctime>
 
 namespace Random
 {
@@ -8,7 +9,7 @@ namespace Random
 	using std::uniform_int_distribution;
 	using std::uniform_real_distribution;
 
-	mt19937 gen;
+	mt19937 gen((uint32)time(0));
 
 	float Float()
 	{

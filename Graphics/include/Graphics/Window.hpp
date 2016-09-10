@@ -41,6 +41,9 @@ namespace Graphics
 		void Close();
 
 		Vector2i GetMousePos();
+		void SetMousePos(const Vector2i& pos);
+
+
 		// Sets cursor to use
 		void SetCursor(Ref<class ImageRes> image, Vector2i hotspot = Vector2i(0,0));
 		void SetCursorVisible(bool visible);
@@ -58,6 +61,7 @@ namespace Graphics
 		// Set window client area size
 		void SetWindowSize(const Vector2i& size);
 		void SwitchFullscreen(uint32 monitorID = -1); 
+		bool IsFullscreen() const;
 		
 		// Checks if a key is pressed
 		bool IsKeyPressed(Key key) const;

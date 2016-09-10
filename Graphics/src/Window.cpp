@@ -288,6 +288,10 @@ namespace Graphics
 				m_fullscreen = true;
 			}
 		}
+		bool IsFullscreen() const
+		{
+			return m_fullscreen;
+		}
 
 		SDL_Window* m_window;
 
@@ -382,6 +386,11 @@ namespace Graphics
 	{
 		m_impl->SwitchFullscreen(monitorID);
 	}
+	bool Window::IsFullscreen() const
+	{
+		return m_impl->IsFullscreen();
+	}
+
 	bool Window::IsKeyPressed(Key key) const
 	{
 		return m_impl->m_keyStates[(uint8)key] > 0;
@@ -412,6 +421,11 @@ namespace Graphics
 		SDL_free(utf8Clipboard);
 
 		return ret;
+	}
+
+	void Window::SetMousePos(const Vector2i& pos)
+	{
+		SDL_WarpMouseInWindow(m_impl->m_window, pos.x, pos.y);
 	}
 
 }

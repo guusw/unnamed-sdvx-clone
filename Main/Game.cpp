@@ -14,7 +14,7 @@
 #include "ScoreScreen.hpp"
 #include "TransitionScreen.hpp"
 #include "AsyncAssetLoader.hpp"
-#include "Shared/Config.hpp"
+#include "GameConfig.hpp"
 
 #include "GUI/GUI.hpp"
 #include "GUI/HealthGauge.hpp"
@@ -88,11 +88,10 @@ private:
 	// The play field
 	Track* m_track = nullptr;
 
-	// Input controller
-	Input m_input;
-
 	// The camera watching the playfield
 	Camera m_camera;
+
+	MouseLockHandle m_lockMouse;
 
 	// Current background visualization
 	Background* m_background = nullptr;
@@ -129,8 +128,7 @@ public:
 		// Get Parent path
 		m_mapRootPath = Path::RemoveLast(m_mapPath, nullptr);
 
-		Variant* hispeedSetting = g_mainConfig.Get("hispeed");
-		m_hispeed = hispeedSetting ? hispeedSetting->ToFloat() : 1.0f;
+		m_hispeed = g_gameConfig.Get<float>(GameConfigKeys::HiSpeed);
 	}
 	~Game_Impl()
 	{
@@ -138,12 +136,14 @@ public:
 			delete m_track;
 		if(m_background)
 			delete m_background;
-		m_input.Cleanup();
 
 		// Save hispeed
-		g_mainConfig.Add("hispeed", Variant::Create(m_hispeed));
+		g_gameConfig.Set(GameConfigKeys::HiSpeed, m_hispeed);
 
-		g_rootCanvas->Remove(m_canvas.As<GUIElementBase>());
+		g_rootCanvas->Remove(m_canvas.As<GUIElementBase>()); 
+
+		// In case the cursor was still hidden
+		g_gameWindow->SetCursorVisible(true);
 	}
 
 	AsyncAssetLoader loader;
@@ -272,6 +272,23 @@ public:
 	}
 	virtual void Tick(float deltaTime) override
 	{
+		// Lock mouse to screen when playing
+		if(g_gameConfig.GetEnum<Enum_InputDevice>(GameConfigKeys::LaserInputDevice) == InputDevice::Mouse)
+		{
+			if(!m_paused)
+			{
+				if(!m_lockMouse)
+					m_lockMouse = g_input.LockMouse();
+				g_gameWindow->SetCursorVisible(false);
+			}
+			else
+			{
+				if(m_lockMouse)
+					m_lockMouse.Release();
+				g_gameWindow->SetCursorVisible(true);
+			}
+		}
+
 		TickGameplay(deltaTime);
 	}
 	virtual void Render(float deltaTime) override
@@ -512,10 +529,7 @@ public:
 		ApplyAudioLeadin();
 
 		// Load audio offset
-		Variant* offsetSetting = g_mainConfig.Get("offset");
-		if(offsetSetting)
-			m_audioOffset = offsetSetting->ToInt();
-		g_mainConfig.Add("offset", Variant::Create(m_audioOffset));
+		m_audioOffset = g_gameConfig.Get<int32>(GameConfigKeys::GlobalOffset);
 
 		// Playback and timing
 		m_playback = BeatmapPlayback(*m_beatmap);
@@ -527,11 +541,8 @@ public:
 
 		m_playback.hittableObjectTreshold = Scoring::goodHitTime;
 
-		// Initialize game input
-		m_input.Init(*g_gameWindow);
-
 		m_scoring.SetPlayback(m_playback);
-		m_scoring.SetInput(&m_input);
+		m_scoring.SetInput(&g_input);
 		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
 		m_scoring.OnLaserSlamHit.Add(this, &Game_Impl::OnLaserSlamHit);
 		m_scoring.OnButtonHit.Add(this, &Game_Impl::OnButtonHit);
@@ -915,6 +926,7 @@ public:
 		if(key == Key::Pause)
 		{
 			m_audioPlayback.TogglePause();
+			m_paused = m_audioPlayback.IsPaused();
 		}
 		else if(key == Key::Return) // Skip intro
 		{

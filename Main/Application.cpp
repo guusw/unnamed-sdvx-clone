@@ -10,16 +10,19 @@
 #include "Shared/Jobs.hpp"
 #include "Profiling.hpp"
 #include "Scoring.hpp"
+#include "GameConfig.hpp"
 #include "GUIRenderer.hpp"
+#include "Input.hpp"
 #include "GUI/Canvas.hpp"
 #include "GUI/CommonGUIStyle.hpp"
 #include "TransitionScreen.hpp"
 
-Config g_mainConfig;
+GameConfig g_gameConfig;
 OpenGL* g_gl = nullptr;
 Graphics::Window* g_gameWindow = nullptr;
 Application* g_application = nullptr;
 JobSheduler* g_jobSheduler = nullptr;
+Input g_input;
 
 GUIRenderer* g_guiRenderer = nullptr;
 Ref<Canvas> g_rootCanvas;
@@ -130,24 +133,21 @@ bool Application::m_LoadConfig()
 	if(configFile.OpenRead("Main.cfg"))
 	{
 		FileReader reader(configFile);
-		if(g_mainConfig.Load(reader))
+		if(g_gameConfig.Load(reader))
 			return true;
 	}
 	return false;
 }
-void Application::m_LoadDefaultConfig()
-{
-	g_mainConfig.Clear();
-	g_mainConfig.Add("songfolder", Variant::Create("songs"));
-	g_mainConfig.Add("hispeed", Variant::Create(1.0f));
-}
 void Application::m_SaveConfig()
 {
+	if(!g_gameConfig.IsDirty())
+		return;
+
 	File configFile;
 	if(configFile.OpenWrite("Main.cfg"))
 	{
 		FileWriter writer(configFile);
-		g_mainConfig.Save(writer);
+		g_gameConfig.Save(writer);
 	}
 }
 
@@ -159,7 +159,9 @@ bool Application::m_Init()
 	assert(m_commandLine.size() >= 1);
 
 	if(!m_LoadConfig())
-		m_LoadDefaultConfig();
+	{
+		Logf("Failed to load config file", Logger::Warning);
+	}
 
 	// Job sheduler
 	g_jobSheduler = new JobSheduler();
@@ -168,6 +170,12 @@ bool Application::m_Init()
 	bool debugMute = false;
 	bool startFullscreen = false;
 	uint32 fullscreenMonitor = -1;
+
+	// Fullscreen settings from config
+	if(g_gameConfig.Get<bool>(GameConfigKeys::Fullscreen))
+		startFullscreen = true;
+	fullscreenMonitor = g_gameConfig.Get<int32>(GameConfigKeys::FullscreenMonitorIndex);
+
 	for(auto& cl : m_commandLine)
 	{
 		String k, v;
@@ -196,13 +204,19 @@ bool Application::m_Init()
 	}
 
 	// Create the game window
-	g_resolution = Vector2i{ (int32)(g_screenHeight * g_aspectRatio), (int32)g_screenHeight };
+	g_resolution = Vector2i(
+		g_gameConfig.Get<int32>(GameConfigKeys::ScreenWidth),
+		g_gameConfig.Get<int32>(GameConfigKeys::ScreenHeight));
+	g_aspectRatio = (float)g_resolution.x / (float)g_resolution.y;
 	g_gameWindow = new Graphics::Window(g_resolution);
 	g_gameWindow->Show();
 	m_OnWindowResized(g_resolution);
 	g_gameWindow->OnKeyPressed.Add(this, &Application::m_OnKeyPressed);
 	g_gameWindow->OnKeyReleased.Add(this, &Application::m_OnKeyReleased);
 	g_gameWindow->OnResized.Add(this, &Application::m_OnWindowResized);
+
+	// Initialize Input
+	g_input.Init(*g_gameWindow);
 
 	// Window cursor
 	Image cursorImg = ImageRes::Create("textures/cursor.png");
@@ -373,6 +387,9 @@ void Application::m_MainLoop()
 
 void Application::m_Tick()
 {
+	// Handle input first
+	g_input.Update(m_deltaTime);
+
 	// Tick all items
 	for(auto& tickable : g_tickables)
 	{
@@ -421,6 +438,10 @@ void Application::m_Cleanup()
 		g_gl = nullptr;
 	}
 
+	// Cleanup input
+	g_input.Cleanup();
+
+	// Cleanup window after this
 	if(g_gameWindow)
 	{
 		delete g_gameWindow;
@@ -528,6 +549,7 @@ void Application::m_OnKeyPressed(Key key)
 		if((g_gameWindow->GetModifierKeys() & ModifierKeys::Alt) == ModifierKeys::Alt)
 		{
 			g_gameWindow->SwitchFullscreen();
+			g_gameConfig.Set(GameConfigKeys::Fullscreen, g_gameWindow->IsFullscreen());
 			return;
 		}
 	}
@@ -556,4 +578,8 @@ void Application::m_OnWindowResized(const Vector2i& newSize)
 	m_renderStateBase.viewportSize = g_resolution;
 	glViewport(0, 0, newSize.x, newSize.y);
 	glScissor(0, 0, newSize.x, newSize.y);
+
+	// Set in config
+	g_gameConfig.Set(GameConfigKeys::ScreenWidth, newSize.x);
+	g_gameConfig.Set(GameConfigKeys::ScreenHeight, newSize.y);
 }

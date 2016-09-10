@@ -5,13 +5,14 @@
 
 const MapTime Scoring::goodHitTime = 75;
 const MapTime Scoring::perfectHitTime = 35;
-const float Scoring::idleLaserSpeed = 0.5f;
+const float Scoring::idleLaserSpeed = 1.0f;
 
 Scoring::Scoring()
 {
 }
 Scoring::~Scoring()
 {
+	m_CleanupInput();
 	m_CleanupHitStats();
 	m_CleanupTicks();
 }
@@ -705,8 +706,57 @@ void Scoring::m_UpdateLasers(float deltaTime)
 
 		m_laserInput[i] = autoplay ? 0.0f : m_input->GetInputLaserDir(i);
 
-		// Update idle laser
-		if(IsLaserIdle(i))
+		bool notAffectingGameplay = true;
+		if(currentSegment)
+		{
+			// Update laser gameplay
+			float positionDelta = laserTargetPositions[i] - laserPositions[i];
+			float moveDir = Math::Sign(positionDelta);
+			float laserDir = currentSegment->GetDirection();
+			float input = m_input->GetInputLaserDir(i);
+			if(autoplay)
+			{
+				if(abs(positionDelta) > 0.05f)
+					input = positionDelta;
+				else
+					input = laserDir;
+			}
+			float inputDir = Math::Sign(input);
+
+			// Always snap laser to start sections if they are completely vertical
+			// Check Yggdrasil_ch.ksh for a part that starts of with vertical lasers and then curve towards the other side (46500 ms in)
+			if(laserDir == 0 && currentSegment->prev == nullptr)
+				laserPositions[i] = laserTargetPositions[i]; 
+			else if(inputDir != 0.0f)
+			{
+				// Snap to laser if laser is on the wrong side
+				if(moveDir != laserDir && inputDir == laserDir)
+				{
+					laserPositions[i] = laserTargetPositions[i];
+					notAffectingGameplay = false;
+				}
+				else if(moveDir == inputDir)
+				{
+					moveDir *= abs(input);
+					if(moveDir < 0)
+					{
+						laserPositions[i] = Math::Max(laserPositions[i] + input, laserTargetPositions[i]);
+					}
+					else
+					{
+						laserPositions[i] = Math::Min(laserPositions[i] + input, laserTargetPositions[i]);
+					}
+					notAffectingGameplay = false;
+				}
+
+				// Lock lasers on straight parts
+				if(laserDir == 0.0f)
+					notAffectingGameplay = false;
+			}
+		}
+
+		// Idle laser
+		if(notAffectingGameplay)
 		{
 			laserPositions[i] = Math::Clamp(laserPositions[i] + m_laserInput[i] * deltaTime * idleLaserSpeed, 0.0f, 1.0f);
 
@@ -724,51 +774,6 @@ void Scoring::m_UpdateLasers(float deltaTime)
 			{
 				m_timeSinceLaserInput[i] = 0.0f;
 			}
-		}
-		else
-		{
-			if(currentSegment)
-			{
-				// Update laser gameplay
-				float positionDelta = laserTargetPositions[i] - laserPositions[i];
-				float laserDir = currentSegment->GetDirection();
-				float moveDir = Math::Sign(positionDelta);
-				float input = m_input->GetInputLaserDir(i);
-				if(autoplay)
-				{
-					if(abs(positionDelta) > 0.05f)
-						input = positionDelta;
-					else
-						input = laserDir;
-				}
-				float inputDir = Math::Sign(input);
-
-				// Always snap laser to start sections if they are completely vertical
-				// Check Yggdrasil_ch.ksh for a part that starts of with vertical lasers and then curve towards the other side (46500 ms in)
-				if(laserDir == 0 && currentSegment->prev == nullptr)
-					laserPositions[i] = laserTargetPositions[i]; 
-				else if(inputDir != 0.0f)
-				{
-					// Snap to laser if laser is on the wrong side
-					if(moveDir != laserDir && inputDir == laserDir)
-					{
-						laserPositions[i] = laserTargetPositions[i];
-					}
-					else if(moveDir == inputDir)
-					{
-						moveDir *= abs(input);
-						if(moveDir < 0)
-						{
-							laserPositions[i] = Math::Max(laserPositions[i] + moveDir, laserTargetPositions[i]);
-						}
-						else
-						{
-							laserPositions[i] = Math::Min(laserPositions[i] + moveDir, laserTargetPositions[i]);
-						}
-					}
-				}
-			}
-			m_timeSinceLaserInput[i] = 0.0f;
 		}
 	}
 
