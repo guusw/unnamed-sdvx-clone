@@ -3,8 +3,7 @@
 
 String IntConfigEntry::ToString() const
 {
-	static char buffer[32] = { 0 };
-	return itoa(data, buffer, 10);
+	return Utility::Sprintf("%d", data);
 }
 void IntConfigEntry::FromString(const String& str)
 {
