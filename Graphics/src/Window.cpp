@@ -68,6 +68,32 @@ namespace Graphics
 			m_window = SDL_CreateWindow(*titleUtf8, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 				m_clntSize.x, m_clntSize.y, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 			assert(m_window);
+
+			uint32 numJoysticks = SDL_NumJoysticks();
+			if(numJoysticks == 0)
+			{
+				Logf("No joysticks found", Logger::Warning);
+			}
+			else
+			{
+				Logf("Listing %d Joysticks:", Logger::Info, numJoysticks);
+				for(uint32 i = 0; i < numJoysticks; i++)
+				{
+					SDL_Joystick* joystick = SDL_JoystickOpen(i);
+					if(!joystick)
+					{
+						Logf("[%d] <failed to open>", Logger::Warning, i);
+						continue;
+					}
+					String deviceName = SDL_JoystickName(joystick);
+
+					Logf("[%d] \"%s\" (%d buttons, %d axes, %d hats)", Logger::Info,
+						i, deviceName, SDL_JoystickNumButtons(joystick), SDL_JoystickNumAxes(joystick), SDL_JoystickNumHats(joystick));
+
+					SDL_JoystickClose(joystick);
+				}
+			}
+
 		}
 		~Window_Impl()
 		{

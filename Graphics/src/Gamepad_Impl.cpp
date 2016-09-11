@@ -11,16 +11,25 @@ namespace Graphics
 	}
 	bool Gamepad_Impl::Init(Window* window, uint32 deviceIndex)
 	{
+		Logf("Trying to open joystick %d", Logger::Info, deviceIndex);
+
 		m_window = window;
 		m_deviceIndex = deviceIndex;
 		m_joystick = SDL_JoystickOpen(deviceIndex);
 		if(!m_joystick)
+		{
+			Logf("Failed to open joystick %d", Logger::Error, deviceIndex);
 			return false;
+		}
 
 		for(int32 i = 0; i < SDL_JoystickNumButtons(m_joystick); i++)
 			m_buttonStates.Add(0);
 		for(int32 i = 0; i < SDL_JoystickNumAxes(m_joystick); i++)
 			m_axisState.Add(0.0f);
+
+		String deviceName = SDL_JoystickName(m_joystick);
+		Logf("Joystick device \"%s\" opened with %d buttons and %d axes", Logger::Info,
+			deviceName, m_buttonStates.size(), m_axisState.size());
 
 		return true;
 	}

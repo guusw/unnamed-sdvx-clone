@@ -1,6 +1,7 @@
 #include "Shared/Shared.hpp"
 #include "Shared/Enum.hpp"
 #include "Shared/Config.hpp"
+#include "Shared/Debug.hpp"
 
 #define _STRINGIFY(__x) #__x
 #define STRINGIFY(__x) _STRINGIFY(__x)
@@ -41,11 +42,30 @@ protected:
 
 int main(void)
 {
-    Logf("Started", Logger::Info);
+	Logf("Started", Logger::Info);
 	test(Enum_TestEnum::ToString(TestEnum::OO) == "OO");
 
 	MyConfig c;
 	c.Save("file");
 
+	try
+	{
+		Vector<float> floats;
+		floats.resize(10);
+		(*floats.end()) = 20.0f;
+		uint32* test = 0;
+		test[0] = 20;
+	}
+	catch(...)
+	{
+		auto stackTrace = Debug::GetStackTrace();
+		Logf("Program crashed, dumping stack trace", Logger::Error);
+		for(uint32 i = 0; i < stackTrace.size(); i++)
+		{
+			auto& sf = stackTrace[i];
+			Logf("[%d: 0x%016X] %s@%d %s", Logger::Warning, i, sf.address, sf.file, sf.line, sf.function);
+		}
+		return 1;
+	}
 	return 0;
 }
