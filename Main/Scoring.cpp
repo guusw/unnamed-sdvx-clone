@@ -105,7 +105,7 @@ void Scoring::Tick(float deltaTime)
 float Scoring::GetLaserRollOutput(uint32 index)
 {
 	assert(index >= 0 && index <= 1);
-	if(m_holdObjects[6+index])
+	if(m_currentLaserSegments[index])
 	{
 		if(index == 0)
 			return -laserTargetPositions[index];
@@ -414,7 +414,7 @@ void Scoring::m_UpdateTicks()
 			bool processed = false;
 			if(delta >= 0)
 			{
-				if(tick->HasFlag(TickFlags::Button) && autoplay)
+				if(tick->HasFlag(TickFlags::Button) && (autoplay || autoplayButtons))
 				{
 					m_TickHit(tick, buttonCode, 0);
 					processed = true;
@@ -424,10 +424,10 @@ void Scoring::m_UpdateTicks()
 				{
 					// Ignore the first hold note ticks
 					//	except for autoplay, which just hits it.
-					if(!tick->HasFlag(TickFlags::Start) || autoplay)
+					if(!tick->HasFlag(TickFlags::Start) || (autoplay || autoplayButtons))
 					{
 						// Check buttons here for holds
-						if(m_input && (m_input->GetButton(button) || autoplay))
+						if(m_input && (m_input->GetButton(button) || autoplay || autoplayButtons))
 						{
 							m_TickHit(tick, buttonCode);
 							processed = true;
@@ -453,8 +453,13 @@ void Scoring::m_UpdateTicks()
 					else
 					{
 						// Check laser input
-						float laserDelta = abs(laserPositions[laserObject->index] - laserTargetPositions[laserObject->index]);
-						if(laserDelta < 0.083f)
+						float laserDelta = abs(laserPositions[laserObject->index] - laserTargetPositions[laserObject->index]);\
+
+						// Halve distance for extended laser
+						if((laserObject->flags & LaserObjectState::flag_Extended) != 0)
+							laserDelta *= 0.5f;
+
+						if(laserDelta < laserDistanceLeniency)
 						{
 							m_TickHit(tick, buttonCode);
 							processed = true;
@@ -713,7 +718,7 @@ void Scoring::m_UpdateLasers(float deltaTime)
 			float positionDelta = laserTargetPositions[i] - laserPositions[i];
 			float moveDir = Math::Sign(positionDelta);
 			float laserDir = currentSegment->GetDirection();
-			float input = m_input->GetInputLaserDir(i);
+			float input = m_laserInput[i];
 			if(autoplay)
 			{
 				if(abs(positionDelta) > 0.05f)

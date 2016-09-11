@@ -354,14 +354,7 @@ public:
 		// Copy over laser position
 		for(uint32 i = 0; i < 2; i++)
 		{
-			if(m_scoring.IsLaserHeld(i))
-			{
-				m_track->laserPositions[i] = m_scoring.laserTargetPositions[i];
-			}
-			else
-			{
-				m_track->laserPositions[i] = m_scoring.laserPositions[i];
-			}
+			m_track->laserPositions[i] = m_scoring.laserPositions[i];
 		}
 
 		m_track->DrawOverlays(scoringRq);
@@ -461,6 +454,7 @@ public:
 			sb->AddSetting(&m_camera.cameraHeightBase, 0.01f, 1.0f, "Camera Height Base");
 			sb->AddSetting(&m_camera.cameraHeightMult, 0.0f, 2.0f, "Camera Height Mult");
 			sb->AddSetting(&m_hispeed, 0.25f, 16.0f, "HiSpeed multiplier");
+			sb->AddSetting(&m_scoring.laserDistanceLeniency, 1.0f/32.0f, 1.0f, "Laser Distance Leniency");
 			m_settingsBar->SetShow(false);
 
 			Canvas::Slot* settingsSlot = m_canvas->Add(sb->MakeShared());
@@ -552,6 +546,11 @@ public:
 		m_scoring.OnObjectReleased.Add(this, &Game_Impl::OnObjectReleased);
 		m_scoring.OnScoreChanged.Add(this, &Game_Impl::OnScoreChanged);
 		m_scoring.Reset(); // Initialize
+
+		if(g_application->GetAppCommandLine().Contains("-autobuttons"))
+		{
+			m_scoring.autoplayButtons = true;
+		}
 
 		return true;
 	}

@@ -164,6 +164,10 @@ public:
 
 	// Autoplay mode
 	bool autoplay = false;
+	// Autoplay but for buttons
+	bool autoplayButtons = false;
+
+	float laserDistanceLeniency = 1.0f / 12.0f;
 
 	// Actual positions of the laser
 	float laserPositions[2];
@@ -231,6 +235,8 @@ private:
 	// Input values for laser [-1,1]
 	float m_laserInput[2] = { 0.0f };
 	float m_timeSinceLaserInput[2] = { 0.0f };
+	// Keeps being set to the last direction the laser was moving in to create laser intertia
+	float m_lastLaserInputDirection[2] = { 0.0f };
 
 	// used the update the amount of hit ticks for hold/laser notes
 	Map<ObjectState*, HitStat*> m_holdHitStats;

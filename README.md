@@ -47,6 +47,7 @@ Additional command line parameters:
 - '-convertmaps' allows converting a loading maps to a binary format that loads faster (experimental, not feature complete)
 - '-debug' used to show relevant debug info in game such as hit timings, and scoring debug info.
 - '-test' runs test scene, only used for development purposed without running the game.
+- '-autobuttons' makes all BT/FX object be played automatically. so you only have to control the lasers
 
 ### Game Controls (to be customizable soon):
 - White buttons = [S] [D] [K] [L]
