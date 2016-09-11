@@ -328,7 +328,7 @@ public:
 
 	virtual void OnKeyPressed(Key key) override
 	{
-		if(key == Key::Escape)
+        if(key == Key::Escape || key = Key::Return)
 		{
 			g_application->RemoveTickable(this);
 		}
