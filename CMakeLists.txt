@@ -62,7 +62,8 @@ macro(set_output_postfixes projectName)
 endmacro(set_output_postfixes)
 
 # Sub-Project directories
-add_subdirectory(third_party)
+# libvorbis is included since it doesn't have a nuget package
+add_subdirectory(third_party/libvorbis-1.3.5)
 add_subdirectory(Shared)
 add_subdirectory(Graphics)
 add_subdirectory(Main)
@@ -72,15 +73,6 @@ add_subdirectory(Tests.Shared)
 if(MSVC)
 	# Use filters in VS projects
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-	
-	# Put all third party libraries in a seperate folder in the VS solution
-	set_target_properties(jpeg PROPERTIES FOLDER "Third Party")
-	set_target_properties(png PROPERTIES FOLDER "Third Party")
-	set_target_properties(zlib PROPERTIES FOLDER "Third Party")
-	set_target_properties(ogg PROPERTIES FOLDER "Third Party")
-	set_target_properties(vorbis PROPERTIES FOLDER "Third Party")
-	set_target_properties(freetype PROPERTIES FOLDER "Third Party")
-	set_target_properties(SDL2 PROPERTIES FOLDER "Third Party")
 	
 	# My libraries in the libraries folder
 	set_target_properties(Shared PROPERTIES FOLDER Libraries)

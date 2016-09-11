@@ -2,6 +2,7 @@
 #include "Shared/Enum.hpp"
 #include "Shared/Config.hpp"
 #include "Shared/Debug.hpp"
+#include <zlib.h>
 
 #define _STRINGIFY(__x) #__x
 #define STRINGIFY(__x) _STRINGIFY(__x)

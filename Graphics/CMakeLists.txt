@@ -1,7 +1,7 @@
 # Graphics library
 
 # Find files used for project
-file(GLOB Graphics_src "src/*.cpp" "src/glew.c" "include/Graphics/*.hpp")
+file(GLOB Graphics_src "src/*.cpp" "src/glew.c" "include/Graphics/*.hpp" "packages.config")
 
 # Platform specific source files
 if(WIN32)
@@ -35,11 +35,6 @@ add_definitions(-DGLEW_NO_GLU -DGLEW_STATIC)
 # Dependencies
 target_link_libraries(Graphics Shared)
 if(WIN32)
-	target_link_libraries(Graphics freetype)
-	target_link_libraries(Graphics SDL2)
-	target_link_libraries(Graphics png)
-	target_link_libraries(Graphics jpeg)
-	target_include_directories(Graphics PUBLIC ${SDL2_SOURCE_DIR}/include/)
 else(WIN32)
 	find_package(X11 REQUIRED)
 	find_package(Freetype REQUIRED)

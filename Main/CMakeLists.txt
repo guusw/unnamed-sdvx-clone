@@ -3,7 +3,7 @@
 # Find files used for project
 file(GLOB Main_src "*.cpp" "*.hpp"  "Resource.rc" 
 	"Audio/*.cpp" "Audio/*.hpp"
-	"GUI/*.cpp" "GUI/*.hpp")
+	"GUI/*.cpp" "GUI/*.hpp" "packages.config")
 file(GLOB C_src "*.c" "Audio/minimp3.c")
 
 # Project filters
@@ -40,13 +40,6 @@ target_link_libraries(Main Shared)
 target_link_libraries(Main Graphics)
 
 if(WIN32)
-	# Bundled libraries
-	target_link_libraries(Main zlib)
-	target_link_libraries(Main freetype)
-	target_link_libraries(Main SDL2)
-	target_link_libraries(Main png)
-	target_link_libraries(Main jpeg)
-	target_include_directories(Main PUBLIC ${SDL2_SOURCE_DIR}/include/)
 else()
 	set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/third_party)
 	include(FindLibraries)
@@ -59,7 +52,7 @@ else()
 	target_link_libraries(Main ${VORBIS_LIBRARIES})
 	target_link_libraries(Main pthread) 
 	target_link_libraries(Main dl)
-	target_link_libraries(Main GL)      
+	target_link_libraries(Main GL)   
+	target_link_libraries(Main ogg)   
 endif()
 target_link_libraries(Main vorbis)
-target_link_libraries(Main ogg)

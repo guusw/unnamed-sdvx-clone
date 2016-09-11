@@ -280,14 +280,7 @@ namespace Graphics
 				}
 				else if(evt.type == SDL_EventType::SDL_MOUSEWHEEL)
 				{
-					if(evt.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
-					{
-						outer.OnMouseScroll.Call(evt.wheel.y);
-					}
-					else
-					{
-						outer.OnMouseScroll.Call(-evt.wheel.y);
-					}
+					outer.OnMouseScroll.Call(evt.wheel.y);
 				}
 				else if(evt.type == SDL_EventType::SDL_QUIT)
 				{
