@@ -63,6 +63,7 @@ public:
 
 	// Laser positions, as shown on the overlay
 	float laserPositions[2];
+	float laserPointerOpacity[2] = { 1.0f };
 
 	// Visible time elements on the playfield track
 	// a single unit is 1 beat in distance

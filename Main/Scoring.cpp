@@ -62,6 +62,8 @@ void Scoring::Reset()
 	laserTargetPositions[1] = 0.0f;
 	laserPositions[0] = 0.0f;
 	laserPositions[1] = 1.0f;
+	timeSinceLaserUsed[0] = 1000.0f;
+	timeSinceLaserUsed[1] = 1000.0f;
 
 	memset(categorizedHits, 0, sizeof(categorizedHits));
 	// Clear hit statistics
@@ -684,6 +686,9 @@ void Scoring::m_UpdateLasers(float deltaTime)
 		// Check for new laser segments in laser queue
 		for(auto it = m_laserSegmentQueue.begin(); it != m_laserSegmentQueue.end();)
 		{
+			// Reset laser usage timer
+			timeSinceLaserUsed[(*it)->index] = 0.0f;
+
 			if((*it)->time <= mapTime)
 			{
 				// Replace the currently active segment
@@ -760,27 +765,17 @@ void Scoring::m_UpdateLasers(float deltaTime)
 			}
 			else if(laserDir == 0.0f)
 				notAffectingGameplay = false;
+			timeSinceLaserUsed[i] = 0.0f;
+		}
+		else
+		{
+			timeSinceLaserUsed[i] += deltaTime;
 		}
 
 		// Idle laser
 		if(notAffectingGameplay)
 		{
 			laserPositions[i] = Math::Clamp(laserPositions[i] + m_laserInput[i] * deltaTime * idleLaserSpeed, 0.0f, 1.0f);
-
-			if(m_laserInput[i] == 0.0f)
-			{
-				m_timeSinceLaserInput[i] += deltaTime;
-				// Slowly move laser towards base when not being used
-				if(m_timeSinceLaserInput[i] > 2.0f)
-				{
-					static const float targets[2] = { -1.0f, 1.0f };
-					laserPositions[i] = Math::Clamp(laserPositions[i] + targets[i] * deltaTime * idleLaserSpeed, 0.0f, 1.0f);
-				}
-			}
-			else
-			{
-				m_timeSinceLaserInput[i] = 0.0f;
-			}
 		}
 	}
 

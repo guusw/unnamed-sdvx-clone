@@ -173,6 +173,8 @@ public:
 	float laserPositions[2];
 	// Sampled target position of the lasers in the map
 	float laserTargetPositions[2] = { 0 };
+	// Time since laser has been used
+	float timeSinceLaserUsed[2];
 
 private:
 	// Calculates the times at which a single hold object ticks
@@ -234,7 +236,6 @@ private:
 
 	// Input values for laser [-1,1]
 	float m_laserInput[2] = { 0.0f };
-	float m_timeSinceLaserInput[2] = { 0.0f };
 	// Keeps being set to the last direction the laser was moving in to create laser intertia
 	float m_lastLaserInputDirection[2] = { 0.0f };
 
