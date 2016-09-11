@@ -66,6 +66,7 @@ add_subdirectory(third_party)
 add_subdirectory(Shared)
 add_subdirectory(Graphics)
 add_subdirectory(Main)
+add_subdirectory(Tests.Shared)
 
 # Enabled project filters on windows
 if(MSVC)
@@ -84,4 +85,7 @@ if(MSVC)
 	# My libraries in the libraries folder
 	set_target_properties(Shared PROPERTIES FOLDER Libraries)
 	set_target_properties(Graphics PROPERTIES FOLDER Libraries)
+	
+	# Tests
+	set_target_properties(Tests.Shared PROPERTIES FOLDER "Tests")
 endif(MSVC)

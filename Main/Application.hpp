@@ -6,8 +6,8 @@ extern class Graphics::Window* g_gameWindow;
 extern float g_aspectRatio;
 extern Vector2i g_resolution;
 extern class Application* g_application;
-extern class Config g_mainConfig;
 extern class JobSheduler* g_jobSheduler;
+extern class Input g_input;
 
 // GUI
 extern class GUIRenderer* g_guiRenderer;
@@ -55,7 +55,6 @@ public:
 
 private:
 	bool m_LoadConfig();
-	void m_LoadDefaultConfig();
 	void m_SaveConfig();
 
 	bool m_Init();

@@ -9,7 +9,7 @@
 
 // Minimal windows headers
 #define WIN32_LEAN_AND_MEAN
-#include <minwindef.h>
+#include <windows.h>
 
 // Windows max macro nonsense
 #ifdef max

@@ -31,6 +31,8 @@ private:
 	float c = 1.0f; // 0 - 5
 	float d = 0.0f; // -2 - 2
 
+	Ref<Gamepad> m_gamepad;
+
 public:
 	static void StaticFunc(int32 arg)
 	{
@@ -46,6 +48,8 @@ public:
 	bool Init()
 	{
 		m_guiStyle = CommonGUIStyle::Get();
+
+		m_gamepad = g_gameWindow->OpenGamepad(0);
 
 		{
 			ScrollBox* box0 = new ScrollBox(m_guiStyle);

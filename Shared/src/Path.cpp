@@ -32,7 +32,7 @@ String Path::ReplaceExtension(String path, String newExt)
 	newExt.TrimFront('.');
 
 	// Remove everything in the extension and the dot
-	size_t dotPos = path.find(".");
+	size_t dotPos = path.find_last_of(".");
 	if(dotPos != -1)
 	{
 		path.erase(path.begin() + dotPos, path.end());

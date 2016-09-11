@@ -1,87 +1,107 @@
 #include "stdafx.h"
 #include "Config.hpp"
 #include "TextStream.hpp"
+#include "Set.hpp"
+#include "File.hpp"
+#include "FileStream.hpp"
 #include <sstream>
 
-bool Config::Load(BinaryStream& stream, bool binary /*= false*/)
+ConfigBase::~ConfigBase()
 {
-	Clear();
-	if(binary)
+	for(auto e : m_entries)
 	{
-		stream << m_entries;
+		delete e.second;
 	}
-	else
+}
+bool ConfigBase::Load(const String& path)
+{
+    File file;
+    if(!file.OpenRead(path))
+        return false;
+    FileReader reader(file);
+    return Load(reader);
+}
+bool ConfigBase::Load(BinaryStream& stream)
+{
+	// Clear and load defaults
+	Clear();
+
+	Set<uint32> setKeys;
+	for(auto e : m_entries)
 	{
-		String line;
-		while(TextStream::ReadLine(stream, line))
+		setKeys.Add(e.first);
+	}
+
+	String line;
+	while(TextStream::ReadLine(stream, line))
+	{
+		String k, v;
+		if(line.Split("=", &k, &v))
 		{
-			String k, v;
-			if(line.Split("=", &k, &v))
+			k.Trim(' ');
+			v.Trim(' ');
+			std::stringstream s(v);
+
+			auto it = m_keys.find(k);
+			if(it != m_keys.end())
 			{
-				k.Trim(' ');
-				v.Trim(' ');
-
-				// Detect type of right hand side
-				std::stringstream s(v);
-
-				int32 i;
-				s >> i;
-				if(!s.fail() && s.eof())
+				auto it1 = m_entries.find(it->second);
+				if(it1 != m_entries.end())
 				{
-					Add(k, Variant::Create(i));
-					continue;
+					setKeys.erase(it1->first);
+					m_entries[it1->first]->FromString(v);
 				}
-				s.seekg(0);
-				s.clear();
-				float f;
-				s >> f;
-				if(!s.fail() && s.eof())
-				{
-					Add(k, Variant::Create(f));
-					continue;
-				}
-
-				// Trim quotes
-				v.Trim('"');
-				Add(k, Variant::Create(v));
 			}
 		}
 	}
 
-	return true;
-}
-void Config::Save(BinaryStream& stream, bool binary /*= false*/)
-{
-	if(binary)
+
+	if(!setKeys.empty())
 	{
-		stream << m_entries;
+		// Default setting missed in config file, flag as dirty
+		m_dirty = true;
 	}
 	else
 	{
-		for(auto& p : m_entries)
-		{
-			String v = p.second.ToString();
-			if(p.second.GetType() == VariantType::String)
-				v = "\"" + v + "\"";
-			String line = p.first + " = " + v;
-			TextStream::WriteLine(stream, line);
-		}
+		// Config is clean
+		m_dirty = false;
 	}
+	return true;
 }
+bool ConfigBase::Save(const String& path)
+{
+    File file;
+    if(!file.OpenWrite(path))
+        return false;
+    FileWriter reader(file);
+    Save(reader);
+    return true;
+}
+void ConfigBase::Save(BinaryStream& stream)
+{
+	for(auto& e : m_entries)
+	{
+		String key = m_reverseKeys[e.first];
+		String line = key + " = " + e.second->ToString();
+		TextStream::WriteLine(stream, line);
+	}
 
-Variant* Config::Get(const String& key)
-{
-	return m_entries.Find(key);
+	// Saved
+	m_dirty = false;
 }
-void Config::Add(const String& key, const Variant& val)
+bool ConfigBase::IsDirty() const
 {
-	m_entries.Add(key, val);
+	return m_dirty;
 }
-bool Config::Contains(const String& key) const
+void ConfigBase::Clear()
 {
-	return m_entries.Contains(key);
-}
-void Config::Clear()
-{
+	for(auto e : m_entries)
+	{
+		delete e.second;
+	}
 	m_entries.clear();
+	InitDefaults();
+}
+ConfigBase::ConfigBase()
+{
 }

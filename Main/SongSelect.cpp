@@ -9,6 +9,7 @@
 #include "MapDatabase.hpp"
 #include "Game.hpp"
 #include "TransitionScreen.hpp"
+#include "GameConfig.hpp"
 
 #include "Audio.hpp"
 
@@ -485,10 +486,7 @@ public:
 		m_selectSound = g_audio->CreateSample("audio/menu_click.wav");
 
 		// Setup the map database
-		if(g_mainConfig.Contains("songfolder"))
-		{
-			m_mapDatabase.AddSearchPath(g_mainConfig.Get("songfolder")->ToString());
-		}
+		m_mapDatabase.AddSearchPath(g_gameConfig.GetString(GameConfigKeys::SongFolder));
 
 		m_mapDatabase.OnMapsAdded.Add(m_selectionWheel.GetData(), &SelectionWheel::OnMapsAdded);
 		m_mapDatabase.OnMapsUpdated.Add(m_selectionWheel.GetData(), &SelectionWheel::OnMapsUpdated);
