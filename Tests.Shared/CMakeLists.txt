@@ -12,6 +12,7 @@ set_output_postfixes(Tests.Shared)
 	
 # Dependencies
 target_link_libraries(Tests.Shared Shared)
+target_link_libraries(Tests.Shared Tests)
 
 if(WIN32)
 	# Bundled libraries
