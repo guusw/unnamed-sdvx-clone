@@ -9,7 +9,10 @@ enable_cpp11()
 include_directories(.)
 add_executable(Tests.Shared ${Main_src})
 set_output_postfixes(Tests.Shared)
-	
+
+# SEH
+target_compile_options(Tests.Shared PUBLIC /EHa)
+
 # Dependencies
 target_link_libraries(Tests.Shared Shared)
 target_link_libraries(Tests.Shared Tests)

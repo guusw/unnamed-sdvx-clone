@@ -21,6 +21,9 @@ enable_precompiled_headers("${Tests_src}" src/stdafx.cpp)
 include_directories(include include/Tests src)
 add_library(Tests ${Tests_src} ${Tests_include} ${Platform_src})
 
+# SEH
+target_compile_options(Tests PUBLIC /EHa)
+
 target_link_libraries(Tests Shared)
 
 # Public include paths for library
