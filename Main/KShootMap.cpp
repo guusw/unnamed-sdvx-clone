@@ -207,7 +207,21 @@ float KShootMap::TimeToFloat(const KShootTime& time) const
 }
 float KShootMap::TranslateLaserChar(char c) const
 {
-	return (float)((uint32_t)c - c_laserStart) / (float)c_laserRange;
+	float laserPosition = 0;
+
+	if (c >= '0' && c <= '9')
+	{
+		laserPosition = c - '0';
+	}
+	else if (c >= 'A' && c <= 'Z')
+	{
+		laserPosition = c - 'A' + 10;
+	}
+	else if (c >= 'a' && c <= 'o')
+	{
+		laserPosition = c - 'a' + 36;
+	}
+	return laserPosition / 50.0f;
 }
 const char* KShootMap::c_sep = "--";
 const uint32_t KShootMap::c_laserStart = '0';
