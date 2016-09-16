@@ -13,6 +13,8 @@ public:
 	// Working dir
 	static String GetCurrentPath();
 	static String GetExecutablePath();
+	// The filename of the executable
+	static String GetModuleName();
 
 	static String GetTemporaryPath();
 	static String GetTemporaryFileName(const String& path, const String& prefix = String());

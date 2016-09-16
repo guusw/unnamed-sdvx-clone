@@ -22,6 +22,14 @@ String Path::GetExecutablePath()
 	GetModuleFileNameA(GetModuleHandle(0), filename, sizeof(filename));
 	return filename;
 }
+
+String Path::GetModuleName()
+{
+	String moduleName = Path::GetExecutablePath();
+	Path::RemoveLast(moduleName, &moduleName);
+	return moduleName;
+}
+
 String Path::GetTemporaryPath()
 {
 	char path[MAX_PATH];

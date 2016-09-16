@@ -9,6 +9,9 @@ enable_cpp11()
 include_directories(.)
 add_executable(Tests.Graphics ${Main_src})
 set_output_postfixes(Tests.Graphics)
+
+# SEH
+target_compile_options(Tests.Graphics PUBLIC /EHa)
 	
 # Dependencies
 target_link_libraries(Tests.Graphics Shared)
