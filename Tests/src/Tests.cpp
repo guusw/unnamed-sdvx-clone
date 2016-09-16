@@ -13,6 +13,14 @@ int main()
 	}
 }
 
+TestCategory& TestCategory::operator+=(TestCategory* categoryToAdd)
+{
+}
+
+TestCategory& TestCategory::operator+=(Test* testToAdd)
+{
+}
+
 TestManager::TestManager()
 {
 }
