@@ -66,7 +66,10 @@ add_subdirectory(third_party)
 add_subdirectory(Shared)
 add_subdirectory(Graphics)
 add_subdirectory(Main)
+# Unit test projects
+add_subdirectory(Tests)
 add_subdirectory(Tests.Shared)
+add_subdirectory(Tests.Graphics)
 
 # Enabled project filters on windows
 if(MSVC)
@@ -86,6 +89,8 @@ if(MSVC)
 	set_target_properties(Shared PROPERTIES FOLDER Libraries)
 	set_target_properties(Graphics PROPERTIES FOLDER Libraries)
 	
-	# Tests
+	# Unit tests
+	set_target_properties(Tests PROPERTIES FOLDER "Tests")
 	set_target_properties(Tests.Shared PROPERTIES FOLDER "Tests")
+	set_target_properties(Tests.Graphics PROPERTIES FOLDER "Tests")
 endif(MSVC)

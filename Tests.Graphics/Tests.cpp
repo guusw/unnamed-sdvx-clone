@@ -56,7 +56,7 @@ int main(void)
 		uint32* test = 0;
 		test[0] = 20;
 	}
-	catch (...)
+	catch(...)
 	{
 		auto stackTrace = Debug::GetStackTrace();
 		Logf("Program crashed, dumping stack trace", Logger::Error);
