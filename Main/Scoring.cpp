@@ -117,6 +117,18 @@ float Scoring::GetLaserRollOutput(uint32 index)
 	return 0.0f;
 }
 
+bool Scoring::GetLaserActive()
+{
+	for (int i = 0; i < 2; i++)
+	{
+		if (m_currentLaserSegments[i])
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 static const float laserOutputInterpolationDuration = 0.1f;
 float Scoring::GetLaserOutput()
 {
@@ -454,16 +466,18 @@ void Scoring::m_UpdateTicks()
 					}
 					else
 					{
+						// Snap to first laser tick
+						/// TODO: Find better solution
+						if (tick->HasFlag(TickFlags::Start))
+							laserPositions[laserObject->index] = laserTargetPositions[laserObject->index];
+
 						// Check laser input
 						float laserDelta = abs(laserPositions[laserObject->index] - laserTargetPositions[laserObject->index]);\
-
-						// Halve distance for extended laser
-						if((laserObject->flags & LaserObjectState::flag_Extended) != 0)
-							laserDelta *= 0.5f;
 
 						if(laserDelta < laserDistanceLeniency)
 						{
 							m_TickHit(tick, buttonCode);
+							m_autoLaserTick[laserObject->index] = false;
 							processed = true;
 						}
 					}
@@ -724,14 +738,7 @@ void Scoring::m_UpdateLasers(float deltaTime)
 			float positionDelta = laserTargetPositions[i] - laserPositions[i];
 			float moveDir = Math::Sign(positionDelta);
 			float laserDir = currentSegment->GetDirection();
-			float input = m_laserInput[i];
-			if(autoplay)
-			{
-				if(abs(positionDelta) > 0.05f)
-					input = positionDelta;
-				else
-					input = laserDir;
-			}
+			float input = m_laserInput[i];		
 			float inputDir = Math::Sign(input);
 
 			// Always snap laser to start sections if they are completely vertical
@@ -742,7 +749,7 @@ void Scoring::m_UpdateLasers(float deltaTime)
 			else if (laserDir == 0.0f && abs(positionDelta) < laserDistanceLeniency)
 			{
 				laserPositions[i] = laserTargetPositions[i];
-				notAffectingGameplay = false;
+				m_autoLaserTick[i] = true;
 			}
 			else if(inputDir != 0.0f)
 			{
@@ -762,8 +769,11 @@ void Scoring::m_UpdateLasers(float deltaTime)
 						laserPositions[i] = Math::Max(laserPositions[i] + input, laserTargetPositions[i]);
 				}
 				notAffectingGameplay = false;
-				// Clamp cursor between 0 and 1
-				laserPositions[i] = Math::Min(Math::Max(laserPositions[i], 0.0f), 1.0f);
+				if (inputDir == moveDir && positionDelta < laserDistanceLeniency)
+				{
+					m_autoLaserTick[i] = true;
+				}
+				
 
 				
 			}
@@ -773,12 +783,12 @@ void Scoring::m_UpdateLasers(float deltaTime)
 		{
 			timeSinceLaserUsed[i] += deltaTime;
 		}
-
-		// Idle laser
-		if(notAffectingGameplay)
+		if (autoplay || m_autoLaserTick[i])
 		{
-			laserPositions[i] = Math::Clamp(laserPositions[i] + m_laserInput[i] * deltaTime * idleLaserSpeed, 0.0f, 1.0f);
+			laserPositions[i] = laserTargetPositions[i];
 		}
+		// Clamp cursor between 0 and 1
+		laserPositions[i] = Math::Clamp(laserPositions[i], 0.0f, 1.0f);
 	}
 
 	// Interpolate laser output

@@ -79,6 +79,8 @@ public:
 	void Tick(float deltaTime);
 
 	float GetLaserRollOutput(uint32 index);
+	// Check if any lasers are currently active
+	bool GetLaserActive();
 	float GetLaserOutput();
 
 	// Check if an object is currently held
@@ -239,6 +241,9 @@ private:
 	float m_laserInput[2] = { 0.0f };
 	// Keeps being set to the last direction the laser was moving in to create laser intertia
 	float m_lastLaserInputDirection[2] = { 0.0f };
+	// Decides if the coming tick should be auto completed
+	bool m_autoLaserTick[2] = { false,false };
+
 
 	// used the update the amount of hit ticks for hold/laser notes
 	Map<ObjectState*, HitStat*> m_holdHitStats;

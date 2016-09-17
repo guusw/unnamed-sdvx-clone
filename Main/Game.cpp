@@ -300,7 +300,10 @@ public:
 		// Get render state from the camera
 		float rollA = m_scoring.GetLaserRollOutput(0);
 		float rollB = m_scoring.GetLaserRollOutput(1);
-		m_camera.SetTargetRoll((rollA + rollB) * m_rollIntensity);
+		bool laserActive = m_scoring.GetLaserActive();
+		m_camera.SetTargetRoll(rollA + rollB);
+		m_camera.SetLasersActive(laserActive);
+		m_camera.SetRollIntensity(m_rollIntensity);
 
 		// Set track zoom
 		if(!m_settingsBar->IsShown()) // Overridden settings?
@@ -309,7 +312,7 @@ public:
 			m_camera.zoomTop = m_playback.GetZoom(1);
 		}
 		m_camera.track = m_track;
-		m_camera.Tick(deltaTime);
+		m_camera.Tick(deltaTime,m_playback);
 		RenderState rs = m_camera.CreateRenderState(true);
 
 		// Draw BG first
@@ -917,7 +920,7 @@ public:
 				m_rollIntensity = 0;
 			else
 			{
-				m_rollIntensity = m_rollIntensityBase + (float)(i - 1) * 0.03f;
+				m_rollIntensity = m_rollIntensityBase + (float)(i - 1) * 0.0125f;
 			}
 		}
 		else if(key == EventKey::SlamVolume)

@@ -24,14 +24,14 @@ public:
 	~Camera();
 
 	// Updates the camera's shake effects, movement, etc.
-	void Tick(float deltaTime);
+	void Tick(float deltaTime, class BeatmapPlayback& playback);
 
 	void AddCameraShake(CameraShake camerShake);
 	void AddRollImpulse(float dir, float strength);
 
 	// Changes the amount of roll applied when lasers are controlled, default = 1
 	void SetRollIntensity(float val);
-
+	void SetLasersActive(bool lasersActive);
 	void SetTargetRoll(float target);
 	float GetRoll() const;
 
@@ -63,6 +63,7 @@ private:
 	// Target to roll towards
 	float m_targetRoll = 0.0f;
 	bool m_targetRollSet = false;
+	bool m_lasersActive = false;
 	// Roll force
 	float m_rollVelocity = 0.0f;
 	float m_rollIntensity;
