@@ -734,41 +734,38 @@ void Scoring::m_UpdateLasers(float deltaTime)
 			}
 			float inputDir = Math::Sign(input);
 
-			// Always snap laser to start sections if they are completely vertical
-			// Check Yggdrasil_ch.ksh for a part that starts of with vertical lasers and then curve towards the other side (46500 ms in)
-			if(laserDir == 0 && currentSegment->prev == nullptr)
+			// Always snap laser to start sections
+			if (currentSegment->prev == nullptr)
 				laserPositions[i] = laserTargetPositions[i];
+			// Lock lasers on straight parts
+			else if (laserDir == 0.0f && abs(positionDelta) < laserDistanceLeniency)
+			{
+				laserPositions[i] = laserTargetPositions[i];
+				notAffectingGameplay = false;
+			}
 			else if(inputDir != 0.0f)
 			{
-				// Snap to laser if laser is on the wrong side
-				if(moveDir != laserDir && inputDir == laserDir)
+				if(laserDir < 0 && positionDelta < 0)
 				{
-					laserPositions[i] = laserTargetPositions[i];
-					notAffectingGameplay = false;
+					laserPositions[i] = Math::Max(laserPositions[i] + input, laserTargetPositions[i]);
 				}
-				else if(moveDir == inputDir)
+				else if (laserDir > 0 && positionDelta > 0)
 				{
-					moveDir *= abs(input);
-					if(moveDir < 0)
-					{
-						laserPositions[i] = Math::Max(laserPositions[i] + input, laserTargetPositions[i]);
-					}
-					else
-					{
+					laserPositions[i] = Math::Min(laserPositions[i] + input, laserTargetPositions[i]);
+				}
+				else if (laserDir == 0.0f)
+				{
+					if (positionDelta > 0)
 						laserPositions[i] = Math::Min(laserPositions[i] + input, laserTargetPositions[i]);
-					}
-					// Clamp cursor between 0 and 1
-					laserPositions[i] = Math::Min(Math::Max(laserPositions[i],0.0f), 1.0f);
-
-					notAffectingGameplay = false;
+					if (positionDelta < 0)
+						laserPositions[i] = Math::Max(laserPositions[i] + input, laserTargetPositions[i]);
 				}
-
-				// Lock lasers on straight parts
-				if(laserDir == 0.0f)
-					notAffectingGameplay = false;
-			}
-			else if(laserDir == 0.0f)
 				notAffectingGameplay = false;
+				// Clamp cursor between 0 and 1
+				laserPositions[i] = Math::Min(Math::Max(laserPositions[i], 0.0f), 1.0f);
+
+				
+			}
 			timeSinceLaserUsed[i] = 0.0f;
 		}
 		else
