@@ -1,13 +1,20 @@
 #pragma once
 
+// Types of input device
+DefineEnum(InputDevice,
+	Keyboard,
+	Mouse,
+	Controller);
+
+typedef Ref<int32> MouseLockHandle;
+
 /*
 	Class that handles game keyboard (and soon controller input)
 */
 class Input : Unique
 {
 public:
-	enum class Button
-	{
+	DefineEnum(Button,
 		BT_0,
 		BT_1,
 		BT_2,
@@ -18,13 +25,23 @@ public:
 		LS_0Pos, // Left laser+		(|---->)
 		LS_1Neg, // Right laser-	(<----|)
 		LS_1Pos, // Right laser+
-		Length,
-	};
+		Length);
 
+	~Input();
 	void Init(Graphics::Window& wnd);
 	void Cleanup();
 
+	// Poll/Update input
+	void Update(float deltaTime);
+
 	bool GetButton(Button button) const;
+
+	// Controller state as a string
+	// Primarily used for debugging
+	String GetControllerStateString() const;
+
+	// Returns a handle to a mouse lock, release it to unlock the mouse
+	MouseLockHandle LockMouse();
 
 	// Event handlers
 	virtual void OnKeyPressed(Key key);
@@ -38,12 +55,37 @@ public:
 	Delegate<Button> OnButtonReleased;
 
 private:
-	void m_InitButtonMapping();
+	void m_InitKeyboardMapping();
+	void m_InitControllerMapping();
 	void m_OnButtonInput(Button b, bool pressed);
 
-	Map<Key, Button> m_buttonMap;
+	void m_OnGamepadButtonPressed(uint8 button);
+	void m_OnGamepadButtonReleased(uint8 button);
+
+	int32 m_mouseLockIndex = 0;
+	Vector<MouseLockHandle> m_mouseLocks;
+
+	InputDevice m_laserDevice;
+	InputDevice m_buttonDevice;
+
 	bool m_buttonStates[(size_t)Button::Length];
 	float m_laserStates[2] = { 0.0f };
+
+	// Keyboard bindings
+	Multimap<Key, Button> m_buttonMap;
+
+	// Mouse bindings
+	uint32 m_mouseAxisMapping[2] = { 0,1 };
+	float m_mouseSensitivity;
+	Vector2 m_lastMousePos;
+
+	// Controller bindings
+	Multimap<uint32, Button> m_controllerMap;
+	uint32 m_controllerAxisMapping[2] = { 0,1 };
+	float m_controllerSensitivity;
+	float m_controllerDeadzone;
+
+	Ref<Gamepad> m_gamepad;
 
 	Graphics::Window* m_window = nullptr;
 };

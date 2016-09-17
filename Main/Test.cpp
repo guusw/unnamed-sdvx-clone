@@ -17,6 +17,7 @@
 #include "HealthGauge.hpp"
 #include "Shared/Jobs.hpp"
 #include "ScoreScreen.hpp"
+#include "Shared/Enum.hpp"
 
 class Test_Impl : public Test
 {
@@ -30,16 +31,25 @@ private:
 	float c = 1.0f; // 0 - 5
 	float d = 0.0f; // -2 - 2
 
-public:
-	bool Init0()
-	{
-		
+	Ref<Gamepad> m_gamepad;
 
-		return true;
+public:
+	static void StaticFunc(int32 arg)
+	{
+	}
+	static int32 StaticFunc1(int32 arg)
+	{
+		return arg * 2;
+	}
+	static int32 StaticFunc2(int32 arg)
+	{
+		return arg * 2;
 	}
 	bool Init()
 	{
 		m_guiStyle = CommonGUIStyle::Get();
+
+		m_gamepad = g_gameWindow->OpenGamepad(0);
 
 		{
 			ScrollBox* box0 = new ScrollBox(m_guiStyle);

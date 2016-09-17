@@ -60,11 +60,20 @@ public:
 	}
 	void ClearThreads()
 	{
-		m_lock.lock();
 		for(JobThread* t : m_threadPool)
 		{
 			t->Terminate();
 			delete t;
+		}
+		m_lock.lock();
+		// Unregister jobs
+		for(auto job : m_jobQueue)
+		{
+			job->m_sheduler = nullptr;
+		}
+		for(auto job : m_finishedJobs)
+		{
+			job->m_sheduler = nullptr;
 		}
 		m_threadPool.clear();
 		m_lock.unlock();

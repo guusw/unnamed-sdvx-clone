@@ -1,11 +1,18 @@
 #include "stdafx.h"
 #include "Log.hpp"
 #include "Path.hpp"
+#include "File.hpp"
+#include "FileStream.hpp"
+#include "TextStream.hpp"
 #include <ctime>
 #include <map>
 
 class Logger_Impl
 {
+private:
+	File m_logFile;
+	FileWriter m_writer;
+
 public:
 	Logger_Impl()
 	{
@@ -18,6 +25,10 @@ public:
 		// Store console output handle
 		consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 #endif
+
+		// Log to file
+		m_logFile.OpenWrite(Utility::Sprintf("log_%s.txt", moduleName));
+		m_writer = FileWriter(m_logFile);
 	}
 
 	void WriteHeader(Logger::Severity severity)
@@ -47,6 +58,7 @@ public:
 #else
 		printf("%s", msg.c_str());
 #endif
+		TextStream::Write(m_writer, msg);
 	}
 
 #ifdef _WIN32

@@ -164,7 +164,12 @@ void AudioStreamBase::Process(float* out, uint32 numSamples)
 
 		// Read more data
 		if(DecodeData_Internal() <= 0)
+		{
+			// Ended
+			Logf("Audio stream ended", Logger::Info);
+			m_ended = true;
 			break;
+		}
 	}
 
 	// Store timing info

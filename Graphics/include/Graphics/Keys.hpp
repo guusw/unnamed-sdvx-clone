@@ -1,4 +1,5 @@
 #pragma once
+#include "Shared/Enum.hpp"
 
 // In case None is defined by someone (linux)
 #ifdef None
@@ -7,25 +8,18 @@
 
 namespace Graphics
 {
-	enum class MouseButton : uint8 
-	{
+	DefineEnum(MouseButton,
 		Left = 0,
 		Middle,
-		Right
-	};
+		Right);
 
-	enum class ModifierKeys : uint8 
-	{
+	DefineBitflagEnum(ModifierKeys,
 		None = 0,
 		Alt = 1,
 		Ctrl = 2,
-		Shift = 4
-	};
-	ModifierKeys operator&(ModifierKeys l, ModifierKeys r);
-	ModifierKeys operator|(ModifierKeys l, ModifierKeys r);
+		Shift = 4);
 
-	enum class Key : uint8
-	{
+	DefineEnum(Key,
 		None = 0,
 		// Top Row Keys
 		Escape,
@@ -96,6 +90,5 @@ namespace Graphics
 		Return,
 		PageUp,
 		PageDown,
-		Tab,
-	};
+		Tab);
 }

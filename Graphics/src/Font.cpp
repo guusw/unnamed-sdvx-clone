@@ -1,10 +1,11 @@
 #include "stdafx.h"
 #include "Font.hpp"
-#include <Graphics/ResourceManagers.hpp>
+#include "ResourceManagers.hpp"
 #include "Image.hpp"
 #include "Texture.hpp"
 #include "Mesh.hpp"
 #include "OpenGL.hpp"
+#include <Shared/Timer.hpp>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

@@ -201,6 +201,10 @@ void Track::Tick(class BeatmapPlayback& playback, float deltaTime)
 
 	MapTime currentTime = playback.GetLastTime();
 
+	// Set the view range of the track
+	trackViewRange = Vector2((float)currentTime, 0.0f);
+	trackViewRange.y = trackViewRange.x + GetViewRange();
+
 	// Update ticks separating bars to draw
 	double tickTime = (double)currentTime;
 	MapTime rangeEnd = currentTime + playback.ViewDistanceToDuration(m_viewRange);
@@ -213,6 +217,10 @@ void Track::Tick(class BeatmapPlayback& playback, float deltaTime)
 		tickTime -= firstOverflow;
 
 	m_barTicks.clear();
+
+	// Add first tick
+	m_barTicks.Add(playback.TimeToViewDistance((MapTime)tickTime));
+
 	while(tickTime < rangeEnd)
 	{
 		double next = tickTime + stepTime;
@@ -232,10 +240,6 @@ void Track::Tick(class BeatmapPlayback& playback, float deltaTime)
 		// Add tick
 		m_barTicks.Add(playback.TimeToViewDistance((MapTime)tickTime));
 	}
-
-	// Set the view range of the track
-	trackViewRange = Vector2((float)currentTime, 0.0f);
-	trackViewRange.y = trackViewRange.x + GetViewRange();
 
 	// Set Object glow
 	int32 startBeat = 0;
@@ -400,7 +404,7 @@ void Track::DrawOverlays(class RenderQueue& rq)
 			pos = pos * 2.0f - 0.5f;
 		Vector2 objectSize = Vector2(buttonWidth * 0.7f, 0.0f);
 		objectSize.y = laserPointerTexture->CalculateHeight(objectSize.x);
-		DrawSprite(rq, Vector3(pos - trackWidth * 0.5f, 0.0f, 0.0f), objectSize, laserPointerTexture, laserColors[i]);
+		DrawSprite(rq, Vector3(pos - trackWidth * 0.5f, 0.0f, 0.0f), objectSize, laserPointerTexture, laserColors[i].WithAlpha(laserPointerOpacity[i]));
 	}
 }
 void Track::DrawTrackOverlay(RenderQueue& rq, Texture texture, float heightOffset /*= 0.05f*/, float widthScale /*= 1.0f*/)

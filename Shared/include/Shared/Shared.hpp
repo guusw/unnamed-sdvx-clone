@@ -5,31 +5,15 @@
 
 // Random Utility classes
 #include "Unique.hpp"
-#include "Delegate.hpp"
 #include "Utility.hpp"
+#include "Delegate.hpp"
 #include "Timer.hpp"
-
-// File API
-#include "Path.hpp"
-#include "File.hpp"
-
-// Binary Streams
-#include "Buffer.hpp"
-#include "BinaryStream.hpp"
-#include "MemoryStream.hpp"
-#include "FileStream.hpp"
-
-// Text layer above binary streams
-#include "TextStream.hpp"
-
-// Config
-#include "Config.hpp"
 
 // Reference counting
 #include "Ref.hpp"
 
-// RTTI
-#include "TypeInfo.hpp"
+// Filsystem headers
+#include "FileSystem.hpp"
 
 // Container classes
 #include "String.hpp"
@@ -49,6 +33,3 @@
 #include "Rect.hpp"
 #include "Margin.hpp"
 #include "Random.hpp"
-
-// Resource manager
-#include "ResourceManager.hpp"

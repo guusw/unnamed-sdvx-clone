@@ -109,7 +109,7 @@ Vector<float> LayoutBox::CalculateSizes(const GUIRenderData& rd) const
 	// Combined size of everything
 	float minSize = 0.0f;
 	float fixedSize = 0.0f;
-	uint32 fillCount = 0;
+	float fillCount = 0;
 	for(auto it = m_children.begin(); it != m_children.end(); it++)
 	{
 		Vector2 size = (*it)->GetDesiredSize(rd);
@@ -118,7 +118,7 @@ Vector<float> LayoutBox::CalculateSizes(const GUIRenderData& rd) const
 		minSize += currentSize;
 		if(currentFill)
 		{
-			fillCount++;
+			fillCount += (*it)->fillAmount;
 		}
 		else
 		{
@@ -139,9 +139,6 @@ Vector<float> LayoutBox::CalculateSizes(const GUIRenderData& rd) const
 		fixedSize *= fixedScale;
 	}
 
-	// Reciprocal of fill count
-	float fillMult = 1.0f / fillCount;
-
 	float offset = 0.0f;
 	Vector<float> ret;
 	for(auto it = m_children.begin(); it != m_children.end(); it++)
@@ -152,6 +149,7 @@ Vector<float> LayoutBox::CalculateSizes(const GUIRenderData& rd) const
 		float mySize;
 		if(currentFill)
 		{
+			float fillMult = (*it)->fillAmount / fillCount;
 			mySize = fillSpace * fillMult;
 		}
 		else

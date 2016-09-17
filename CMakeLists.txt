@@ -29,10 +29,12 @@ add_definitions(-DUNICODE -D_UNICODE)
 #	pchSrc 	= Path to precompiled header source file
 macro(enable_precompiled_headers src pchSrc)
 	if(MSVC)
-	   # Set precompiled header usage
-	   set_source_files_properties(src PROPERTIES COMPILE_FLAGS "/Yu")
-	   # Set precompiled header
-	   set_source_files_properties(pchSrc PROPERTIES COMPILE_FLAGS "/Yc")
+		message("Enabling precompiled header generated from source file ${pchSrc}")
+		message("Files using precompiled headers => ${src}")
+		# Set precompiled header usage
+		set_source_files_properties(${src} PROPERTIES COMPILE_FLAGS "/Yu")
+		# Set precompiled header
+		set_source_files_properties(${pchSrc} PROPERTIES COMPILE_FLAGS "/Yc")
 	endif(MSVC)
 endmacro(enable_precompiled_headers)
 
@@ -40,7 +42,7 @@ endmacro(enable_precompiled_headers)
 macro(precompiled_header_exclude exclude)
 	if(MSVC)
 		# Excluded files
-	   set_source_files_properties(exclude PROPERTIES COMPILE_FLAGS "")
+		set_source_files_properties(${exclude} PROPERTIES COMPILE_FLAGS "")
 	endif(MSVC)
 endmacro(precompiled_header_exclude)
 
@@ -64,6 +66,7 @@ add_subdirectory(third_party)
 add_subdirectory(Shared)
 add_subdirectory(Graphics)
 add_subdirectory(Main)
+add_subdirectory(Tests.Shared)
 
 # Enabled project filters on windows
 if(MSVC)
@@ -82,4 +85,7 @@ if(MSVC)
 	# My libraries in the libraries folder
 	set_target_properties(Shared PROPERTIES FOLDER Libraries)
 	set_target_properties(Graphics PROPERTIES FOLDER Libraries)
+	
+	# Tests
+	set_target_properties(Tests.Shared PROPERTIES FOLDER "Tests")
 endif(MSVC)

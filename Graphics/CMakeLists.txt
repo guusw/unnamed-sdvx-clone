@@ -16,6 +16,11 @@ endif(WIN32)
 
 file(GLOB Graphics_src ${Graphics_src} ${Platform_src})
 
+# Compiler stuff
+enable_cpp11()
+enable_precompiled_headers("${Graphics_src}" src/stdafx.cpp)
+precompiled_header_exclude("src/glew.c")
+
 include_directories(include include/Graphics src
 	include/Graphics/glew 
 	${PROJECT_SOURCE_DIR}/Shared/include)
@@ -26,11 +31,6 @@ target_include_directories(Graphics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include $
 	
 # GLEW is included statically and also doesn't need GLU(Which doesn't even exist on linux)
 add_definitions(-DGLEW_NO_GLU -DGLEW_STATIC)
-	
-# Compiler stuff
-enable_cpp11()
-enable_precompiled_headers(${Graphics_src} src/stdafx.cpp)
-precompiled_header_exclude(src/glew.c)
 
 # Dependencies
 target_link_libraries(Graphics Shared)

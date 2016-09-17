@@ -9,6 +9,7 @@
 #include "MapDatabase.hpp"
 #include "Game.hpp"
 #include "TransitionScreen.hpp"
+#include "GameConfig.hpp"
 
 #include "Audio.hpp"
 
@@ -97,7 +98,6 @@ class SelectionWheel : public Canvas
 {
 	Map<MapIndex*, Ref<SongSelectItem>> m_guiElements;
 
-	Vector<MapIndex*> m_mapRange;
 	Map<int32, MapIndex*> m_maps;
 
 	Map<int32, MapIndex*> m_mapFilter;
@@ -176,6 +176,15 @@ public:
 		{
 			AdvanceSelection(0);
 		}
+	}
+	void SelectRandom()
+	{
+		if(m_SourceCollection().empty())
+			return;
+		uint32 selection = Random::IntRange(0, (int32)m_SourceCollection().size() - 1);
+		auto it = m_SourceCollection().begin();
+		std::advance(it, selection);
+		SelectMap(it->first);
 	}
 	void SelectMap(int32 newIndex)
 	{
@@ -433,31 +442,10 @@ public:
 	bool Init() override
 	{
 		m_commonGUIStyle = CommonGUIStyle::Get();
-
 		m_canvas = Utility::MakeRef(new Canvas());
 
 		// Load textures for song select
-		m_style = Ref<SongSelectStyle>(new SongSelectStyle);
-		m_style->frameSub = g_application->LoadTexture("song_select/sub.png");
-		m_style->frameSub->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
-		m_style->frameMain = g_application->LoadTexture("song_select/main.png");
-		m_style->frameMain->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
-		m_style->loadingJacketImage = g_application->LoadTexture("song_select/loading.png");
-		static const char* diffTextures[] =
-		{
-			"song_select/nov.png",
-			"song_select/adv.png",
-			"song_select/exh.png",
-			"song_select/grv.png",
-			"song_select/inf.png",
-		};
-		for(uint32 i = 0; i < 5; i++)
-		{
-			m_style->diffFrames[i] = g_application->LoadTexture(diffTextures[i]);
-			m_style->diffFrames[i]->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
-		}
-		m_style->diffFrameMaterial = g_application->LoadMaterial("diffFrame");
-		m_style->diffFrameMaterial->opaque = false;
+		m_style = SongSelectStyle::Get(g_application);
 
 		// Split between statistics and selection wheel (in percentage)
 		const float screenSplit = 0.4f;
@@ -498,10 +486,7 @@ public:
 		m_selectSound = g_audio->CreateSample("audio/menu_click.wav");
 
 		// Setup the map database
-		if(g_mainConfig.Contains("songfolder"))
-		{
-			m_mapDatabase.AddSearchPath(g_mainConfig.Get("songfolder")->ToString());
-		}
+		m_mapDatabase.AddSearchPath(g_gameConfig.GetString(GameConfigKeys::SongFolder));
 
 		m_mapDatabase.OnMapsAdded.Add(m_selectionWheel.GetData(), &SelectionWheel::OnMapsAdded);
 		m_mapDatabase.OnMapsUpdated.Add(m_selectionWheel.GetData(), &SelectionWheel::OnMapsUpdated);
@@ -606,6 +591,10 @@ public:
 		else if(key == Key::F5)
 		{
 			m_mapDatabase.StartSearching();
+		}
+		else if(key == Key::F2)
+		{
+			m_selectionWheel->SelectRandom();
 		}
 	}
 	virtual void OnKeyReleased(Key key)

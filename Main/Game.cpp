@@ -14,7 +14,7 @@
 #include "ScoreScreen.hpp"
 #include "TransitionScreen.hpp"
 #include "AsyncAssetLoader.hpp"
-#include "Shared/Config.hpp"
+#include "GameConfig.hpp"
 
 #include "GUI/GUI.hpp"
 #include "GUI/HealthGauge.hpp"
@@ -47,8 +47,8 @@ class Game_Impl : public Game
 {
 public:
 	// Startup parameters
+	String m_mapRootPath;
 	String m_mapPath;
-	String m_fullMapPath;
 
 private:
 	bool m_playing = true;
@@ -88,11 +88,10 @@ private:
 	// The play field
 	Track* m_track = nullptr;
 
-	// Input controller
-	Input m_input;
-
 	// The camera watching the playfield
 	Camera m_camera;
+
+	MouseLockHandle m_lockMouse;
 
 	// Current background visualization
 	Background* m_background = nullptr;
@@ -124,13 +123,12 @@ public:
 	Game_Impl(const String& mapPath)
 	{
 		// Store path to map
-		m_fullMapPath = Path::Normalize(mapPath);
+		m_mapPath = Path::Normalize(mapPath);
 
 		// Get Parent path
-		m_mapPath = Path::RemoveLast(m_fullMapPath, nullptr);
+		m_mapRootPath = Path::RemoveLast(m_mapPath, nullptr);
 
-		Variant* hispeedSetting = g_mainConfig.Get("hispeed");
-		m_hispeed = hispeedSetting ? hispeedSetting->ToFloat() : 1.0f;
+		m_hispeed = g_gameConfig.GetFloat(GameConfigKeys::HiSpeed);
 	}
 	~Game_Impl()
 	{
@@ -138,12 +136,14 @@ public:
 			delete m_track;
 		if(m_background)
 			delete m_background;
-		m_input.Cleanup();
 
 		// Save hispeed
-		g_mainConfig.Add("hispeed", Variant::Create(m_hispeed));
+		g_gameConfig.Set(GameConfigKeys::HiSpeed, m_hispeed);
 
-		g_rootCanvas->Remove(m_canvas.As<GUIElementBase>());
+		g_rootCanvas->Remove(m_canvas.As<GUIElementBase>()); 
+
+		// In case the cursor was still hidden
+		g_gameWindow->SetCursorVisible(true);
 	}
 
 	AsyncAssetLoader loader;
@@ -151,13 +151,13 @@ public:
 	{
 		ProfilerScope $("AsyncLoad Game");
 
-		if(!Path::FileExists(m_fullMapPath))
+		if(!Path::FileExists(m_mapPath))
 		{
-			Logf("Couldn't find map at %s", Logger::Error, m_fullMapPath);
+			Logf("Couldn't find map at %s", Logger::Error, m_mapPath);
 			return false;
 		}
 
-		m_beatmap = TryLoadMap(m_fullMapPath);
+		m_beatmap = TryLoadMap(m_mapPath);
 
 		// Check failure of above loading attempts
 		if(!m_beatmap)
@@ -175,11 +175,11 @@ public:
 		const BeatmapSettings& mapSettings = m_beatmap->GetMapSettings();
 
 		// Try to load beatmap jacket image
-		String jacketPath = m_mapPath + "/" + mapSettings.jacketPath;
+		String jacketPath = m_mapRootPath + "/" + mapSettings.jacketPath;
 		m_jacketImage = ImageRes::Create(jacketPath);
 
 		// Load beatmap audio
-		if(!m_audioPlayback.Init(*m_beatmap, m_mapPath))
+		if(!m_audioPlayback.Init(*m_beatmap, m_mapRootPath))
 			return false;
 
 		if(!InitGameplay())
@@ -241,7 +241,7 @@ public:
 	{
 		m_camera = Camera();
 
-		bool audioReinit = m_audioPlayback.Init(*m_beatmap, m_mapPath);
+		bool audioReinit = m_audioPlayback.Init(*m_beatmap, m_mapRootPath);
 		assert(audioReinit);
 
 		// Audio leadin
@@ -272,7 +272,25 @@ public:
 	}
 	virtual void Tick(float deltaTime) override
 	{
-		TickGameplay(deltaTime);
+		// Lock mouse to screen when playing
+		if(g_gameConfig.GetEnum<Enum_InputDevice>(GameConfigKeys::LaserInputDevice) == InputDevice::Mouse)
+		{
+			if(!m_paused)
+			{
+				if(!m_lockMouse)
+					m_lockMouse = g_input.LockMouse();
+				g_gameWindow->SetCursorVisible(false);
+			}
+			else
+			{
+				if(m_lockMouse)
+					m_lockMouse.Release();
+				g_gameWindow->SetCursorVisible(true);
+			}
+		}
+
+		if(!m_paused)
+			TickGameplay(deltaTime);
 	}
 	virtual void Render(float deltaTime) override
 	{
@@ -346,6 +364,8 @@ public:
 				m_track->laserPositions[i] = m_scoring.laserPositions[i];
 				m_track->lasersAreExtend[i] = m_scoring.lasersAreExtend[i];
 			}
+			m_track->laserPositions[i] = m_scoring.laserPositions[i];
+			m_track->laserPointerOpacity[i] = (1.0f - Math::Clamp<float>(m_scoring.timeSinceLaserUsed[i] / 0.5f - 1.0f, 0, 1));
 		}
 
 		m_track->DrawOverlays(scoringRq);
@@ -449,6 +469,7 @@ public:
 			sb->AddSetting(&m_camera.cameraHeightBase, 0.01f, 1.0f, "Camera Height Base");
 			sb->AddSetting(&m_camera.cameraHeightMult, 0.0f, 2.0f, "Camera Height Mult");
 			sb->AddSetting(&m_hispeed, 0.25f, 16.0f, "HiSpeed multiplier");
+			sb->AddSetting(&m_scoring.laserDistanceLeniency, 1.0f/32.0f, 1.0f, "Laser Distance Leniency");
 			m_settingsBar->SetShow(false);
 
 			Canvas::Slot* settingsSlot = m_canvas->Add(sb->MakeShared());
@@ -518,10 +539,7 @@ public:
 		ApplyAudioLeadin();
 
 		// Load audio offset
-		Variant* offsetSetting = g_mainConfig.Get("offset");
-		if(offsetSetting)
-			m_audioOffset = offsetSetting->ToInt();
-		g_mainConfig.Add("offset", Variant::Create(m_audioOffset));
+		m_audioOffset = g_gameConfig.GetInt(GameConfigKeys::GlobalOffset);
 
 		// Playback and timing
 		m_playback = BeatmapPlayback(*m_beatmap);
@@ -533,11 +551,8 @@ public:
 
 		m_playback.hittableObjectTreshold = Scoring::goodHitTime;
 
-		// Initialize game input
-		m_input.Init(*g_gameWindow);
-
 		m_scoring.SetPlayback(m_playback);
-		m_scoring.SetInput(&m_input);
+		m_scoring.SetInput(&g_input);
 		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
 		m_scoring.OnLaserSlamHit.Add(this, &Game_Impl::OnLaserSlamHit);
 		m_scoring.OnButtonHit.Add(this, &Game_Impl::OnButtonHit);
@@ -546,6 +561,11 @@ public:
 		m_scoring.OnObjectReleased.Add(this, &Game_Impl::OnObjectReleased);
 		m_scoring.OnScoreChanged.Add(this, &Game_Impl::OnScoreChanged);
 		m_scoring.Reset(); // Initialize
+
+		if(g_application->GetAppCommandLine().Contains("-autobuttons"))
+		{
+			m_scoring.autoplayButtons = true;
+		}
 
 		return true;
 	}
@@ -757,6 +777,9 @@ public:
 		textPos.y += RenderText(Utility::Sprintf("Track Zoom Top: %f", m_camera.zoomTop), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Track Zoom Bottom: %f", m_camera.zoomBottom), textPos).y;
 
+		Vector2 buttonStateTextPos = Vector2(g_resolution.x - 200.0f, 100.0f);
+		RenderText(g_input.GetControllerStateString(), buttonStateTextPos);
+
 		if(m_scoring.autoplay)
 			textPos.y += RenderText("Autoplay enabled", textPos, Color::Blue).y;
 
@@ -921,6 +944,7 @@ public:
 		if(key == Key::Pause)
 		{
 			m_audioPlayback.TogglePause();
+			m_paused = m_audioPlayback.IsPaused();
 		}
 		else if(key == Key::Return) // Skip intro
 		{
@@ -939,6 +963,10 @@ public:
 		{
 			// Restart
 			Restart();
+		}
+		else if(key == Key::F8)
+		{
+			m_renderDebugHUD = !m_renderDebugHUD;
 		}
 		else if(key == Key::Tab)
 		{
@@ -1021,6 +1049,14 @@ public:
 		return m_scoring;
 	}
 
+	virtual const String& GetMapRootPath() const
+	{
+		return m_mapRootPath;
+	}
+	virtual const String& GetMapPath() const
+	{
+		return m_mapPath;
+	}
 };
 
 Game* Game::Create(const String& mapPath)

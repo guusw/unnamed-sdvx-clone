@@ -1,5 +1,6 @@
 #pragma once
 #include <Graphics/Keys.hpp>
+#include <Graphics/Gamepad.hpp>
 
 namespace Graphics
 {
@@ -41,6 +42,9 @@ namespace Graphics
 		void Close();
 
 		Vector2i GetMousePos();
+		void SetMousePos(const Vector2i& pos);
+
+
 		// Sets cursor to use
 		void SetCursor(Ref<class ImageRes> image, Vector2i hotspot = Vector2i(0,0));
 		void SetCursorVisible(bool visible);
@@ -58,6 +62,7 @@ namespace Graphics
 		// Set window client area size
 		void SetWindowSize(const Vector2i& size);
 		void SwitchFullscreen(uint32 monitorID = -1); 
+		bool IsFullscreen() const;
 		
 		// Checks if a key is pressed
 		bool IsKeyPressed(Key key) const;
@@ -73,6 +78,11 @@ namespace Graphics
 
 		// Get the text currently in the clipboard
 		WString GetClipboard() const;
+
+		// The number of available gamepad devices
+		int32 GetNumGamepads() const;
+		// Open a gamepad within the range of the number of gamepads
+		Ref<Gamepad> OpenGamepad(int32 deviceIndex);
 
 		Delegate<Key> OnKeyPressed;
 		Delegate<Key> OnKeyReleased;

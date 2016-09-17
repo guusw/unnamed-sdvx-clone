@@ -76,3 +76,28 @@ public:
 		return nullptr;
 	}
 };
+
+/* Multimap class, extends std::map */
+template<typename K, typename V>
+class Multimap : public std::multimap<K, V>
+{
+public:
+	using std::multimap<K, V>::multimap;
+
+	// These are for allowing function to be called on the base class when compiling on GCC
+	using std::multimap<K, V>::begin;
+	using std::multimap<K, V>::end;
+	using std::multimap<K, V>::erase;
+	using std::multimap<K, V>::insert;
+	using std::multimap<K, V>::find;
+
+	bool Contains(const K& key) const
+	{
+		return find(key) != end();
+	}
+	V& Add(const K& k, const V& v = V())
+	{
+		auto it = insert(std::make_pair(k, v));
+		return it->second;
+	}
+};

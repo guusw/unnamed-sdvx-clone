@@ -26,4 +26,8 @@ public:
 	virtual Texture GetJacketImage() = 0;
 	// The beatmap
 	virtual Ref<class Beatmap> GetBeatmap() = 0;
+	// The folder that contians the map
+	virtual const String& GetMapRootPath() const = 0;
+	// Full path to map
+	virtual const String& GetMapPath() const = 0;
 };

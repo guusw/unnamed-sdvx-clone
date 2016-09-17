@@ -44,7 +44,8 @@ bool Path::IsDirectory(const String& path)
 
 bool Path::FileExists(const String& path)
 {
-	return PathFileExistsA(*path) == TRUE;
+	WString wpath = Utility::ConvertToWString(path);
+	return PathFileExistsW(*wpath) == TRUE;
 }
 String Path::Normalize(const String& path)
 {

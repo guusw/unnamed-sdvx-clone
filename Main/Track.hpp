@@ -65,6 +65,8 @@ public:
 	float laserPositions[2];
 	// Current lasers are extended
 	bool lasersAreExtend[2] = { false, false };
+	float laserPointerOpacity[2] = { 1.0f };
+
 	// Visible time elements on the playfield track
 	// a single unit is 1 beat in distance
 	Vector2 trackViewRange;
