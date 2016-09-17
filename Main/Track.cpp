@@ -396,6 +396,8 @@ void Track::DrawOverlays(class RenderQueue& rq)
 	for(uint32 i = 0; i < 2; i++)
 	{
 		float pos = laserPositions[i];
+		if (lasersAreExtend[i])
+			pos = pos * 2.0f - 0.5f;
 		Vector2 objectSize = Vector2(buttonWidth * 0.7f, 0.0f);
 		objectSize.y = laserPointerTexture->CalculateHeight(objectSize.x);
 		DrawSprite(rq, Vector3(pos - trackWidth * 0.5f, 0.0f, 0.0f), objectSize, laserPointerTexture, laserColors[i]);

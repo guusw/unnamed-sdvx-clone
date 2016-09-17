@@ -554,22 +554,7 @@ bool Beatmap::m_ProcessKShootMap(BinaryStream& input, bool metadataOnly)
 			}
 			else
 			{
-				float pos = kshootMap.TranslateLaserChar(c) * laserRanges[i];
-				if(laserRanges[i] > 1.0f)
-				{
-					if(c == 'C') // Snap edges to 0 or 1
-					{
-						pos = 0.0f;
-					}
-					else if(c == 'b')
-					{
-						pos = 1.0f;
-					}
-					else
-					{
-						pos -= (laserRanges[i] - 1.0f) * 0.5f;
-					}
-				}
+				float pos = kshootMap.TranslateLaserChar(c);
 				LaserObjectState* last = nullptr;
 				if(state)
 				{

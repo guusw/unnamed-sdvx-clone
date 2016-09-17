@@ -167,6 +167,8 @@ public:
 	float laserPositions[2];
 	// Sampled target position of the lasers in the map
 	float laserTargetPositions[2] = { 0 };
+	// Current lasers are extended
+	bool lasersAreExtend[2] = { false, false };
 
 private:
 	// Calculates the times at which a single hold object ticks

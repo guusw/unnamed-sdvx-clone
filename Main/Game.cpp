@@ -333,16 +333,18 @@ public:
 		rs = m_camera.CreateRenderState(false);
 		RenderQueue scoringRq(g_gl, rs);
 
-		// Copy over laser position
+		// Copy over laser position and extend info
 		for(uint32 i = 0; i < 2; i++)
 		{
 			if(m_scoring.IsLaserHeld(i))
 			{
 				m_track->laserPositions[i] = m_scoring.laserTargetPositions[i];
+				m_track->lasersAreExtend[i] = m_scoring.lasersAreExtend[i];
 			}
 			else
 			{
 				m_track->laserPositions[i] = m_scoring.laserPositions[i];
+				m_track->lasersAreExtend[i] = m_scoring.lasersAreExtend[i];
 			}
 		}
 
@@ -363,7 +365,11 @@ public:
 					m_laserFollowEmitters[i] = CreateTrailEmitter(m_track->laserColors[i]);
 
 				// Set particle position to follow laser
-				m_laserFollowEmitters[i]->position.x = m_track->trackWidth * m_scoring.laserTargetPositions[i] - m_track->trackWidth * 0.5f;
+				float followPos = m_scoring.laserTargetPositions[i];
+				if (m_scoring.lasersAreExtend[i])
+					followPos = followPos * 2.0f - 0.5f; 
+
+				m_laserFollowEmitters[i]->position.x = m_track->trackWidth * followPos - m_track->trackWidth * 0.5f;
 			}
 			else
 			{

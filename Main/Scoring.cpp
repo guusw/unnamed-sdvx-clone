@@ -684,6 +684,7 @@ void Scoring::m_UpdateLasers(float deltaTime)
 		LaserObjectState* currentSegment = m_currentLaserSegments[i];
 		if(currentSegment)
 		{
+			lasersAreExtend[i] = (currentSegment->flags & LaserObjectState::flag_Extended) != 0;
 			if((currentSegment->time + currentSegment->duration) < mapTime)
 			{
 				currentSegment = nullptr;
@@ -759,6 +760,9 @@ void Scoring::m_UpdateLasers(float deltaTime)
 							laserPositions[i] = Math::Min(laserPositions[i] + moveDir, laserTargetPositions[i]);
 						}
 					}
+					// Clamp cursor between 0 and 1
+					laserPositions[i] = Math::Min(Math::Max(laserPositions[i],0.0f), 1.0f);
+
 				}
 			}
 			m_timeSinceLaserInput[i] = 0.0f;
