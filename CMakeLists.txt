@@ -66,10 +66,12 @@ add_subdirectory(third_party)
 add_subdirectory(Shared)
 add_subdirectory(Graphics)
 add_subdirectory(Main)
+add_subdirectory(Audio)
+add_subdirectory(Beatmap)
 # Unit test projects
 add_subdirectory(Tests)
 add_subdirectory(Tests.Shared)
-add_subdirectory(Tests.Graphics)
+add_subdirectory(Tests.Game)
 
 # Enabled project filters on windows
 if(MSVC)
@@ -88,9 +90,11 @@ if(MSVC)
 	# My libraries in the libraries folder
 	set_target_properties(Shared PROPERTIES FOLDER Libraries)
 	set_target_properties(Graphics PROPERTIES FOLDER Libraries)
+	set_target_properties(Audio PROPERTIES FOLDER Libraries)
+	set_target_properties(Beatmap PROPERTIES FOLDER Libraries)
 	
 	# Unit tests
 	set_target_properties(Tests PROPERTIES FOLDER "Tests")
 	set_target_properties(Tests.Shared PROPERTIES FOLDER "Tests")
-	set_target_properties(Tests.Graphics PROPERTIES FOLDER "Tests")
+	set_target_properties(Tests.Game PROPERTIES FOLDER "Tests")
 endif(MSVC)

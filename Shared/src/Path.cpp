@@ -125,6 +125,20 @@ Vector<String> Path::SplitCommandLine(const String& input)
 	}
 	return res;
 }
+
+Vector<String> Path::SplitCommandLine(int argc, char** argv)
+{
+	Vector<String> res;
+	for(int i = 0; i < argc; i++)
+	{
+		String a = argv[i];
+		a.Trim();
+		if(!a.empty())
+			res.push_back(a);
+	}
+	return res;
+}
+
 String Path::GetModuleName()
 {
 	String moduleName = Path::GetExecutablePath();

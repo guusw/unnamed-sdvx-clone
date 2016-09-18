@@ -21,9 +21,7 @@ enable_cpp11()
 enable_precompiled_headers("${Graphics_src}" src/stdafx.cpp)
 precompiled_header_exclude("src/glew.c")
 
-include_directories(include include/Graphics src
-	include/Graphics/glew 
-	${PROJECT_SOURCE_DIR}/Shared/include)
+include_directories(include include/Graphics src include/Graphics/glew)
 add_library(Graphics ${Graphics_src})
 
 # Public include paths for library

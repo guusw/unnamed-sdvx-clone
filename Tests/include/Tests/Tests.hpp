@@ -9,3 +9,6 @@ void CONCAT(LocalTest, __LINE__)(TestContext& context)
 #define TestEnsure(__expr) if(!(__expr)) throw TestFailure(STRINGIFY(__expr));
 #define TestFilename context.GenerateTestFilePath()
 #define TestBasePath context.GetTestBasePath()
+
+// Main entry point for running tests
+int TestMain();
