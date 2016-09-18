@@ -33,11 +33,29 @@ class TestManager
 public:
 	~TestManager();
 	static TestManager& Get();
-	int32 RunTests();
+
+	// Run all tests
+	// returns the number of failed tests
+	// 0 = all good
+	int32 RunAll();
+
+	// Run single individual tests
+	int32 Run(const String& testID);
+	int32 Run(size_t testIndex);
+
+	// Query registered tests
+	Vector<String> GetAvailableTests() const;
+	size_t GetNumTests() const;
 
 private:
+	bool m_Begin();
+	void m_End();
+	int32 m_RunTest(TestEntry* test);
+	Map<String, size_t> m_testsByName;
 	Vector<TestEntry*> m_tests;
 	String m_testBasePath;
+	String m_moduleName;
+	void (*m_oldSigHandler)(int);
 	friend class TestEntry;
 	friend class TestContext;
 };

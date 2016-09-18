@@ -53,9 +53,8 @@ public:
 	{
 #ifdef _WIN32
 		OutputDebugStringA(*msg);
-#else
-		printf("%s", msg.c_str());
 #endif
+		printf("%s", msg.c_str());
 		TextStream::Write(m_writer, msg);
 	}
 

@@ -1,16 +1,15 @@
 # Main Project
 
 # Find files used for project
-file(GLOB Main_src "*.cpp" "*.hpp"  "Resource.rc" 
-	"Audio/*.cpp" "Audio/*.hpp"
-	"GUI/*.cpp" "GUI/*.hpp")
-file(GLOB C_src "*.c" "Audio/minimp3.c")
-
-# Project filters
 file(GLOB Audio_include "Audio/*.hpp")
 file(GLOB Audio_src "Audio/*.cpp")
 file(GLOB GUI_include "GUI/*.hpp")
 file(GLOB GUI_src "GUI/*.cpp" "Audio/minimp3.c")
+file(GLOB Main_src "*.cpp" "*.hpp"  "Resource.rc" 
+	${Audio_include} ${Audio_src} ${GUI_src} ${GUI_include})
+
+# Project filters
+
 source_group("Header Files\\Audio" FILES ${Audio_include})
 source_group("Source Files\\Audio" FILES ${Audio_src})
 source_group("Header Files\\GUI" FILES ${GUI_include})
@@ -18,17 +17,11 @@ source_group("Source Files\\GUI" FILES ${GUI_src})
 
 # Compiler stuff
 enable_cpp11()
-enable_precompiled_headers("${Main_src}" stdafx.cpp)	
-precompiled_header_exclude("${C_src}")
+enable_precompiled_headers("${Main_src}" stdafx.cpp)
 
 include_directories(Audio GUI .)
 add_executable(Main ${Main_src} ${C_src})
 set_output_postfixes(Main)
-
-if(UNIX)
-	# use SDL audio engine
-	add_definitions(-DAUDIO_SDL)
-endif(UNIX)
 
 # Target subsystem on windows
 if(MSVC)
@@ -38,6 +31,8 @@ endif(MSVC)
 # Dependencies
 target_link_libraries(Main Shared)
 target_link_libraries(Main Graphics)
+target_link_libraries(Main Audio)
+target_link_libraries(Main Beatmap)
 
 if(WIN32)
 	# Bundled libraries
@@ -55,11 +50,7 @@ else()
 	target_link_libraries(Main ${SDL2_LIBRARY})
 	target_link_libraries(Main ${JPEG_LIBRARIES})
 	target_link_libraries(Main ${PNG_LIBRARIES})
-	target_link_libraries(Main ${OGG_LIBRARIES})
-	target_link_libraries(Main ${VORBIS_LIBRARIES})
 	target_link_libraries(Main pthread) 
 	target_link_libraries(Main dl)
 	target_link_libraries(Main GL)      
 endif()
-target_link_libraries(Main vorbis)
-target_link_libraries(Main ogg)

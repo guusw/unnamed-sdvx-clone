@@ -2,7 +2,7 @@
 #include "Tests/Tests.hpp"
 #include "Shared/Debug.hpp"
 
-int main()
+int TestMain()
 {
-	return TestManager::Get().RunTests();
+	return TestManager::Get().RunAll();
 }

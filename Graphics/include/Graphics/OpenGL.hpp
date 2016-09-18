@@ -1,4 +1,5 @@
 #pragma once
+#include <Graphics/GL.hpp>
 #include <Graphics/Window.hpp>
 
 namespace Graphics
