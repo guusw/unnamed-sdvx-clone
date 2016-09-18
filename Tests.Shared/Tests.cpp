@@ -1,10 +1,10 @@
-#include "Shared/Shared.hpp"
-#include "Shared/Enum.hpp"
-#include "Shared/Config.hpp"
-#include "Shared/Debug.hpp"
+#include <Shared/Shared.hpp>
+#include <Shared/Enum.hpp>
+#include <Shared/Config.hpp>
+#include <Shared/Debug.hpp>
+#include <Shared/Macro.hpp>
+#include <Tests/Tests.hpp>
 
-#define _STRINGIFY(__x) #__x
-#define STRINGIFY(__x) _STRINGIFY(__x)
 #define test(__exp) if(!(__exp)){\
 	Logf("Test failed (%s)", Logger::Error, STRINGIFY(__exp));\
 	throw int();\
@@ -40,32 +40,30 @@ protected:
     }
 };
 
-int main(void)
+Test("Test1")
 {
-	Logf("Started", Logger::Info);
-	test(Enum_TestEnum::ToString(TestEnum::OO) == "OO");
-
-	MyConfig c;
-	c.Save("file");
-
-	try
-	{
-		Vector<float> floats;
-		floats.resize(10);
-		(*floats.end()) = 20.0f;
-		uint32* test = 0;
-		test[0] = 20;
-	}
-	catch (...)
-	{
-		auto stackTrace = Debug::GetStackTrace();
-		Logf("Program crashed, dumping stack trace", Logger::Error);
-		for(uint32 i = 0; i < stackTrace.size(); i++)
-		{
-			auto& sf = stackTrace[i];
-			Logf("[%d: 0x%016X] %s@%d %s", Logger::Warning, i, sf.address, sf.file, sf.line, sf.function);
-		}
-		return 1;
-	}
-	return 0;
+	uint32* a = nullptr;
+	a[10] = 5;
+}
+Test("Test2")
+{
+	int a = 2;
+	int b = 3;
+	TestEnsure(a + b == 5);
+}
+Test("Test3")
+{
+	int a = 2;
+	int b = 5;
+	TestEnsure(a - b == -1);
+}
+Test("Test4")
+{
+	int a = 2;
+	int b = 5;
+	Vector<int> v;
+	v.Add(a);
+	v.Add(b);
+	v.Add();
+	TestEnsure(*v.end() == 1);
 }

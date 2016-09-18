@@ -6,37 +6,36 @@
 class TestFailure
 {
 public:
-	TestFailure(String expression) : expression(expression)
+	TestFailure(String expression = String()) : expression(expression)
 	{
+		trace = Debug::GetStackTrace();
 	}
-
 	String expression;
-	Debug::StackTrace stackTrace;
+	Debug::StackTrace trace;
 };
 
-class TestCategory
+class TestEntry
 {
 public:
-	TestCategory& operator+=(class TestCategory* categoryToAdd);
-	TestCategory& operator+=(class Test* testToAdd);
+	typedef void(*TestFunction)();
 
-protected:
-	Vector<TestCategory*> m_categories;
-	Vector<Test*> m_rootTests;
+	TestEntry(String name, TestFunction function);
+
+private:
+	String m_name;
+	TestFunction m_function;
+	friend class TestManager;
 };
 
-class Test
-{
-public:
-	template<typename T>
-	Test& operator+=(T exec);
-
-};
-
-class TestManager : public TestCategory
+class TestManager
 {
 	TestManager();
 public:
 	~TestManager();
 	static TestManager& Get();
+	int32 RunTests();
+
+private:
+	Vector<TestEntry*> m_tests;
+	friend class TestEntry;
 };

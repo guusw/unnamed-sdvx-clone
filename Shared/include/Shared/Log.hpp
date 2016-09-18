@@ -39,6 +39,11 @@ public:
 	// Log a string to the logging output, 
 	void Log(const String& msg, Logger::Severity severity);
 
+	// Write log message header, (timestamp, etc..)
+	void WriteHeader(Logger::Severity severity);
+	// Writes string without newline
+	void Write(const String& msg);
+
 private:
 	class Logger_Impl* m_impl;
 };
