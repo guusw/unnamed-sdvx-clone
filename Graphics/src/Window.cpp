@@ -15,7 +15,11 @@ namespace Graphics
 		{
 			SDL_SetMainReady();
 			int r = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
-			assert(r == 0);
+			if(r != 0)
+			{
+                Logf("SDL_Init Failed: %s", Logger::Error, SDL_GetError());
+                assert(false);
+			}
 		}
 	public:
 		~SDL()

@@ -2,8 +2,8 @@
 #include "Path.hpp"
 #include "Files.hpp"
 
-/* 
-	Common 
+/*
+	Common
 */
 String Path::Absolute(const String& path)
 {
@@ -156,7 +156,7 @@ bool Path::CreateDirRecursive(String path)
 		path1 += segment;
 
 		// Create if not existing
-		if(IsDirectory(path1))
+		if(IsDirectory(path1) || path1.empty())
 			continue;
 		if(!CreateDir(path1))
 			return false;

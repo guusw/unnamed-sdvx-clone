@@ -47,7 +47,7 @@ Test("File.ScanFilesRecursive")
 	CreateDummyFile(folder + Path::sep + "fileA");
 	CreateDummyFile(folder + Path::sep + "fileB");
 	CreateDummyFile(folder + Path::sep + "fileC");
-	String folder1 = folder + Path::sep + "Folder"; 
+	String folder1 = folder + Path::sep + "Folder";
 	TestEnsure(Path::CreateDir(folder1));
 	CreateDummyFile(folder1 + Path::sep + "fileD");
 
@@ -132,7 +132,7 @@ Test("File.DirOperations")
 
 	// Target
 	String folder1 = TestFilename + "1";
-	String sub1 = folder1 + Path::sep + "sub";
+	String sub1 = folder1 + Path::sep + "Sub";
 
 	// Try to copy a folder with it's files
 	TestEnsure(Path::CopyDir(folder, folder1));
