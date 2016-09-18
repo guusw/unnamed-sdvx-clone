@@ -56,11 +56,14 @@ Test("Delegate.Call")
 	TestEnsure(tc.classCallCounter == 1);
 }
 
-Test("Action.LambdaConversion")
+Test("Action.Assignment")
 {
+	Action<> a;
+	TestEnsure(!a.IsBound());
+
 	// Static binding
 	callCounter = 0;
-	Action<> a = []()
+	a = []()
 	{
 		callCounter++;
 	};
