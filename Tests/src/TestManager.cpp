@@ -21,13 +21,13 @@ int32 TestManager::RunTests()
 		throw TestFailure();
 	};
 
-	_crt_signal_t oldSigHandler = 0;
+	void (*oldSigHandler)(int) = 0;
 	if(!Debug::IsDebuggerAttached())
 	{
 		oldSigHandler = signal(SIGSEGV, SignalHandler);
 	}
 
-	String moduleName = Path::ReplaceExtension(Path::GetModuleName(), "");
+	String moduleName = Path::GetModuleName();
 	Logf("Running tests for %s", Logger::Info, moduleName);
 
 	// Create intermediate folder

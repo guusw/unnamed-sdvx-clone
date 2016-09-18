@@ -62,6 +62,11 @@ static Vector<FileInfo> _ScanFiles(String rootFolder, String extFilter, bool rec
 						// Visit sub-folder
 						folderQueue.AddBack(info.fullPath);
 					}
+					else if(!filterByExtension)
+					{
+                        info.type = FileType::Folder;
+                        ret.Add(info);
+					}
 				}
 				else
 				{

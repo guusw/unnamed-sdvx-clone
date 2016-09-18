@@ -76,6 +76,12 @@ namespace Graphics
 
 		// Create a context
 		m_impl->context = SDL_GL_CreateContext(sdlWnd);
+		if(!m_impl->context)
+		{
+            Logf("Failed to create OpenGL context: %s", Logger::Error, SDL_GetError());
+            return false;
+		}
+
 		SDL_GL_MakeCurrent(sdlWnd, m_impl->context);
 
 		// To allow usage of experimental features

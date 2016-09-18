@@ -10,8 +10,12 @@ include_directories(.)
 add_executable(Tests.Shared ${Main_src})
 set_output_postfixes(Tests.Shared)
 
-# SEH
-target_compile_options(Tests.Shared PUBLIC /EHa /Zi)
+if(MSVC)
+	# SEH and Debug
+	target_compile_options(Tests.Shared PUBLIC /EHa /Zi)
+else()
+	target_compile_options(Tests.Shared PUBLIC -rdynamic)
+endif()
 
 # Dependencies
 target_link_libraries(Tests.Shared Shared)

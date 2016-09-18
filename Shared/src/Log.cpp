@@ -18,7 +18,6 @@ public:
 	{
 		// Store the name of the executable
 		moduleName = Path::GetModuleName();
-		moduleName = Path::ReplaceExtension(moduleName, ""); // Remove .exe or dll
 
 #ifdef _WIN32
 		// Store console output handle

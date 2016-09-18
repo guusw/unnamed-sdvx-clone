@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "Path.hpp"
+#include "Log.hpp"
+#include "File.hpp"
+#include "Math.hpp"
 
 /*
 	Linux version
@@ -12,6 +15,59 @@
 
 char Path::sep = '/';
 
+bool Path::CreateDir(const String& path)
+{
+	return mkdir(*path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0;
+}
+bool Path::Delete(const String& path)
+{
+    return remove(*path) == 0;
+}
+bool Path::DeleteDir(const String& path)
+{
+	if(!ClearDir(path))
+		return false;
+    return rmdir(*path) == 0;
+}
+bool Path::Rename(const String& srcFile, const String& dstFile, bool overwrite)
+{
+	if(FileExists(*dstFile))
+	{
+		if(!overwrite)
+			return false;
+		if(Delete(*dstFile))
+		{
+			Logf("Failed to rename file, overwrite was true but the destination could not be removed", Logger::Warning);
+			return false;
+		}
+	}
+	return rename(*srcFile, *dstFile) == 0;
+}
+bool Path::Copy(const String& srcFile, const String& dstFile, bool overwrite)
+{
+    File src;
+    if(!src.OpenRead(srcFile))
+        return false;
+    File dst;
+    if(!dst.OpenWrite(dstFile))
+        return false;
+
+    size_t sizeMax = src.GetSize();
+    size_t remaining = sizeMax;
+    char buffer[8096];
+
+    // Do a buffered copy
+    while(remaining > 0)
+    {
+        size_t read = Math::Min(remaining, sizeof(buffer));
+        if(src.Read(buffer, read) != read)
+            return false;
+        if(dst.Write(buffer, read) != read)
+            return false;
+        remaining -= read;
+    }
+    return true;
+}
 String Path::GetCurrentPath()
 {
 	char currDir[MAX_PATH];
@@ -21,15 +77,15 @@ String Path::GetCurrentPath()
 String Path::GetExecutablePath()
 {
 	char filename[MAX_PATH];
-	
+
 	pid_t pid = getpid();
-	
+
 	// Get name from pid
 	char path[MAX_PATH];
 	sprintf(path, "/proc/%d/exe", pid);
 	int r = readlink(path, filename, PATH_MAX);
 	assert(r != -1);
-	
+
 	return filename;
 }
 String Path::GetTemporaryPath()

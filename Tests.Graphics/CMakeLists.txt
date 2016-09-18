@@ -10,9 +10,13 @@ include_directories(.)
 add_executable(Tests.Graphics ${Main_src})
 set_output_postfixes(Tests.Graphics)
 
-# SEH
-target_compile_options(Tests.Graphics PUBLIC /EHa)
-	
+if(MSVC)
+	# SEH and Debug
+	target_compile_options(Tests.Graphics PUBLIC /EHa /Zi)
+else()
+	target_compile_options(Tests.Graphics PUBLIC -rdynamic)
+endif()	
+
 # Dependencies
 target_link_libraries(Tests.Graphics Shared)
 target_link_libraries(Tests.Graphics Tests)
