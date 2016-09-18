@@ -1,7 +1,7 @@
 #pragma once
-#include "Beatmap.hpp"
-#include "AudioEffects.hpp"
-#include "AudioStream.hpp"
+#include <Beatmap/Beatmap.hpp>
+#include <Beatmap/AudioEffects.hpp>
+#include <Audio/AudioStream.hpp>
 
 /* 
 	Handles playback of map audio

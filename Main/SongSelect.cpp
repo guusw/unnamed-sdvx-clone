@@ -1,17 +1,16 @@
 #include "stdafx.h"
 #include "SongSelect.hpp"
 #include "Application.hpp"
-#include "Profiling.hpp"
+#include <Shared/Profiling.hpp>
 #include "Scoring.hpp"
-#include "Audio.hpp"
 #include "GUI.hpp"
 #include "GUI/SongSelectItem.hpp"
-#include "MapDatabase.hpp"
+#include <Beatmap/MapDatabase.hpp>
 #include "Game.hpp"
 #include "TransitionScreen.hpp"
 #include "GameConfig.hpp"
+#include <Audio/Audio.hpp>
 
-#include "Audio.hpp"
 
 /*
 	Song preview player with fade-in/out

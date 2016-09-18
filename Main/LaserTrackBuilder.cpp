@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "LaserTrackBuilder.hpp"
-#include "BeatmapPlayback.hpp"
+#include <Beatmap/BeatmapPlayback.hpp>
 #include "Track.hpp"
 #include <algorithm>
 

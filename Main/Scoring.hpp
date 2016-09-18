@@ -1,5 +1,5 @@
 #pragma once
-#include "BeatmapPlayback.hpp"
+#include <Beatmap/BeatmapPlayback.hpp>
 #include "HitStat.hpp"
 #include "Input.hpp"
 

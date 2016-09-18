@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Scoring.hpp"
-#include "BeatmapPlayback.hpp"
+#include <Beatmap/BeatmapPlayback.hpp>
 #include <math.h>
 
 const MapTime Scoring::goodHitTime = 75;
