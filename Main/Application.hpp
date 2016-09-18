@@ -1,5 +1,5 @@
 #pragma once
-#include "Sample.hpp"
+#include <Audio/Sample.hpp>
 
 extern class OpenGL* g_gl;
 extern class Graphics::Window* g_gameWindow;

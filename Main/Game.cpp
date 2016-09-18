@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "Game.hpp"
 #include "Application.hpp"
-#include "BeatmapPlayback.hpp"
-#include "Profiling.hpp"
+#include <Beatmap/BeatmapPlayback.hpp>
+#include <Shared/Profiling.hpp>
 #include "Scoring.hpp"
-#include "Audio.hpp"
+#include <Audio/Audio.hpp>
 #include "Track.hpp"
 #include "Camera.hpp"
 #include "Background.hpp"

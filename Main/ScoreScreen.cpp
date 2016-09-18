@@ -3,7 +3,7 @@
 #include "Application.hpp"
 #include "GUI.hpp"
 #include "CommonGUIStyle.hpp"
-#include "Audio.hpp"
+#include <Audio/Audio.hpp>
 #include "Scoring.hpp"
 #include "Game.hpp"
 #include "AsyncAssetLoader.hpp"

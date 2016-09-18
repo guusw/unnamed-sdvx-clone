@@ -1,14 +1,14 @@
 #include "stdafx.h"
 #include "Application.hpp"
-#include "Beatmap.hpp"
+#include <Beatmap/Beatmap.hpp>
 #include "Game.hpp"
 #include "Test.hpp"
 #include "SongSelect.hpp"
-#include "Audio.hpp"
+#include <Audio/Audio.hpp>
 #include <Graphics/Window.hpp>
 #include <Graphics/ResourceManagers.hpp>
 #include "Shared/Jobs.hpp"
-#include "Profiling.hpp"
+#include <Shared/Profiling.hpp>
 #include "Scoring.hpp"
 #include "GameConfig.hpp"
 #include "GUIRenderer.hpp"
@@ -235,7 +235,7 @@ bool Application::m_Init()
 
 		// Init audio
 		new Audio();
-		if(!g_audio->Init(*g_gameWindow))
+		if(!g_audio->Init())
 		{
 			Log("Audio initialization failed", Logger::Error);
 			delete g_audio;

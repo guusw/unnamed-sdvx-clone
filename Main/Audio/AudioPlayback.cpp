@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "AudioPlayback.hpp"
-#include "BeatmapPlayback.hpp"
-#include "Beatmap.hpp"
-#include "Audio.hpp"
-#include "DSP.hpp"
+#include <Beatmap/BeatmapPlayback.hpp>
+#include <Beatmap/Beatmap.hpp>
+#include <Audio/Audio.hpp>
+#include <Audio/DSP.hpp>
 
 AudioPlayback::AudioPlayback()
 {
@@ -189,9 +189,7 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 		FlangerDSP* fl = new FlangerDSP();
 		double delay = (barDelay) / 1000.0;
 		fl->delay = (uint32)(delay * g_audio->GetSampleRate());
-		fl->min = 2;
-		fl->max = 40;
-		fl->time = object->time;
+		fl->SetDelayRange(2, 40);
 		dsp = fl;
 		m_GetDSPTrack()->AddDSP(dsp);
 		break;

@@ -1,5 +1,5 @@
 #pragma once
-#include "BeatmapObjects.hpp"
+#include <Beatmap/BeatmapObjects.hpp>
 
 // Hit rating for hitting a button
 enum class ScoreHitRating

@@ -3,8 +3,8 @@
 #include "GUI.hpp"
 #include "Application.hpp"
 
-#include "Beatmap.hpp"
-#include "MapDatabase.hpp"
+#include <Beatmap/Beatmap.hpp>
+#include <Beatmap/MapDatabase.hpp>
 
 static float padding = 5.0f;
 

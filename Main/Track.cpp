@@ -3,8 +3,8 @@
 #include "Game.hpp"
 #include "Track.hpp"
 #include "LaserTrackBuilder.hpp"
-#include "BeatmapPlayback.hpp"
-#include "BeatmapObjects.hpp"
+#include <Beatmap/BeatmapPlayback.hpp>
+#include <Beatmap/BeatmapObjects.hpp>
 #include "AsyncAssetLoader.hpp"
 
 const float Track::trackWidth = 1.0f;

@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "Test.hpp"
 #include "Application.hpp"
-#include "Profiling.hpp"
+#include <Shared/Profiling.hpp>
 #include "Scoring.hpp"
-#include "Audio.hpp"
+#include <AUdio/Audio.hpp>
 #include "Track.hpp"
 #include "Camera.hpp"
 #include "Background.hpp"
