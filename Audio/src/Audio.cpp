@@ -21,7 +21,7 @@ void Audio_Impl::Mix(float* data, uint32& numSamples)
 	double adv = GetSecondsPerSample();
 
 	// Clear buffer
-	memset(data, 0, sizeof(float) * 2 * numSamples);
+	memset(data, 0, sizeof(float) * output->GetNumChannels() * numSamples);
 
 	// Render items
 	lock.lock();
@@ -48,8 +48,8 @@ void Audio_Impl::Mix(float* data, uint32& numSamples)
 		// Mix into buffer and apply volume scaling
 		for(uint32 i = 0; i < numSamples; i++)
 		{
-			data[i * 2 + 0] += tempData[i * 2] * item->GetVolume();
-			data[i * 2 + 1] += tempData[i * 2 + 1] * item->GetVolume();
+			data[i * output->GetNumChannels() + 0] += tempData[i * 2] * item->GetVolume();
+			data[i * output->GetNumChannels() + 1] += tempData[i * 2 + 1] * item->GetVolume();
 		}
 	}
 	lock.unlock();
@@ -57,8 +57,8 @@ void Audio_Impl::Mix(float* data, uint32& numSamples)
 	// Apply volume levels
 	for(uint32 i = 0; i < numSamples; i++)
 	{
-		data[i * 2 + 0] *= globalVolume;
-		data[i * 2 + 1] *= globalVolume;
+		data[i * output->GetNumChannels() + 0] *= globalVolume;
+		data[i * output->GetNumChannels() + 1] *= globalVolume;
 	}
 
 	// Process global DSPs
