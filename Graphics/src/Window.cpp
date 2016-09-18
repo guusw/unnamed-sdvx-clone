@@ -14,7 +14,7 @@ namespace Graphics
 		SDL()
 		{
 			SDL_SetMainReady();
-			int r = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
+			int r = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 			if(r != 0)
 			{
                 Logf("SDL_Init Failed: %s", Logger::Error, SDL_GetError());
