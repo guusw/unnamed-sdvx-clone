@@ -87,8 +87,8 @@ namespace Debug
 			{
 				frame.line = 0;
 				frame.function = String(symInfo->Name, symInfo->Name + symInfo->NameLen);
+				ret.Add(frame);
 			}
-			ret.Add(frame);
 		}
 		return ret;
 	}

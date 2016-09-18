@@ -22,7 +22,7 @@ include_directories(include include/Tests src)
 add_library(Tests ${Tests_src} ${Tests_include} ${Platform_src})
 
 # SEH
-target_compile_options(Tests PUBLIC /EHa)
+target_compile_options(Tests PUBLIC /EHa /Zi)
 
 target_link_libraries(Tests Shared)
 

@@ -17,9 +17,8 @@ public:
 	Logger_Impl()
 	{
 		// Store the name of the executable
-		moduleName = Path::GetExecutablePath();
-		Path::RemoveLast(moduleName, &moduleName);
-		moduleName =  Path::ReplaceExtension(moduleName, ""); // Remove .exe or dll
+		moduleName = Path::GetModuleName();
+		moduleName = Path::ReplaceExtension(moduleName, ""); // Remove .exe or dll
 
 #ifdef _WIN32
 		// Store console output handle
@@ -49,7 +48,7 @@ public:
 		strftime(timeStr, sizeof(timeStr), "%T", currentLocalTime);
 
 		// Write the formated header
-		Write(Utility::Sprintf("[%s][%s][%s] ", moduleName, timeStr, severityNames[(size_t)severity]));
+		Write(Utility::Sprintf("[%s][%s] ", timeStr, severityNames[(size_t)severity]));
 	}
 	void Write(const String& msg)
 	{
@@ -140,7 +139,14 @@ void Logger::Log(const String& msg, Logger::Severity severity)
 	m_impl->Write(msg);
 	m_impl->Write("\n");
 }
-
+void Logger::WriteHeader(Severity severity)
+{
+	m_impl->WriteHeader(severity);
+}
+void Logger::Write(const String& msg)
+{
+	m_impl->Write(msg);
+}
 void Log(const String& msg, Logger::Severity severity)
 {
 	Logger::Get().Log(msg, severity);
