@@ -16,7 +16,7 @@ struct ObjectBinding : public IFunctionBinding<R, A...>
 	ObjectBinding(Class* object, R (Class::*func)(A...)) : object(object), func(func) {};
 	virtual R Call(A... args) override
 	{
-		return (object->*func)(args...);
+		return ((object)->*func)(args...);
 	}
 
 	Class* object;
@@ -58,18 +58,4 @@ struct ConstantBinding : public IFunctionBinding<R, A...>
 		return value;
 	}
 	R value;
-};
-
-/* Bindable property */
-template<typename T>
-class Property
-{
-public:
-	// Get
-	operator const T&() const { return value; }
-	// Set
-	Property& operator=(const T& other) { vlaue = other; return this; }
-
-private:
-	T value;
 };
