@@ -20,9 +20,7 @@ struct FileInfo
 };
 
 /*
-File path API
-Operates on string objects that contain path strings
-Valid formats are windows strings using \'s as directory seperators and X: as drive letters
+	File enumeration functions
 */
 class Files
 {

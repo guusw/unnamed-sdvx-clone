@@ -1,81 +1,8 @@
 #pragma once
 #include "Shared/Utility.hpp"
 #include "Shared/Map.hpp"
+#include "Shared/Bindable.hpp"
 
-template<typename... A>
-struct IDelegateHandler
-{
-	virtual ~IDelegateHandler() {};
-	virtual void Call(A... args) = 0;
-	// 0 or object pointer for object handlers
-	virtual void* GetObject() { return 0; }
-	virtual void* GetFunction() { return 0; }
-};
-
-/* Handler for object function pointers */
-template<typename Class, typename... A>
-struct ObjectDelegateHandler : public IDelegateHandler<A...>
-{
-	ObjectDelegateHandler(Class* object, void (Class::*func)(A...)) : object(object), func(func) {};
-	virtual void Call(A... args) override
-	{
-		(object->*func)(args...);
-	}
-	virtual void* GetObject() override
-	{
-		return object;
-	}
-	virtual void* GetFunction() 
-	{
-		return funcData;
-	}
-
-	Class* object;
-	union
-	{
-		void (Class::*func)(A...);
-		void* funcData;
-	};
-};
-/* Handler for static functions */
-template<typename... A>
-struct StaticDelegateHandler : public IDelegateHandler<A...>
-{
-	StaticDelegateHandler(void (*func)(A...)) : func(func) {};
-	virtual void Call(A... args) override
-	{
-		(*func)(args...);
-	}
-	virtual void* GetFunction()
-	{
-		return funcData;
-	}
-
-	union
-	{
-		void(*func)(A...);
-		void* funcData;
-	};
-};
-
-/* Handler for lambda functions */
-template<typename T, typename... A>
-struct LambdaDelegatehandler : public IDelegateHandler<A...>
-{
-	// Copies the given lambda
-	LambdaDelegatehandler(T& lambda) : lambda(lambda) {};
-	~LambdaDelegatehandler() 
-	{ 
-	}
-	virtual void Call(A... args) override
-	{
-		lambda(args...);
-	}
-
-	T lambda;
-};
-
-// Handle to a registered delegate
 typedef void* DelegateHandle;
 
 /*
@@ -84,9 +11,9 @@ typedef void* DelegateHandle;
 template<typename... A>
 class Delegate
 {
-	Map<void*, IDelegateHandler<A...>*> staticMap;
-	Map<void*, Map<void*, IDelegateHandler<A...>*>> objectMap;
-	Map<void*, IDelegateHandler<A...>*> lambdaMap;
+	Map<void*, IFunctionBinding<void, A...>*> staticMap;
+	Map<void*, Map<void*, IFunctionBinding<void, A...>*>> objectMap;
+	Map<void*, IFunctionBinding<void, A...>*> lambdaMap;
 public:
 	~Delegate()
 	{
@@ -100,21 +27,22 @@ public:
 		void* id = Utility::UnionCast<void*>(func);
 		auto& fmap = objectMap.FindOrAdd(object);
 		assert(!fmap.Contains(id));
-		fmap.Add(id, new ObjectDelegateHandler<Class, A...>(object, func));
+		fmap.Add(id, new ObjectBinding<Class, void, A...>(object, func));
 	}
 	// Adds a static function handler
 	void Add(void (*func)(A...))
 	{
 		void* id = Utility::UnionCast<void*>(func);
 		assert(!staticMap.Contains(id));
-		staticMap.Add(id, new StaticDelegateHandler<A...>(func));
+		staticMap.Add(id, new StaticBinding<void, A...>(func));
 	}
 	// Adds a lambda function as a handler for this delegate
 	template<typename T> DelegateHandle AddLambda(T& lambda)
 	{
-		void* id = &lambda;
+		LambdaBinding<T, void, A...>* binding = new LambdaBinding<T, void, A...>(lambda);
+		void* id = binding;
 		assert(!lambdaMap.Contains(id));
-		lambdaMap.Add(id, new LambdaDelegatehandler<T, A...>(lambda));
+		lambdaMap.Add(id, binding);
 		return id;
 	}
 
@@ -138,17 +66,10 @@ public:
 		delete staticMap[id];
 		staticMap.erase(id);
 	}
-	template<typename T> void RemoveLambda(T& lambda)
-	{
-		void* id = &lambda;
-		assert(!lambdaMap.Contains(id));
-		delete lambdaMap[id];
-		lambdaMap.erase(id);
-	}
 	// Removes a lambda by it's handle
-	template<typename T> void RemoveLambda(DelegateHandle handle)
+	void Remove(DelegateHandle handle)
 	{
-		assert(!lambdaMap.Contains(handle));
+		assert(lambdaMap.Contains(handle));
 		delete lambdaMap[handle];
 		lambdaMap.erase(handle);
 	}
