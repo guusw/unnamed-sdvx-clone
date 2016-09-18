@@ -187,14 +187,6 @@ public:
 		// Aquire format and initialize device for shared mode
 		WAVEFORMATEX* mixFormat = nullptr;
 		res = m_audioClient->GetMixFormat(&mixFormat);
-		if(mixFormat->nChannels != 2)
-		{
-			Log("Couldn't open stereo device", Logger::Error);
-			SAFE_RELEASE(device);
-			SAFE_RELEASE(m_audioClient);
-			CoTaskMemFree(mixFormat);
-			return false;
-		}
 
 		// Init client
 		res = m_audioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0,
