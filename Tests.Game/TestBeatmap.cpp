@@ -3,20 +3,13 @@
 #include <Audio/Audio.hpp>
 #include <Beatmap/BeatmapPlayback.hpp>
 #include <Audio/DSP.hpp>
-#include <thread>
-
-using namespace std::this_thread;
-using namespace std::chrono;
+#include "TestMusicPlayer.hpp"
 
 // Normal test map
 static String testBeatmapPath = Path::Normalize("songs/love is insecurable/love_is_insecurable.ksh");
 //static String testBeatmapPath = Path::Normalize("songs/Yggdrasil/Yggdrasil_ex.ksh");
 // Song with speed changes
 static String testBeatmapPath1 = Path::Normalize("songs/soflan/Konran shoujo Soflan-chan!!.ksh");
-
-// Test for music player
-static String testSongPath = Path::Normalize("songs/mix1.ogg");
-static uint32 testSongOffset = 220000;
 
 Beatmap LoadTestBeatmap(const String& mapPath = testBeatmapPath)
 {
@@ -27,41 +20,6 @@ Beatmap LoadTestBeatmap(const String& mapPath = testBeatmapPath)
 	TestEnsure(beatmap.Load(reader));
 	return std::move(beatmap);
 }
-
-class TestMusicPlayer
-{
-public:
-	Audio* audio;
-	AudioStream song;
-
-public:
-	TestMusicPlayer()
-	{
-	}
-	void Init(const String& songPath = testSongPath, uint32 startOffset = testSongOffset)
-	{
-		audio = new Audio();
-		TestEnsure(audio->Init());
-
-		song = audio->CreateStream(songPath);
-		TestEnsure(song.IsValid());
-
-		song->Play();
-		song->SetPosition(startOffset); 
-	}
-	void Run()
-	{
-		Timer t;
-		while(!song->HasEnded())
-		{
-			float dt = t.SecondsAsFloat();
-			t.Restart();
-			Update(dt);
-			sleep_for(milliseconds(5));
-		}
-	}
-	virtual void Update(float dt) { };
-};
 
 // Test loading fo map + metadata without errors
 Test("Beatmap.Loading")
