@@ -37,9 +37,9 @@ public:
 		staticMap.Add(id, new StaticBinding<void, A...>(func));
 	}
 	// Adds a lambda function as a handler for this delegate
-	template<typename T> DelegateHandle AddLambda(T& lambda)
+	template<typename T> DelegateHandle AddLambda(T&& lambda)
 	{
-		LambdaBinding<T, void, A...>* binding = new LambdaBinding<T, void, A...>(lambda);
+		LambdaBinding<T, void, A...>* binding = new LambdaBinding<T, void, A...>(std::forward<T>(lambda));
 		void* id = binding;
 		assert(!lambdaMap.Contains(id));
 		lambdaMap.Add(id, binding);

@@ -40,7 +40,7 @@ template<typename T, typename R, typename... A>
 struct LambdaBinding : public IFunctionBinding<R, A...>
 {
 	// Copies the given lambda
-	LambdaBinding(T& lambda) : lambda(lambda) {};
+	LambdaBinding(T&& lambda) : lambda(std::forward<T>(lambda)) {};
 	virtual R Call(A... args) override
 	{
 		return lambda(args...);

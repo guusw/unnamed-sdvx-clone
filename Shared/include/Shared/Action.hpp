@@ -14,9 +14,9 @@ public:
 		m_binding = new StaticBinding<R, A...>(staticFunction);
 	}
 	template<typename L>
-	Action(L lambda)
+	Action(L&& lambda)
 	{
-		m_binding = new LambdaBinding<L, R, A...>(lambda);
+		m_binding = new LambdaBinding<L, R, A...>(std::forward<L>(lambda));
 	}
 	Action(Action&& other)
 	{
@@ -42,10 +42,10 @@ public:
 		m_binding = new ObjectBinding<T, R, A...>(obj, memberFunc);
 	}
 	template<typename L>
-	void BindLambda(L lambda)
+	void BindLambda(L&& lambda)
 	{
 		Clear();
-		m_binding = new LambdaBinding<L, R, A...>(lambda);
+		m_binding = new LambdaBinding<L, R, A...>(std::forward<L>(lambda));
 	}
 	~Action()
 	{
