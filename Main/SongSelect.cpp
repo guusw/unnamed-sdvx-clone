@@ -493,6 +493,8 @@ public:
 		m_mapDatabase.OnMapsCleared.Add(m_selectionWheel.GetData(), &SelectionWheel::OnMapsCleared);
 		m_mapDatabase.StartSearching();
 
+		m_selectionWheel->SelectRandom();
+
 		return true;
 	}
 	~SongSelect_Impl()
