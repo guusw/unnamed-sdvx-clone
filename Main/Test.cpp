@@ -3,7 +3,7 @@
 #include "Application.hpp"
 #include <Shared/Profiling.hpp>
 #include "Scoring.hpp"
-#include <AUdio/Audio.hpp>
+#include <Audio/Audio.hpp>
 #include "Track.hpp"
 #include "Camera.hpp"
 #include "Background.hpp"
