@@ -3,6 +3,7 @@
 #include <Audio/Audio.hpp>
 #include <Audio/DSP.hpp>
 #include <thread>
+#include <float.h>
 
 using namespace std::this_thread;
 using namespace std::chrono;
