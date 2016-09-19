@@ -42,10 +42,14 @@ struct BeatmapSettings
 /*
 	Generic beatmap format, Can either load it's own format or KShoot maps
 */
-class Beatmap
+class Beatmap : public Unique
 {
 public:
 	virtual ~Beatmap();
+	Beatmap() = default;
+	Beatmap(Beatmap&& other);
+	Beatmap& operator=(Beatmap&& other);
+
 	bool Load(BinaryStream& input, bool metadataOnly = false);
 	// Saves the map as it's own format
 	bool Save(BinaryStream& output);

@@ -64,6 +64,7 @@ void BeatmapPlayback::Update(MapTime newTime)
 	if(timingEnd != nullptr && timingEnd != m_currentTiming)
 	{
 		m_currentTiming = timingEnd;
+		OnTimingPointChanged.Call(*m_currentTiming);
 	}
 
 	// Advance objects
@@ -256,9 +257,10 @@ uint32 BeatmapPlayback::CountBeats(MapTime start, MapTime range, int32& startInd
 {
 	const TimingPoint& tp = GetCurrentTimingPoint();
 	int64 delta = (int64)start - (int64)tp.time;
-	int64 beatStart = (int64)floor((double)delta / (tp.beatDuration/ multiplier));
-	int64 beatEnd = (int64)floor((double)(delta + range) / (tp.beatDuration/ multiplier));
-	startIndex = (int32)beatStart + 1;
+	double beatDuration = tp.GetWholeNoteLength() / tp.denominator;
+	int64 beatStart = (int64)floor((double)delta / (beatDuration / multiplier));
+	int64 beatEnd = (int64)floor((double)(delta + range) / (beatDuration / multiplier));
+	startIndex = ((int32)beatStart + 1) % tp.numerator;
 	return (uint32)Math::Max<int64>(beatEnd - beatStart, 0);
 }
 MapTime BeatmapPlayback::ViewDistanceToDuration(float distance)

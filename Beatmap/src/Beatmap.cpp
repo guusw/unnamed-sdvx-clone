@@ -14,7 +14,28 @@ Beatmap::~Beatmap()
 	for(auto z : m_zoomControlPoints)
 		delete z;
 }
-
+Beatmap::Beatmap(Beatmap&& other)
+{
+	m_timingPoints = std::move(other.m_timingPoints);
+	m_objectStates = std::move(other.m_objectStates);
+	m_zoomControlPoints = std::move(other.m_zoomControlPoints);
+	m_settings = std::move(other.m_settings);
+}
+Beatmap& Beatmap::operator=(Beatmap&& other)
+{
+	// Perform cleanup
+	for(auto tp : m_timingPoints)
+		delete tp;
+	for(auto obj : m_objectStates)
+		delete obj;
+	for(auto z : m_zoomControlPoints)
+		delete z;
+	m_timingPoints = std::move(other.m_timingPoints);
+	m_objectStates = std::move(other.m_objectStates);
+	m_zoomControlPoints = std::move(other.m_zoomControlPoints);
+	m_settings = std::move(other.m_settings);
+	return *this;
+}
 bool Beatmap::Load(BinaryStream& input, bool metadataOnly)
 {
 	ProfilerScope $("Load Beatmap");
@@ -242,6 +263,15 @@ float ObjectTypeData_Laser::SamplePosition(MapTime time) const
 	}
 	float f = Math::Clamp((float)(time - state->time) / (float)Math::Max(1, state->duration), 0.0f, 1.0f);
 	return (state->points[1] - state->points[0]) * f + state->points[0];
+}
+
+float ObjectTypeData_Laser::ConvertToNormalRange(float inputRange)
+{
+	return (inputRange + 0.5f) * 0.5f;
+}
+float ObjectTypeData_Laser::ConvertToExtendedRange(float inputRange)
+{
+	return inputRange * 2.0f - 0.5f;
 }
 
 // Enum OR, AND
