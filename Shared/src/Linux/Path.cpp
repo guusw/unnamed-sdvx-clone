@@ -86,7 +86,7 @@ String Path::GetExecutablePath()
 	int r = readlink(path, filename, PATH_MAX);
 	assert(r != -1);
 
-	return filename;
+	return String(filename, filename + r);
 }
 String Path::GetTemporaryPath()
 {
