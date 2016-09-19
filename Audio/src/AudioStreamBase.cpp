@@ -168,6 +168,7 @@ void AudioStreamBase::Process(float* out, uint32 numSamples)
 			// Ended
 			Logf("Audio stream ended", Logger::Info);
 			m_ended = true;
+			m_playing = false;
 			break;
 		}
 	}
