@@ -7,11 +7,9 @@
 using namespace std::this_thread;
 using namespace std::chrono;
 
-String testSamplePath = Path::Normalize("audio/laser_slam1.wav");
-//String testSongPath = Path::Normalize("songs/mix1.ogg");
-//uint32 songOffset = 220000;
-String testSongPath = Path::Normalize("songs/Yggdrasil/Yggdrasil.ogg");
-uint32 songOffset = 0;
+static String testSamplePath = Path::Normalize("audio/laser_slam1.wav");
+static String testSongPath = Path::Normalize("songs/Yggdrasil/Yggdrasil.ogg");
+static uint32 testSongOffset = 0;
 
 Test("Audio.Playback")
 {
@@ -53,7 +51,7 @@ Test("Audio.Music.LPF")
 
 	testStream->SetVolume(1.0f);
 	testStream->Play();
-	testStream->SetPosition(songOffset);
+	testStream->SetPosition(testSongOffset);
 
 	BQFDSP* filter = new BQFDSP();
 	testStream->AddDSP(filter);
@@ -111,7 +109,7 @@ Test("Audio.Music.Peaking")
 
 	testStream->SetVolume(1.0f);
 	testStream->Play();
-	testStream->SetPosition(songOffset);
+	testStream->SetPosition(testSongOffset);
 
 	BQFDSP* pfilter = new BQFDSP();
 	testStream->AddDSP(pfilter);
@@ -171,7 +169,7 @@ Test("Audio.Music.Echo")
 
 	testStream->SetVolume(1.0f);
 	testStream->Play();
-	testStream->SetPosition(songOffset);
+	testStream->SetPosition(testSongOffset);
 
 	Echo* echo = new Echo();
 	testStream->AddDSP(echo);
@@ -205,7 +203,7 @@ Test("Audio.Music.Flanger")
 
 	testStream->SetVolume(1.0f);
 	testStream->Play();
-	testStream->SetPosition(songOffset);
+	testStream->SetPosition(testSongOffset);
 
 	FlangerDSP* fl = new FlangerDSP();
 	testStream->AddDSP(fl);

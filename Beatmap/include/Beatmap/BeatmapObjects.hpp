@@ -126,6 +126,10 @@ struct ObjectTypeData_Laser
 	TObjectState<ObjectTypeData_Laser>* GetTail();
 	float GetDirection() const;
 	float SamplePosition(MapTime time) const;
+	// Convert extended range to normal range 
+	static float ConvertToNormalRange(float inputRange);
+	// Convert normal range to extended range 
+	static float ConvertToExtendedRange(float inputRange);
 
 	// Duration of laser segment
 	MapTime duration = 0;
