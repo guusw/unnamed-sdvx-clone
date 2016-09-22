@@ -1,5 +1,4 @@
-#include <Shared/Shared.hpp>
-#include <Tests/Tests.hpp>
+#include "stdafx.h"
 #include <Audio/Audio.hpp>
 #include <Audio/DSP.hpp>
 #include <float.h>
@@ -144,7 +143,7 @@ Test("Audio.Music.Peaking")
 			int32 playbackTime = song->GetPosition();
 			printf("%08d > f:%f bw:%f amp:%f", playbackTime, sweepFreq, sweepBw, sweepAmp);
 
-			filter->SetPeaking(sweepBw, sweepFreq, sweepAmp);
+			filter->Set(sweepBw, sweepFreq, sweepAmp);
 		}
 	};
 
@@ -164,7 +163,7 @@ Test("Audio.Music.Echo")
 		{
 			TestMusicPlayer::Init(songPath, startOffset);
 
-			Echo* echo = new Echo();
+			EchoDSP* echo = new EchoDSP();
 			song->AddDSP(echo);
 			echo->SetLength(3000);
 			echo->feedback = 0.4f;
@@ -193,7 +192,7 @@ Test("Audio.Music.Flanger")
 			FlangerDSP* fl = new FlangerDSP();
 			song->AddDSP(fl);
 			fl->SetDelayRange(10, 120);
-			fl->delay = 24100;
+			fl->SetLength(24100);
 			fl->mix = 1.0f;
 		}
 		virtual void Update(float dt) override

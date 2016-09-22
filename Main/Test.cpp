@@ -7,13 +7,13 @@
 #include "Track.hpp"
 #include "Camera.hpp"
 #include "Background.hpp"
-#include "GUI.hpp"
-#include "GUI/CommonGUIStyle.hpp"
-#include "GUI/Button.hpp"
-#include "GUI/Slider.hpp"
-#include "GUI/ScrollBox.hpp"
-#include "GUI/SettingsBar.hpp"
-#include "GUI/Spinner.hpp"
+#include <GUI/GUI.hpp>
+#include <GUI/CommonGUIStyle.hpp>
+#include <GUI/Button.hpp>
+#include <GUI/Slider.hpp>
+#include <GUI/ScrollBox.hpp>
+#include <GUI/SettingsBar.hpp>
+#include <GUI/Spinner.hpp>
 #include "HealthGauge.hpp"
 #include "Shared/Jobs.hpp"
 #include "ScoreScreen.hpp"
@@ -47,7 +47,7 @@ public:
 	}
 	bool Init()
 	{
-		m_guiStyle = CommonGUIStyle::Get();
+		m_guiStyle = g_commonGUIStyle;
 
 		m_gamepad = g_gameWindow->OpenGamepad(0);
 

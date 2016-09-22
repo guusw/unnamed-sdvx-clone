@@ -3,8 +3,8 @@
 #include "Application.hpp"
 #include <Shared/Profiling.hpp>
 #include "Scoring.hpp"
-#include "GUI.hpp"
-#include "GUI/SongSelectItem.hpp"
+#include <GUI/GUI.hpp>
+#include "SongSelectItem.hpp"
 #include <Beatmap/MapDatabase.hpp>
 #include "Game.hpp"
 #include "TransitionScreen.hpp"
@@ -440,7 +440,7 @@ private:
 public:
 	bool Init() override
 	{
-		m_commonGUIStyle = CommonGUIStyle::Get();
+		m_commonGUIStyle = g_commonGUIStyle;
 		m_canvas = Utility::MakeRef(new Canvas());
 
 		// Load textures for song select

@@ -9,6 +9,7 @@ enable_cpp11()
 include_directories(.)
 add_executable(Tests.Game ${Main_src})
 set_output_postfixes(Tests.Game)
+enable_precompiled_headers("${Main_src}" stdafx.cpp)
 
 if(MSVC)
 	# SEH and Debug
@@ -22,6 +23,7 @@ target_link_libraries(Tests.Game Shared)
 target_link_libraries(Tests.Game Graphics)
 target_link_libraries(Tests.Game Audio)
 target_link_libraries(Tests.Game Beatmap)
+target_link_libraries(Tests.Game GUI)
 target_link_libraries(Tests.Game Tests)
 
 if(WIN32)

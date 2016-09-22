@@ -33,7 +33,7 @@ enum class ObjectType : uint8
 enum class EventKey : uint8
 {
 	SlamVolume, // Float
-	LaserEffectType, // uint8
+	LaserEffectType, // Effect
 	LaserEffectMix, // Float
 	TrackRollBehaviour, // uint8
 };
@@ -112,7 +112,8 @@ struct ObjectTypeData_Hold : public ObjectTypeData_Button
 	// The sound effect on the note
 	EffectType effectType = EffectType::None;
 	// The parameter for effects that have it
-	EffectParam effectParam = 0;
+	// the maximum number of parameters is 2 (only echo uses this)
+	int16 effectParams[2] = { 0 };
 
 	static const ObjectType staticType = ObjectType::Hold;
 };
@@ -164,9 +165,10 @@ struct EventData
 	union
 	{
 		float floatVal;
+		uint32 uintVal;
 		int32 intVal;
 		uint8 byteVal;
-		LaserEffectType effectVal;
+		EffectType effectVal;
 		TrackRollBehaviour rollVal;
 	};
 

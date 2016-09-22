@@ -129,8 +129,50 @@ bool KShootMap::Init(BinaryStream& input, bool metadataOnly)
 		}
 		else
 		{
+			if(line.empty())
+				continue;
+
 			String k, v;
-			if(line.Split("=", &k, &v))
+			if(line[0] == '#')
+			{
+				Vector<String> strings = line.Explode(" ");
+				String type = strings[0];
+				if(strings.size() != 3)
+				{
+					Logf("Invalid define found in ksh map @%d: %s", Logger::Warning, lineNumber, line);
+					continue;
+				}
+
+				KShootEffectDefinition def;
+				def.typeName = strings[1];
+
+				// Split up parameters
+				Vector<String> paramsString = strings[2].Explode(";");
+				for(auto param : paramsString)
+				{
+					String k, v;
+					if(!param.Split("=", &k, &v))
+					{
+						Logf("Invalid parameter in custom effect definition for [%s]@%d: \"%s\"", Logger::Warning, def.typeName, lineNumber, line);
+						continue;
+					}
+					def.parameters.Add(k, v);
+				}
+
+				if(strings[0] == "#define_fx")
+				{
+					fxDefines.Add(def.typeName, def);
+				}
+				else if(strings[0] == "#define_filter")
+				{
+					filterDefines.Add(def.typeName, def);
+				}
+				else
+				{
+					Logf("Unkown define statement in ksh @%d: \"%s\"", Logger::Warning, lineNumber, line);
+				}
+			}
+			else if(line.Split("=", &k, &v))
 			{
 				tick.settings.FindOrAdd(k) = v;
 			}
