@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "GUIRenderer.hpp"
+#include <GUI/GUIRenderer.hpp>
 #include "HealthGauge.hpp"
 #include "Application.hpp"
 

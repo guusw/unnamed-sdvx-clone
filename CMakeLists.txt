@@ -22,8 +22,6 @@ endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 #	this is mainly for windows functions either being defined to call A or W prefixed functions
 add_definitions(-DUNICODE -D_UNICODE)
 
-# Begin defining functions/macros for use in sub-projects
-
 # Precompiled header macro
 #	src 	= Path to source files
 #	pchSrc 	= Path to precompiled header source file
@@ -68,6 +66,7 @@ add_subdirectory(Graphics)
 add_subdirectory(Main)
 add_subdirectory(Audio)
 add_subdirectory(Beatmap)
+add_subdirectory(GUI)
 # Unit test projects
 add_subdirectory(Tests)
 add_subdirectory(Tests.Shared)
@@ -92,6 +91,7 @@ if(MSVC)
 	set_target_properties(Graphics PROPERTIES FOLDER Libraries)
 	set_target_properties(Audio PROPERTIES FOLDER Libraries)
 	set_target_properties(Beatmap PROPERTIES FOLDER Libraries)
+	set_target_properties(GUI PROPERTIES FOLDER Libraries)
 	
 	# Unit tests
 	set_target_properties(Tests PROPERTIES FOLDER "Tests")

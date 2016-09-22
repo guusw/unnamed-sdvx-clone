@@ -178,12 +178,18 @@ public:
 		String jacketPath = m_mapRootPath + "/" + mapSettings.jacketPath;
 		m_jacketImage = ImageRes::Create(jacketPath);
 
-		// Load beatmap audio
-		if(!m_audioPlayback.Init(*m_beatmap, m_mapRootPath))
-			return false;
-
+		// Initialize input/scoring
 		if(!InitGameplay())
 			return false;
+
+		// Load beatmap audio
+		if(!m_audioPlayback.Init(m_playback, m_mapRootPath))
+			return false;
+
+		ApplyAudioLeadin();
+
+		// Load audio offset
+		m_audioOffset = g_gameConfig.GetInt(GameConfigKeys::GlobalOffset);
 
 		if(!InitSFX())
 			return false;
@@ -241,7 +247,7 @@ public:
 	{
 		m_camera = Camera();
 
-		bool audioReinit = m_audioPlayback.Init(*m_beatmap, m_mapRootPath);
+		bool audioReinit = m_audioPlayback.Init(m_playback, m_mapRootPath);
 		assert(audioReinit);
 
 		// Audio leadin
@@ -423,7 +429,7 @@ public:
 	bool InitHUD()
 	{
 		CheckedLoad(m_fontDivlit = FontRes::Create(g_gl, "fonts/divlit_custom.ttf"));
-		m_guiStyle = CommonGUIStyle::Get();
+		m_guiStyle = g_commonGUIStyle;
 
 		// Game GUI canvas
 		m_canvas = Utility::MakeRef(new Canvas());
@@ -511,6 +517,9 @@ public:
 			m_lastMapTime = firstObjectTime - 1000;
 			m_audioPlayback.SetPosition(m_lastMapTime);
 		}
+
+		// Reset playback
+		m_playback.Reset(m_lastMapTime);
 	}
 	// Loads sound effects
 	bool InitSFX()
@@ -522,18 +531,12 @@ public:
 	}
 	bool InitGameplay()
 	{
-		ApplyAudioLeadin();
-
-		// Load audio offset
-		m_audioOffset = g_gameConfig.GetInt(GameConfigKeys::GlobalOffset);
-
 		// Playback and timing
 		m_playback = BeatmapPlayback(*m_beatmap);
 		m_playback.OnEventChanged.Add(this, &Game_Impl::OnEventChanged);
 		m_playback.OnFXBegin.Add(this, &Game_Impl::OnFXBegin);
 		m_playback.OnFXEnd.Add(this, &Game_Impl::OnFXEnd);
-		if(!m_playback.Reset(m_lastMapTime)) // Initialize
-			return false;
+		m_playback.Reset();
 
 		m_playback.hittableObjectTreshold = Scoring::goodHitTime;
 
@@ -596,7 +599,7 @@ public:
 		/// #Scoring
 		// Update music filter states
 		m_audioPlayback.SetLaserFilterInput(m_scoring.GetLaserOutput(), m_scoring.IsLaserHeld(0, false) || m_scoring.IsLaserHeld(1, false));
-		m_audioPlayback.Tick(m_playback, deltaTime);
+		m_audioPlayback.Tick(deltaTime);
 
 		// Link FX track to combo counter for now
 		m_audioPlayback.SetFXTrackEnabled(m_scoring.currentComboCounter > 0);
@@ -751,6 +754,9 @@ public:
 		textPos.y += RenderText(Utility::Sprintf("Time Signature: %d/4", tp.numerator), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Laser Effect Mix: %f", m_audioPlayback.GetLaserEffectMix()), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Laser Filter Input: %f", m_scoring.GetLaserOutput()), textPos).y;
+
+		float test = Interpolation::CubicBezier(Interpolation::EaseInCubic).Sample(m_scoring.GetLaserOutput());
+		textPos.y += RenderText(Utility::Sprintf("Laser Filter Input (quad): %f", test), textPos).y;
 
 		textPos.y += RenderText(Utility::Sprintf("Score: %d (Max: %d)", m_scoring.currentHitScore, m_scoring.mapTotals.maxScore), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Actual Score: %d", m_scoring.CalculateCurrentScore()), textPos).y;

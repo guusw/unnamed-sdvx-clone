@@ -1,5 +1,6 @@
 #pragma once
 #include "BeatmapObjects.hpp"
+#include "AudioEffects.hpp"
 
 /* Global settings stored in a beatmap */
 struct BeatmapSettings
@@ -36,7 +37,7 @@ struct BeatmapSettings
 	// Initial audio settings
 	float slamVolume = 1.0f;
 	float laserEffectMix = 1.0f;
-	LaserEffectType laserEffectType = LaserEffectType::PeakingFilter;
+	EffectType laserEffectType = EffectType::PeakingFilter;
 };
 
 /*
@@ -52,10 +53,10 @@ public:
 
 	bool Load(BinaryStream& input, bool metadataOnly = false);
 	// Saves the map as it's own format
-	bool Save(BinaryStream& output);
+	bool Save(BinaryStream& output) const;
 
 	// Returns the settings of the map, contains metadata + song/image paths.
-	const BeatmapSettings& GetMapSettings();
+	const BeatmapSettings& GetMapSettings() const;
 
 	// Vector of timing points in the map, sorted by when they appear in the map
 	// Must keep the beatmap class instance alive for these to stay valid
@@ -70,9 +71,17 @@ public:
 	// Can contain multiple objects at the same time
 	const Vector<ZoomControlPoint*>& GetZoomControlPoints() const;
 
+	// Retrieves audio effect settings for a given button id
+	AudioEffect GetEffect(EffectType type) const;
+	// Retrieves audio effect settings for a given filter effect id
+	AudioEffect GetFilter(EffectType type) const;
+
 private:
 	bool m_ProcessKShootMap(BinaryStream& input, bool metadataOnly);
 	bool m_Serialize(BinaryStream& stream, bool metadataOnly);
+
+	Map<EffectType, AudioEffect> m_customEffects;
+	Map<EffectType, AudioEffect> m_customFilters;
 
 	Vector<TimingPoint*> m_timingPoints;
 	Vector<ObjectState*> m_objectStates;

@@ -50,13 +50,14 @@ bool Beatmap::Load(BinaryStream& input, bool metadataOnly)
 
 	return true;
 }
-bool Beatmap::Save(BinaryStream& output)
+bool Beatmap::Save(BinaryStream& output) const
 {
 	ProfilerScope $("Save Beatmap");
-	return m_Serialize(output, false);
+	// Const cast because serialize is universal for loading and saving
+	return const_cast<Beatmap*>(this)->m_Serialize(output, false);
 }
 
-const BeatmapSettings& Beatmap::GetMapSettings()
+const BeatmapSettings& Beatmap::GetMapSettings() const
 {
 	return m_settings;
 }
@@ -74,6 +75,26 @@ const Vector<ZoomControlPoint*>& Beatmap::GetZoomControlPoints() const
 	return m_zoomControlPoints;
 }
 
+AudioEffect Beatmap::GetEffect(EffectType type) const
+{
+	if(type >= EffectType::UserDefined0)
+	{
+		const AudioEffect* fx = m_customEffects.Find(type);
+		assert(fx);
+		return *fx;
+	}
+	return AudioEffect::GetDefault(type);
+}
+AudioEffect Beatmap::GetFilter(EffectType type) const
+{
+	if(type >= EffectType::UserDefined0)
+	{
+		const AudioEffect* fx = m_customFilters.Find(type);
+		assert(fx);
+		return *fx;
+	}
+	return AudioEffect::GetDefault(type);
+}
 bool MultiObjectState::StaticSerialize(BinaryStream& stream, MultiObjectState*& obj)
 {
 	uint8 type = 0;
@@ -114,8 +135,9 @@ bool MultiObjectState::StaticSerialize(BinaryStream& stream, MultiObjectState*& 
 	case ObjectType::Hold:
 		stream << obj->hold.index;
 		stream << obj->hold.duration;
-		stream << (uint8&)obj->hold.effectType;
-		stream << (uint8&)obj->hold.effectParam;
+		stream << (uint16&)obj->hold.effectType;
+		stream << (int16&)obj->hold.effectParams[0];
+		stream << (int16&)obj->hold.effectParams[1];
 		break;
 	case ObjectType::Laser:
 		stream << obj->laser.index;

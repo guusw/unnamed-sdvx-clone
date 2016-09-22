@@ -16,6 +16,7 @@ public:
 	// Original data for this tick
 	String buttons, fx, laser, add;
 };
+
 /* 
 	A single bar in the map file 
 */
@@ -32,6 +33,12 @@ public:
 	operator bool() const;
 	uint32_t block;
 	uint32_t tick;
+};
+
+struct KShootEffectDefinition
+{
+	String typeName;
+	Map<String, String> parameters;
 };
 
 /* 
@@ -67,6 +74,8 @@ public:
 
 	Map<String, String> settings;
 	Vector<KShootBlock> blocks;
+	Map<String, KShootEffectDefinition> filterDefines;
+	Map<String, KShootEffectDefinition> fxDefines;
 
 private:
 	static const uint32_t c_laserStart;

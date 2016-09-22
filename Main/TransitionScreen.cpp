@@ -2,8 +2,8 @@
 #include "TransitionScreen.hpp"
 #include "Application.hpp"
 #include "Shared/Jobs.hpp"
-#include "GUI.hpp"
-#include "GUI/Spinner.hpp"
+#include <GUI/GUI.hpp>
+#include <GUI/Spinner.hpp>
 #include "AsyncLoadable.hpp"
 
 class TransitionScreen_Impl : public TransitionScreen
@@ -66,7 +66,7 @@ public:
 		blackSlot->SetZOrder(0);
 		black->color = Color::Black;
 
-		Spinner* spinner = new Spinner(CommonGUIStyle::Get());
+		Spinner* spinner = new Spinner(g_commonGUIStyle);
 		Canvas::Slot* spinnerSlot = m_loadingOverlay->Add(spinner->MakeShared());
 		spinnerSlot->anchor = Anchor(1.0f, 1.0f); // Right bottom corner
 		spinnerSlot->padding = Margin(-50, -50, 50, 50);

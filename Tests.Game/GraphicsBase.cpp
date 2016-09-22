@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "GraphicsBase.hpp"
 
 GraphicsTest::~GraphicsTest()

@@ -32,6 +32,7 @@ endif(MSVC)
 target_link_libraries(Main Shared)
 target_link_libraries(Main Graphics)
 target_link_libraries(Main Audio)
+target_link_libraries(Main GUI)
 target_link_libraries(Main Beatmap)
 
 if(WIN32)

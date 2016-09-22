@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "ScoreScreen.hpp"
 #include "Application.hpp"
-#include "GUI.hpp"
-#include "CommonGUIStyle.hpp"
+#include <GUI/GUI.hpp>
+#include <GUI/CommonGUIStyle.hpp>
 #include <Audio/Audio.hpp>
 #include "Scoring.hpp"
 #include "Game.hpp"
@@ -64,7 +64,7 @@ public:
 	AsyncAssetLoader loader;
 	virtual bool AsyncLoad() override
 	{
-		m_guiStyle = CommonGUIStyle::Get();
+		m_guiStyle = g_commonGUIStyle;
 
 		m_canvas = Utility::MakeRef(new Canvas());
 

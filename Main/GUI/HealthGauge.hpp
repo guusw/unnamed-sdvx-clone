@@ -1,5 +1,5 @@
 #pragma once
-#include "GUIElement.hpp"
+#include <GUI/GUIElement.hpp>
 
 class HealthGauge : public GUIElementBase
 {
