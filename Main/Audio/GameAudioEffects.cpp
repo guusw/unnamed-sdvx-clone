@@ -34,26 +34,12 @@ DSP* GameAudioEffect::CreateDSP(class AudioBase* audioTrack, AudioPlayback& play
 		break;
 	}
 	case EffectType::PeakingFilter:
-	{
-		BQFDSP* bqfDSP = new BQFDSP();
-		audioTrack->AddDSP(bqfDSP);
-		bqfDSP->SetPeaking(peaking.q.Sample(filterInput), peaking.freq.Sample(filterInput), peaking.gain.Sample(filterInput));
-		ret = bqfDSP;
-		break;
-	}
 	case EffectType::LowPassFilter:
-	{
-		CombinedFilterDSP* bqfDSP = new CombinedFilterDSP();
-		audioTrack->AddDSP(bqfDSP);
-		bqfDSP->SetLowPass(lpf.q.Sample(filterInput), lpf.freq.Sample(filterInput), lpf.peakQ.Sample(filterInput), lpf.gain.Sample(filterInput));
-		ret = bqfDSP;
-		break;
-	}
 	case EffectType::HighPassFilter:
 	{
-		CombinedFilterDSP* bqfDSP = new CombinedFilterDSP();
+		// Don't set anthing for biquad Filters
+		BQFDSP* bqfDSP = new BQFDSP();
 		audioTrack->AddDSP(bqfDSP);
-		bqfDSP->SetHighPass(hpf.q.Sample(filterInput), hpf.freq.Sample(filterInput), hpf.peakQ.Sample(filterInput), hpf.gain.Sample(filterInput));
 		ret = bqfDSP;
 		break;
 	}
@@ -171,43 +157,5 @@ void GameAudioEffect::SetParams(DSP* dsp, AudioPlayback& playback, HoldObjectSta
 		fl->SetDelayRange(2, 40);
 		break;
 	}
-	}
-}
-void GameAudioEffect::UpdateDSP(DSP* dsp, AudioPlayback& playback, float filterInput)
-{
-	switch(type)
-	{
-	case EffectType::Bitcrush:
-	{
-		BitCrusherDSP* bcDSP = (BitCrusherDSP*)dsp;
-		bcDSP->SetPeriod((float)bitcrusher.reduction.Sample(filterInput));
-		break;
-	}
-	case EffectType::Echo:
-	{
-		EchoDSP* echoDSP = (EchoDSP*)dsp;
-		echoDSP->feedback = echo.feedback.Sample(filterInput);
-		break;
-	}
-	case EffectType::PeakingFilter:
-	{
-		BQFDSP* bqfDSP = (BQFDSP*)dsp;
-		bqfDSP->SetPeaking(peaking.q.Sample(filterInput), peaking.freq.Sample(filterInput), peaking.gain.Sample(filterInput));
-		break;
-	}
-	case EffectType::LowPassFilter:
-	{
-		CombinedFilterDSP* bqfDSP = (CombinedFilterDSP*)dsp;
-		bqfDSP->SetLowPass(lpf.q.Sample(filterInput), lpf.freq.Sample(filterInput), lpf.peakQ.Sample(filterInput), lpf.gain.Sample(filterInput));
-		break;
-	}
-	case EffectType::HighPassFilter:
-	{
-		CombinedFilterDSP* bqfDSP = (CombinedFilterDSP*)dsp;
-		bqfDSP->SetHighPass(hpf.q.Sample(filterInput), hpf.freq.Sample(filterInput), hpf.peakQ.Sample(filterInput), hpf.gain.Sample(filterInput));
-		break;
-	}
-	default:
-		break;
 	}
 }

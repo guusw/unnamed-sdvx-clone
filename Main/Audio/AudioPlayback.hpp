@@ -17,8 +17,6 @@ public:
 	DSP* CreateDSP(class AudioBase* audioTrack, AudioPlayback& playback);
 	// Applies the given parameters overriding some settings for this effect (depending on the effect)
 	void SetParams(DSP* dsp, AudioPlayback& playback, HoldObjectState* object);
-	// Updates all variable parameters on a DSP created with CreateDSP with laser input values
-	void UpdateDSP(DSP* dsp, AudioPlayback& playback, float filterInput);
 };
 
 /* 
