@@ -231,7 +231,7 @@ Test("Beatmap.DoubleFilter")
 				float sweepGain = filterSweepGainStart + (filterSweepGainEnd - filterSweepGainStart) * sweepInput;
 				if(sweepInput < 0.05f)
 					sweepGain *= (sweepInput / 0.05f);
-				filter[i]->Set(sweepBw, sweepFreq, sweepGain * distAtten);
+				filter[i]->SetPeaking(sweepBw, sweepFreq, sweepGain * distAtten);
 			}
 		}
 	};
@@ -332,7 +332,7 @@ Test("Beatmap.SingleFilter")
 			float sweepGain = filterSweepGainStart + (filterSweepGainEnd - filterSweepGainStart) * sweepInput;
 			if(sweepInput < 0.05f)
 				sweepGain *= (sweepInput / 0.05f);
-			filter->Set(sweepBw, sweepFreq, sweepGain * distAtten);
+			filter->SetPeaking(sweepBw, sweepFreq, sweepGain * distAtten);
 		}
 	};
 	Player player(beatmap, mapRootPath);

@@ -232,6 +232,11 @@ public:
 		/// TODO: Load this async
 		CheckedLoad(m_background = CreateBackground(this));
 
+		// Do this here so we don't get input events while still loading
+		m_scoring.SetPlayback(m_playback);
+		m_scoring.SetInput(&g_input);
+		m_scoring.Reset(); // Initialize
+
 		return true;
 	}
 	virtual bool Init() override
@@ -538,10 +543,7 @@ public:
 		m_playback.OnFXEnd.Add(this, &Game_Impl::OnFXEnd);
 		m_playback.Reset();
 
-		m_playback.hittableObjectTreshold = Scoring::goodHitTime;
-
-		m_scoring.SetPlayback(m_playback);
-		m_scoring.SetInput(&g_input);
+		// Register input bindings
 		m_scoring.OnButtonMiss.Add(this, &Game_Impl::OnButtonMiss);
 		m_scoring.OnLaserSlamHit.Add(this, &Game_Impl::OnLaserSlamHit);
 		m_scoring.OnButtonHit.Add(this, &Game_Impl::OnButtonHit);
@@ -549,7 +551,8 @@ public:
 		m_scoring.OnObjectHold.Add(this, &Game_Impl::OnObjectHold);
 		m_scoring.OnObjectReleased.Add(this, &Game_Impl::OnObjectReleased);
 		m_scoring.OnScoreChanged.Add(this, &Game_Impl::OnScoreChanged);
-		m_scoring.Reset(); // Initialize
+
+		m_playback.hittableObjectTreshold = Scoring::goodHitTime;
 
 		if(g_application->GetAppCommandLine().Contains("-autobuttons"))
 		{
@@ -754,9 +757,6 @@ public:
 		textPos.y += RenderText(Utility::Sprintf("Time Signature: %d/4", tp.numerator), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Laser Effect Mix: %f", m_audioPlayback.GetLaserEffectMix()), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Laser Filter Input: %f", m_scoring.GetLaserOutput()), textPos).y;
-
-		float test = Interpolation::CubicBezier(Interpolation::EaseInCubic).Sample(m_scoring.GetLaserOutput());
-		textPos.y += RenderText(Utility::Sprintf("Laser Filter Input (quad): %f", test), textPos).y;
 
 		textPos.y += RenderText(Utility::Sprintf("Score: %d (Max: %d)", m_scoring.currentHitScore, m_scoring.mapTotals.maxScore), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Actual Score: %d", m_scoring.CalculateCurrentScore()), textPos).y;

@@ -2,6 +2,7 @@
 #include "DSP.hpp"
 #include "AudioOutput.hpp"
 #include "Audio_Impl.hpp"
+#include <Shared/Interpolation.hpp>
 
 void PanDSP::Process(float* out, uint32 numSamples)
 {
@@ -305,14 +306,23 @@ void WobbleDSP::SetLength(uint32 length)
 }
 void WobbleDSP::Process(float* out, uint32 numSamples)
 {
+	static Interpolation::CubicBezier easing(Interpolation::EaseInExpo);
 	for(uint32 i = 0; i < numSamples; i++)
 	{
 		float f = abs(2.0f * ((float)m_currentSample / (float)m_length) - 1.0f);
-		f = 1.0f - pow(f, 1.5f) * 0.4f;
-		float freq = (float)pow(22000.0f, f);
-		SetLowPass(0.7f, freq);
+		f = easing.Sample(f);
+		float freq = 25.0f + 24000.0f * f;
+		SetLowPass(2.0f + 2.5f * f, freq);
+
+		float s[2] = { out[i * 2], out[i * 2 + 1] };
 
 		BQFDSP::Process(&out[i * 2], 1);
+
+		// Apply slight mixing
+		float mix = 0.5f;
+		out[i * 2 + 0] = out[i * 2 + 0] * mix + s[0] * (1.0f - mix);
+		out[i * 2 + 1] = out[i * 2 + 1] * mix + s[1] * (1.0f - mix);
+
 		m_currentSample++;
 		m_currentSample %= m_length;
 	}

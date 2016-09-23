@@ -40,34 +40,30 @@ static AudioEffect CreateDefault(EffectType type)
 	// Default timing is 1/4
 	ret.duration = TimeRange(0.25f);
 
+	Interpolation::CubicBezier laserEasingCurve = Interpolation::EaseInExpo;
+	Interpolation::CubicBezier lpfEasingCurve = Interpolation::EaseOutCubic;
+
 	// Set defaults based on effect type
 	switch(type)
 	{
 		// These are assumed to mostly be laser effect types (at least when used with the defaults)
 	case EffectType::PeakingFilter:
 	{
-		Interpolation::Predefined easing = Interpolation::EaseInCubic;
-		ret.peaking.freq = FloatRange(100.0f, 7000.0f, easing);
-		ret.peaking.q = FloatRange(0.1f, 0.5f, easing);
-		ret.peaking.gain = FloatRange(20.0f, 28.0f, easing);
+		ret.peaking.freq = FloatRange(80.0f, 8000.0f, laserEasingCurve);
+		ret.peaking.q = FloatRange(1.f, 0.8f);
+		ret.peaking.gain = FloatRange(20.0f, 20.0f);
 		break;
 	}
 	case EffectType::LowPassFilter:
 	{
-		Interpolation::Predefined easing = Interpolation::EaseOutCubic;
-		ret.lpf.freq = FloatRange(8000.0f, 200.0f, easing);
-		ret.lpf.q = FloatRange(4.0f, 3.0f, easing);
-		ret.lpf.gain = FloatRange(5.0f, 10.0f, easing);
-		ret.lpf.peakQ = FloatRange(1.0f, 0.5f, easing);
+		ret.lpf.freq = FloatRange(10000.0f, 700.0f, lpfEasingCurve);
+		ret.lpf.q = FloatRange(7.0f, 10.0f);
 		break;
 	}
 	case EffectType::HighPassFilter:
 	{
-		Interpolation::Predefined easing = Interpolation::EaseInCubic;
-		ret.hpf.freq = FloatRange(100.0f, 2000.0f, easing);
-		ret.hpf.q = FloatRange(1.0f, 1.0f);
-		ret.hpf.gain = FloatRange(10.0f, 5.0f, easing);
-		ret.hpf.peakQ = FloatRange(1.0f, 0.5f, easing);
+		ret.hpf.freq = FloatRange(80.0f, 2000.0f, laserEasingCurve);
+		ret.hpf.q = FloatRange(10.0f, 5.0f);
 		break;
 	}
 	case EffectType::Bitcrush:
@@ -90,8 +86,9 @@ static AudioEffect CreateDefault(EffectType type)
 		break;
 	case EffectType::Phaser:
 		ret.phaser.min = FloatRange(400.0f);
-		ret.phaser.max = FloatRange(8000.0f);
-		ret.phaser.feedback = FloatRange(0.3f);
+		ret.phaser.max = FloatRange(4000.0f);
+		ret.phaser.feedback = FloatRange(0.5f);
+		ret.duration = TimeRange(1.0f);
 		break;
 	case EffectType::Wobble:
 		// wobble is 1/12 by default

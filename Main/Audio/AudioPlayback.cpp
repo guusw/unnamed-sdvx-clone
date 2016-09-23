@@ -255,7 +255,50 @@ void AudioPlayback::m_SetLaserEffectParameter(float input)
 		return;
 	assert(input >= 0.0f && input <= 1.0f);
 
-	m_laserEffect.UpdateDSP(m_laserDSP, *this, input);
+	// Mix for normal effects
+	m_laserDSP->mix = m_laserEffectMix;
+
+	// Mix float biquad filters, these are applied manualy by changing the filter parameters (gain,q,freq,etc.)
+	float mix = m_laserEffectMix;
+	if(input < 0.1f)
+		mix *= input / 0.1f;
+
+	switch(m_laserEffectType)
+	{
+	case EffectType::Bitcrush:
+	{
+		BitCrusherDSP* bcDSP = (BitCrusherDSP*)m_laserDSP;
+		bcDSP->SetPeriod((float)m_laserEffect.bitcrusher.reduction.Sample(input));
+		break;
+	}
+	case EffectType::Echo:
+	{
+		EchoDSP* echoDSP = (EchoDSP*)m_laserDSP;
+		echoDSP->feedback = m_laserEffect.echo.feedback.Sample(input);
+		break;
+	}
+	case EffectType::PeakingFilter:
+	{
+		if(input > 0.8f)
+			mix *= 1.0f - (input - 0.8f) / 0.2f;
+
+		BQFDSP* bqfDSP = (BQFDSP*)m_laserDSP;
+		bqfDSP->SetPeaking(m_laserEffect.peaking.q.Sample(input), m_laserEffect.peaking.freq.Sample(input), m_laserEffect.peaking.gain.Sample(input) * mix);
+		break;
+	}
+	case EffectType::LowPassFilter:
+	{
+		BQFDSP* bqfDSP = (BQFDSP*)m_laserDSP;
+		bqfDSP->SetLowPass(m_laserEffect.lpf.q.Sample(input) * mix + 0.1f, m_laserEffect.lpf.freq.Sample(input));
+		break;
+	}
+	case EffectType::HighPassFilter:
+	{
+		BQFDSP* bqfDSP = (BQFDSP*)m_laserDSP;
+		bqfDSP->SetHighPass(m_laserEffect.hpf.q.Sample(input)  * mix + 0.1f, m_laserEffect.hpf.freq.Sample(input));
+		break;
+	}
+	}
 }
 
 GameAudioEffect::GameAudioEffect(const AudioEffect& other)
