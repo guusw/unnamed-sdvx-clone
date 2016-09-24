@@ -139,7 +139,7 @@ void ScrollBox::m_AnimateScrollDelta(int32 delta)
 		m_content->SetScroll(scroll);
 		m_vscroll->SetValue(m_content->GetScrollPercent(), false);
 	}, 0);
-	anim->timeFunction = TimeFunction::EaseOutQuad;
+	anim->timeFunction = Interpolation::EaseOutQuad;
 	AddAnimation(anim, true);
 }
 void ScrollBox::m_OnSetScroll(float val)

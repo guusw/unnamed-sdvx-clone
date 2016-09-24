@@ -1,11 +1,7 @@
 #pragma once
+#include <Shared/Interpolation.hpp>
 
-enum class TimeFunction
-{
-	Linear,
-	EaseOutQuad,
-	EaseInQuad,
-};
+using Interpolation::TimeFunction;
 
 // GUI Animation object
 class IGUIAnimation : public RefCounted<IGUIAnimation>
@@ -18,7 +14,7 @@ public:
 	virtual void* GetTarget() = 0;
 
 	// Timing function used
-	TimeFunction timeFunction = TimeFunction::Linear;
+	TimeFunction timeFunction = Interpolation::Linear;
 
 	template<typename T, typename Lambda>
 	static Ref<IGUIAnimation> CreateCallback(T next, T last, float duration, Lambda&& l, uint32 identifier);
@@ -26,31 +22,6 @@ public:
 	static Ref<IGUIAnimation> Create(T* target, T next, float duration);
 	template<typename T>
 	static Ref<IGUIAnimation> Create(T* target, T next, T last, float duration);
-
-protected:
-	template<typename T>
-	T Lerp(T a, T b, float f)
-	{
-		return a + (b - a) * f;
-	}
-	int32 Lerp(int32 a, int32 b, float f)
-	{
-		return a + (int32)((float)(b - a) * f);
-	}
-	float Timing(float t)
-	{
-		switch(timeFunction)
-		{
-		case TimeFunction::Linear:
-			return t;
-		case TimeFunction::EaseInQuad:
-			return t*t;
-		case TimeFunction::EaseOutQuad:
-			return t*(2 - t);
-		}
-		assert(false); // Invalid timing function
-		return t;
-	}
 };
 
 // A templated animation of a single vector/float/color variable
@@ -89,7 +60,7 @@ public:
 			m_time = m_duration;
 		}
 
-		T current = Lerp(m_last, m_next, Timing(r));
+		T current = Interpolation::Lerp(m_last, m_next, r, timeFunction);
 		m_target[0] = current;
 
 		return r < 1.0f;
@@ -133,7 +104,7 @@ public:
 			m_time = m_duration;
 		}
 
-		T current = Lerp(m_last, m_next, r);
+		T current = Interpolation::Lerp(m_last, m_next, r, timeFunction);
 		m_lambda(current);
 
 		return r < 1.0f;

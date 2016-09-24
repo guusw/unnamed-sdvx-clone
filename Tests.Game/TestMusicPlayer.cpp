@@ -1,5 +1,4 @@
-#include <Shared/Shared.hpp>
-#include <Tests/Tests.hpp>
+#include "stdafx.h"
 #include <Audio/Audio.hpp>
 #include "TestMusicPlayer.hpp"
 #include <thread>

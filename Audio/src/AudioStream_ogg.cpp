@@ -61,11 +61,23 @@ public:
 		int32 r = ov_read_float(&m_ovf, &readBuffer, m_bufferSize, 0);
 		if(r > 0)
 		{
-			// Copy data to read buffer
-			for(int32 i = 0; i < r; i++)
+			if(m_info->channels == 1)
 			{
-				m_readBuffer[0][i] = readBuffer[0][i];
-				m_readBuffer[1][i] = readBuffer[1][i];
+				// Copy mono to read buffer
+				for(int32 i = 0; i < r; i++)
+				{
+					m_readBuffer[0][i] = readBuffer[0][i];
+					m_readBuffer[1][i] = readBuffer[0][i];
+				}
+			}
+			else
+			{
+				// Copy data to read buffer
+				for(int32 i = 0; i < r; i++)
+				{
+					m_readBuffer[0][i] = readBuffer[0][i];
+					m_readBuffer[1][i] = readBuffer[1][i];
+				}
 			}
 			m_currentBufferSize = r;
 			m_remainingBufferData = r;

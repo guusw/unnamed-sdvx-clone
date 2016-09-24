@@ -1,5 +1,5 @@
 #pragma once
-#include "LayoutBox.hpp"
+#include <GUI/LayoutBox.hpp>
 
 class PerformanceGraph : public GUIElementBase
 {

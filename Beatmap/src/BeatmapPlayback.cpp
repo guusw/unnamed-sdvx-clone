@@ -7,6 +7,7 @@ BeatmapPlayback::BeatmapPlayback(Beatmap& beatmap) : m_beatmap(&beatmap)
 }
 bool BeatmapPlayback::Reset(MapTime startTime)
 {
+	m_effectObjects.clear();
 	m_timingPoints = m_beatmap->GetLinearTimingPoints();
 	m_objects = m_beatmap->GetLinearObjects();
 	m_zoomPoints = m_beatmap->GetZoomControlPoints();

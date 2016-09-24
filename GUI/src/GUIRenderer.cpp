@@ -2,7 +2,6 @@
 #include "GUIRenderer.hpp"
 #include "GUIRenderData.hpp"
 #include "GUI.hpp"
-#include "Application.hpp"
 
 GUIRenderer::~GUIRenderer()
 {
@@ -15,20 +14,36 @@ bool GUIRenderer::Init(class OpenGL* gl, class Graphics::Window* window)
 	assert(gl);
 	m_gl = gl;
 
+	m_time = 0.0f;
+
 	// Font
-	CheckedLoad(font = FontRes::Create(g_gl, "fonts/segoeui.ttf"));
+	CheckedLoad(font = FontRes::Create(gl, "fonts/segoeui.ttf"));
+
+	auto LoadMaterial = [&](const String& name)
+	{
+		String basePath = String("shaders/");
+		String vs = Path::Normalize(basePath + name + ".vs");
+		String fs = Path::Normalize(basePath + name + ".fs");
+		String gs = Path::Normalize(basePath + name + ".gs");
+		Material ret = MaterialRes::Create(gl, vs, fs);
+		if(ret && Path::FileExists(gs))
+		{
+			ret->AssignShader(ShaderType::Geometry, Graphics::ShaderRes::Create(m_gl, ShaderType::Geometry, gs));
+		}
+		return ret;
+	};
 
 	// Load GUI shaders
-	CheckedLoad(fontMaterial = g_application->LoadMaterial("font"));
+	CheckedLoad(fontMaterial = LoadMaterial("font"));
 	fontMaterial->opaque = false;
-	CheckedLoad(textureMaterial = g_application->LoadMaterial("guiTex"));
+	CheckedLoad(textureMaterial = LoadMaterial("guiTex"));
 	textureMaterial->opaque = false;
-	CheckedLoad(colorMaterial = g_application->LoadMaterial("guiColor"));
+	CheckedLoad(colorMaterial = LoadMaterial("guiColor"));
 	colorMaterial->opaque = false;
-	CheckedLoad(buttonMaterial = g_application->LoadMaterial("guiButton"));
+	CheckedLoad(buttonMaterial = LoadMaterial("guiButton"));
 	buttonMaterial->opaque = false;
 
-	guiQuad = MeshGenerators::Quad(g_gl, Vector2(0, 0), Vector2(1, 1));
+	guiQuad = MeshGenerators::Quad(m_gl, Vector2(0, 0), Vector2(1, 1));
 
 	pointMesh = MeshRes::Create(m_gl);
 	Vector<MeshGenerators::SimpleVertex> points = { MeshGenerators::SimpleVertex(Vector3(0,0,0), Vector2(0,0)) };
@@ -42,6 +57,7 @@ bool GUIRenderer::Init(class OpenGL* gl, class Graphics::Window* window)
 }
 void GUIRenderer::Render(float deltaTime, Rect viewportSize, Ref<class GUIElementBase> rootElement)
 {
+	m_time += deltaTime;
 	m_viewportSize = viewportSize;
 
 	Begin();
@@ -80,7 +96,7 @@ void GUIRenderer::Render(float deltaTime, Rect viewportSize, Ref<class GUIElemen
 	m_mouseScrollDelta = 0;
 
 	// Shift mouse button state
-	memcpy(m_mouseButtonStateLast, m_mouseButtonState, sizeof(float)*3);
+	memcpy(m_mouseButtonStateLast, m_mouseButtonState, sizeof(bool)*3);
 
 	End();
 }
@@ -94,9 +110,13 @@ Graphics::RenderQueue& GUIRenderer::Begin()
 	m_scissorRect = Rect(Vector2(0, 0), Vector2(-1));
 
 	// Render state/queue for the GUI
-	RenderState guiRs = g_application->GetRenderStateBase();
-	guiRs.projectionTransform = g_application->GetGUIProjection();
-	m_renderQueue = new RenderQueue(g_gl, guiRs);
+	Vector2 windowSize = m_window->GetWindowSize();
+	RenderState guiRs;
+	guiRs.viewportSize = windowSize;
+	guiRs.projectionTransform = ProjectionMatrix::CreateOrthographic(0, windowSize.x, windowSize.y, 0.0f, -1.0f, 100.0f);
+	guiRs.aspectRatio = windowSize.y / windowSize.x;
+	guiRs.time = m_time;
+	m_renderQueue = new RenderQueue(m_gl, guiRs);
 
 	return *m_renderQueue;
 }

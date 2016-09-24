@@ -1,20 +1,5 @@
-#include <Shared/Shared.hpp>
-#include <Shared/Enum.hpp>
-#include <Shared/Config.hpp>
-#include <Beatmap/Beatmap.hpp>
+#include "stdafx.h"
 #include <Tests/TestManager.hpp>
-#include "GraphicsBase.hpp"
-
-//class GraphicsTest0 : public GraphicsTest
-//{
-//public:
-//	void Render(float dt) override
-//	{
-//		glClearColor(0, 0, 0, 0);
-//		glClear(GL_COLOR_BUFFER_BIT);
-//		m_gl->SwapBuffers();
-//	}
-//};
 
 void ListTests()
 {

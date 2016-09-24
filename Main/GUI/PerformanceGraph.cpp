@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "PerformanceGraph.hpp"
-#include "GUIRenderer.hpp"
+#include <GUI/GUIRenderer.hpp>
 
 PerformanceGraph::PerformanceGraph()
 {

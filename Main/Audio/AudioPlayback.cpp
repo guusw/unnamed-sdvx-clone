@@ -14,16 +14,25 @@ AudioPlayback::~AudioPlayback()
 	m_CleanupDSP(m_buttonDSPs[1]);
 	m_CleanupDSP(m_laserDSP);
 }
-bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
+bool AudioPlayback::Init(class BeatmapPlayback& playback, const String& mapRootPath)
 {
+	// Cleanup exising DSP's
+	m_currentHoldEffects[0] = nullptr;
+	m_currentHoldEffects[1] = nullptr;
 	m_CleanupDSP(m_buttonDSPs[0]);
 	m_CleanupDSP(m_buttonDSPs[1]);
 	m_CleanupDSP(m_laserDSP);
 
-	m_laserEffectType = LaserEffectType::PeakingFilter;
+	m_playback = &playback;
+	m_beatmap = &playback.GetBeatmap();
+	m_beatmapRootPath = mapRootPath;
+	assert(m_beatmap != nullptr);
 
-	const BeatmapSettings& mapSettings = beatmap.GetMapSettings();
-	String audioPath = mapPath + Path::sep + mapSettings.audioNoFX;
+	// Set default effect type
+	SetLaserEffect(EffectType::PeakingFilter);
+
+	const BeatmapSettings& mapSettings = m_beatmap->GetMapSettings();
+	String audioPath = Path::Normalize(m_beatmapRootPath + Path::sep + mapSettings.audioNoFX);
 	WString audioPathUnicode = Utility::ConvertToWString(audioPath);
 	if(!Path::FileExists(audioPath))
 	{
@@ -39,7 +48,7 @@ bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 	m_music->SetVolume(1.0f);
 
 	// Load FX track
-	audioPath = mapPath + Path::sep + mapSettings.audioFX;
+	audioPath = Path::Normalize(m_beatmapRootPath + Path::sep + mapSettings.audioFX);
 	audioPathUnicode = Utility::ConvertToWString(audioPath);
 	if(!audioPath.empty())
 	{
@@ -61,7 +70,7 @@ bool AudioPlayback::Init(class Beatmap& beatmap, const String& mapPath)
 
 	return true;
 }
-void AudioPlayback::Tick(class BeatmapPlayback& playback, float deltaTime)
+void AudioPlayback::Tick(float deltaTime)
 {
 
 }
@@ -101,12 +110,10 @@ void AudioPlayback::TogglePause()
 	}
 	m_paused = !m_paused;
 }
-
 bool AudioPlayback::HasEnded() const
 {
 	return m_music->HasEnded();
 }
-
 void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class BeatmapPlayback& playback)
 {
 	// Don't use effects when using an FX track
@@ -114,7 +121,8 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 		return;
 
 	assert(index >= 0 && index <= 1);
-	ClearEffect(index);
+	m_CleanupDSP(m_buttonDSPs[index]);
+	m_currentHoldEffects[index] = object;
 
 	// For Time based effects
 	const TimingPoint* timingPoint = playback.GetTimingPointAt(object->time);
@@ -122,84 +130,13 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 	double barDelay = timingPoint->numerator * timingPoint->beatDuration;
 
 	DSP*& dsp = m_buttonDSPs[index];
-	bool shouldAdd = false;
-	switch(object->effectType)
-	{
-	case EffectType::Bitcrush:
-	{
-		BitCrusherDSP* bc = new BitCrusherDSP();
-		m_GetDSPTrack()->AddDSP(bc);
-		bc->SetPeriod(object->effectParam);
-		dsp = bc;
-		break;
-	}
-	case EffectType::Gate:
-	{
-		GateDSP* gate = new GateDSP();
-		double delay = (barDelay / object->effectParam) / 1000.0;
-		gate->SetLength((uint32)(delay * g_audio->GetSampleRate()));
-		dsp = gate;
-		m_GetDSPTrack()->AddDSP(dsp);
-		break;
-	}
-	case EffectType::TapeStop:
-	{
-		TapeStopDSP* ts = new TapeStopDSP();
-		m_GetDSPTrack()->AddDSP(ts);
-		double speed = 1.0 - (double)object->effectParam / 100.0;
-		double delay = speed * object->duration / 1000.0;
-		ts->SetLength((uint32)(delay * g_audio->GetSampleRate()));
-		dsp = ts;
-		break;
-	}
-	case EffectType::Retrigger:
-	{
-		RetriggerDSP* re = new RetriggerDSP();
-		double delay = (barDelay / object->effectParam) / 1000.0;
-		re->SetLength((uint32)(delay * g_audio->GetSampleRate()));
-		dsp = re;
-		m_GetDSPTrack()->AddDSP(dsp);
-		break;
-	}
-	case EffectType::Wobble:
-	{
-		WobbleDSP* wb = new WobbleDSP();
-		double delay = (barDelay / object->effectParam) / 1000.0;
-		wb->delay = (uint32)(delay * g_audio->GetSampleRate());
-		dsp = wb;
-		m_GetDSPTrack()->AddDSP(dsp);
-		break;
-	}
-	case EffectType::Phaser:
-	{
-		PhaserDSP* phs = new PhaserDSP();
-		double delay = (barDelay) / 1000.0;
-		phs->delay = (uint32)(delay * g_audio->GetSampleRate());
-		phs->dmin = 800.f;
-		phs->dmax = 8000.f;
-		phs->depth = 0.8f;
-		phs->fb = 0.5f;
-		phs->time = object->time;
-		dsp = phs;
-		m_GetDSPTrack()->AddDSP(dsp);
-		break;
-	}
-	case EffectType::Flanger:
-	{
-		FlangerDSP* fl = new FlangerDSP();
-		double delay = (barDelay) / 1000.0;
-		fl->delay = (uint32)(delay * g_audio->GetSampleRate());
-		fl->SetDelayRange(2, 40);
-		dsp = fl;
-		m_GetDSPTrack()->AddDSP(dsp);
-		break;
-	}
-	default:
-		break;
-	}
+
+	m_buttonEffects[index] = m_beatmap->GetEffect(object->effectType);
+	dsp = m_buttonEffects[index].CreateDSP(m_GetDSPTrack().GetData(), *this);
 
 	if(dsp)
 	{
+		m_buttonEffects[index].SetParams(dsp, *this, object);
 		// Initialize mix value to previous value
 		dsp->mix = m_effectMix[index];
 	}
@@ -213,49 +150,57 @@ void AudioPlayback::SetEffectEnabled(uint32 index, bool enabled)
 		m_buttonDSPs[index]->mix = m_effectMix[index];
 	}
 }
-void AudioPlayback::ClearEffect(uint32 index)
+void AudioPlayback::ClearEffect(uint32 index, HoldObjectState* object)
 {
 	assert(index >= 0 && index <= 1);
-	m_CleanupDSP(m_buttonDSPs[index]);
+	if(m_currentHoldEffects[index] == object)
+	{
+		m_CleanupDSP(m_buttonDSPs[index]);
+		m_currentHoldEffects[index] = nullptr;
+	}
 }
-void AudioPlayback::SetLaserEffect(LaserEffectType type)
+void AudioPlayback::SetLaserEffect(EffectType type)
 {
-	if(type == m_laserEffectType)
-		return;
 	if(type != m_laserEffectType)
 	{
 		m_CleanupDSP(m_laserDSP);
+		m_laserEffectType = type;
+		m_laserEffect = m_beatmap->GetFilter(type);
 	}
-	m_laserEffectType = type;
 }
 void AudioPlayback::SetLaserFilterInput(float input, bool active)
 {
-	if(active || (input != 0.0f))
+	if(m_laserEffect.type != EffectType::None && (active || (input != 0.0f)))
 	{
 		// Create DSP
 		if(!m_laserDSP)
 		{
 			// Don't use Bitcrush effects over FX track
-			if(m_fxtrack.IsValid() && m_laserEffectType == LaserEffectType::Bitcrush)
+			if(m_fxtrack.IsValid() && m_laserEffectType == EffectType::Bitcrush)
 				return;
 
-			m_laserDSP = m_InitDSP(m_laserEffectType);
+			m_laserDSP = m_laserEffect.CreateDSP(m_GetDSPTrack().GetData(), *this);
 			if(!m_laserDSP)
 			{
-				Logf("Failed to create laser DSP with type %d", Logger::Warning, m_laserEffectType);
+				Logf("Failed to create laser DSP with type %d", Logger::Warning, m_laserEffect.type);
 				return;
 			}
 		}
 
 		// Set params
 		m_SetLaserEffectParameter(input);
+		m_laserInput = input;
 	}
 	else
 	{
 		m_CleanupDSP(m_laserDSP);
+		m_laserInput = 0.0f;
 	}
 }
-
+float AudioPlayback::GetLaserFilterInput() const
+{
+	return m_laserInput;
+}
 void AudioPlayback::SetLaserEffectMix(float mix)
 {
 	m_laserEffectMix = mix;
@@ -264,14 +209,12 @@ float AudioPlayback::GetLaserEffectMix() const
 {
 	return m_laserEffectMix;
 }
-
 AudioStream AudioPlayback::m_GetDSPTrack()
 {
     if(m_fxtrack)
         return m_fxtrack;
 	return m_music;
 }
-
 void AudioPlayback::SetFXTrackEnabled(bool enabled)
 {
 	if(!m_fxtrack)
@@ -291,30 +234,17 @@ void AudioPlayback::SetFXTrackEnabled(bool enabled)
 	}
 	m_fxtrackEnabled = enabled;
 }
-
-DSP* AudioPlayback::m_InitDSP(LaserEffectType type)
+BeatmapPlayback& AudioPlayback::GetBeatmapPlayback()
 {
-	DSP* ret = nullptr;
-	switch(type)
-	{
-	case LaserEffectType::Bitcrush:
-		ret = new BitCrusherDSP();
-		((BitCrusherDSP*)ret)->mix = 0.85f * m_laserEffectMix;
-		break;
-	case LaserEffectType::PeakingFilter:
-	case LaserEffectType::LowPassFilter:
-	case LaserEffectType::HighPassFilter:
-		ret = new BQFDSP();
-		break;
-	}
-
-	if(ret)
-	{
-		ret->priority = 0;
-		m_GetDSPTrack()->AddDSP(ret);
-	}
-
-	return ret;
+	return *m_playback;
+}
+const Beatmap& AudioPlayback::GetBeatmap() const
+{
+	return *m_beatmap;
+}
+const String& AudioPlayback::GetBeatmapRootPath() const
+{
+	return m_beatmapRootPath;
 }
 void AudioPlayback::m_CleanupDSP(DSP*& ptr)
 {
@@ -325,50 +255,65 @@ void AudioPlayback::m_CleanupDSP(DSP*& ptr)
 		ptr = nullptr;
 	}
 }
-
-static float LaserSlope(float x)
-{
-	return powf(x, 2.5f);
-}
 void AudioPlayback::m_SetLaserEffectParameter(float input)
 {
+	if(!m_laserDSP)
+		return;
 	assert(input >= 0.0f && input <= 1.0f);
-	assert(m_laserDSP);
 
-	switch(m_laserEffectType)
+	// Mix for normal effects
+	m_laserDSP->mix = m_laserEffectMix;
+
+	// Mix float biquad filters, these are applied manualy by changing the filter parameters (gain,q,freq,etc.)
+	float mix = m_laserEffectMix;
+	if(input < 0.1f)
+		mix *= input / 0.1f;
+
+	switch(m_laserEffect.type)
 	{
-	case LaserEffectType::Bitcrush:
+	case EffectType::Bitcrush:
 	{
-		((BitCrusherDSP*)m_laserDSP)->SetPeriod(input * 32
-		);
-		((BitCrusherDSP*)m_laserDSP)->mix = 1.0f;
+		BitCrusherDSP* bcDSP = (BitCrusherDSP*)m_laserDSP;
+		bcDSP->SetPeriod((float)m_laserEffect.bitcrusher.reduction.Sample(input));
 		break;
 	}
-	case LaserEffectType::PeakingFilter:
+	case EffectType::Echo:
 	{
-		const float volumeFadeIn = 0.15f;
-		float gain = 20.0f * m_laserEffectMix;
-		if(input < volumeFadeIn) // Fade in
-			gain = (input / volumeFadeIn) * gain;
-		input = LaserSlope(input);
-		float width = 1.0f + 1.0f * input;
-		((BQFDSP*)m_laserDSP)->SetPeaking(width, 200.0f + input * 8000.0f, gain);
+		EchoDSP* echoDSP = (EchoDSP*)m_laserDSP;
+		echoDSP->feedback = m_laserEffect.echo.feedback.Sample(input);
 		break;
 	}
-	case LaserEffectType::LowPassFilter:
+	case EffectType::PeakingFilter:
 	{
-		float v = LaserSlope(1.0f - input);
-		float freq = 100.0f + 10000 * v;
-		((BQFDSP*)m_laserDSP)->SetLowPass(2.0f + 4.0f * (1-v), freq);
+		if(input > 0.8f)
+			mix *= 1.0f - (input - 0.8f) / 0.2f;
+
+		BQFDSP* bqfDSP = (BQFDSP*)m_laserDSP;
+		bqfDSP->SetPeaking(m_laserEffect.peaking.q.Sample(input), m_laserEffect.peaking.freq.Sample(input), m_laserEffect.peaking.gain.Sample(input) * mix);
 		break;
 	}
-	case LaserEffectType::HighPassFilter:
+	case EffectType::LowPassFilter:
 	{
-		float v = LaserSlope(input);
-		float freq =  100.0f + 4000 * v;
-		((BQFDSP*)m_laserDSP)->SetHighPass(2.0f + 4.0f * v, freq);
+		BQFDSP* bqfDSP = (BQFDSP*)m_laserDSP;
+		bqfDSP->SetLowPass(m_laserEffect.lpf.q.Sample(input) * mix + 0.1f, m_laserEffect.lpf.freq.Sample(input));
+		break;
+	}
+	case EffectType::HighPassFilter:
+	{
+		BQFDSP* bqfDSP = (BQFDSP*)m_laserDSP;
+		bqfDSP->SetHighPass(m_laserEffect.hpf.q.Sample(input)  * mix + 0.1f, m_laserEffect.hpf.freq.Sample(input));
+		break;
+	}
+	case EffectType::PitchShift:
+	{
+		PitchShiftDSP* ps = (PitchShiftDSP*)m_laserDSP;
+		ps->amount = m_laserEffect.pitchshift.amount.Sample(input);
 		break;
 	}
 	}
 }
 
+GameAudioEffect::GameAudioEffect(const AudioEffect& other)
+{
+	*((AudioEffect*)this) = other;
+}

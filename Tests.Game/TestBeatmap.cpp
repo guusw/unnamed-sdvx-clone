@@ -1,5 +1,4 @@
-#include <Shared/Shared.hpp>
-#include <Tests/Tests.hpp>
+#include "stdafx.h"
 #include <Audio/Audio.hpp>
 #include <Beatmap/BeatmapPlayback.hpp>
 #include <Audio/DSP.hpp>
@@ -19,6 +18,26 @@ Beatmap LoadTestBeatmap(const String& mapPath = testBeatmapPath)
 	FileReader reader(file);
 	TestEnsure(beatmap.Load(reader));
 	return std::move(beatmap);
+}
+
+Test("Beatmap.v160")
+{
+	Beatmap map = LoadTestBeatmap(Path::Normalize("D:\\KShoot/songs/Other/CHNLDiVR/exh.ksh"));
+
+	// Should have bitcrush effect
+	bool haveBitc = false;
+	for(auto obj : map.GetLinearObjects())
+	{
+		MultiObjectState* mobj = *obj;
+		if(mobj->type == ObjectType::Hold)
+		{
+			if(mobj->hold.effectType == EffectType::Bitcrush)
+			{
+				haveBitc = true;
+			}
+		}
+	}
+	TestEnsure(haveBitc);
 }
 
 // Test loading fo map + metadata without errors

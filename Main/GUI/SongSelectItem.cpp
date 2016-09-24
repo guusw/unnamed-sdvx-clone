@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "SongSelectItem.hpp"
-#include "GUI.hpp"
+#include <GUI/GUI.hpp>
 #include "Application.hpp"
 
 #include <Beatmap/Beatmap.hpp>

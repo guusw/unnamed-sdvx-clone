@@ -1,6 +1,6 @@
 #pragma once
-#include "GUIElement.hpp"
-#include "Canvas.hpp"
+#include <GUI/GUIElement.hpp>
+#include <GUI/Canvas.hpp>
 #include "SongSelectStyle.hpp"
 
 // Song select item

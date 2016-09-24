@@ -3,6 +3,7 @@
 */
 #pragma once
 #include "AudioBase.hpp"
+#include <Shared/Interpolation.hpp>
 
 class PanDSP : public DSP
 {
@@ -27,12 +28,14 @@ public:
 
 	virtual void Process(float* out, uint32 numSamples);
 
-	// Sets the filter to behave as a peaking filter
-	void SetPeaking(float bandWidth, float freq, float gain);
+	// Sets the filter parameters
+	void SetPeaking(float q, float freq, float gain);
 	void SetLowPass(float q, float freq);
 	void SetHighPass(float q, float freq);
-	void SetBandPass(float bandWidth, float freq);
 
+	void SetPeaking(float q, float freq, float gain, float sampleRate);
+	void SetLowPass(float q, float freq, float sampleRate);
+	void SetHighPass(float q, float freq, float sampleRate);
 private:
 	// Delayed samples
 	static const uint32 order = 2;
@@ -40,6 +43,19 @@ private:
 	float zb[2][order];
 	// IIR Delay buffers
 	float za[2][order];
+};
+
+// Combinded Low/High-pass and Peaking filter
+class CombinedFilterDSP : public DSP
+{
+public:
+	void SetLowPass(float q, float freq, float peakQ, float peakGain);
+	void SetHighPass(float q, float freq, float peakQ, float peakGain);
+
+	virtual void Process(float* out, uint32 numSamples);
+private:
+	BQFDSP a;
+	BQFDSP peak;
 };
 
 // Basic limiter
@@ -71,12 +87,14 @@ class GateDSP : public DSP
 public:
 	// The amount of time for a single cycle in samples
 	void SetLength(uint32 length);
+	void SetGating(float gating);
 
 	// Low volume
 	float low = 0.1f;
 
 	virtual void Process(float* out, uint32 numSamples);
 private:
+	float m_gating = 0.75f;
 	uint32 m_length = 0;
 	uint32 m_fadeIn = 0; // Fade In mark
 	uint32 m_fadeOut = 0; // Fade Out mark
@@ -87,7 +105,6 @@ private:
 class TapeStopDSP : public DSP
 {
 public:
-	// Length of the effect in samples
 	void SetLength(uint32 length);
 
 	virtual void Process(float* out, uint32 numSamples);
@@ -102,13 +119,16 @@ private:
 class RetriggerDSP : public DSP
 {
 public:
-	// Length of the effect in sample
 	void SetLength(uint32 length);
+	void SetResetDuration(uint32 resetDuration);
+	void SetGating(float gating);
 
 	virtual void Process(float* out, uint32 numSamples);
 private:
+	float m_gating = 0.75f;
 	uint32 m_length = 0;
 	uint32 m_gateLength = 0;
+	uint32 m_resetDuration = 0;
 	Vector<float> m_sampleBuffer;
 	uint32 m_loops = 0;
 	uint32 m_currentSample = 0;
@@ -117,9 +137,11 @@ private:
 class WobbleDSP : public BQFDSP
 {
 public:
-	uint32 delay;
+	void SetLength(uint32 length);
+
 	virtual void Process(float* out, uint32 numSamples);
 private:
+	uint32 m_length;
 	uint32 m_currentSample = 0;
 };
 
@@ -127,18 +149,20 @@ private:
 class PhaserDSP : public DSP
 { 
 public:
-	uint32 delay;
 	uint32 time = 0;
 
 	// Frequency range
 	float dmin = 1000.0f;
 	float dmax = 4000.0f;
 	float fb = 0.2f; //feedback
-	float depth = 1.0f;
 	
+	void SetLength(uint32 length);
+
 	virtual void Process(float* out, uint32 numSamples);
 
 private:
+	uint32 m_length = 0;
+
 	// All pass filter
 	struct APF
 	{
@@ -154,13 +178,13 @@ private:
 class FlangerDSP : public DSP
 {
 public:
-	// Length of the effect
-	uint32 delay = 0;
-
+	void SetLength(uint32 length);
 	void SetDelayRange(uint32 min, uint32 max);
 
 	virtual void Process(float* out, uint32 numSamples);
 private:
+	uint32 m_length = 0;
+
 	// Delay range
 	uint32 m_min = 0;
 	uint32 m_max = 0;
@@ -171,10 +195,9 @@ private:
 	size_t m_bufferOffset = 0;
 };
 
-class Echo : public DSP
+class EchoDSP : public DSP
 {
 public:
-	// Set echo length in samples
 	void SetLength(uint32 length);
 
 	float feedback = 0.1f;
@@ -183,20 +206,38 @@ public:
 private:
 	uint32 m_bufferLength = 0;
 	size_t m_bufferOffset = 0;
+	uint32 m_numLoops = 0;
 	Vector<float> m_sampleBuffer;
 };
 
 
-class Sidechain : public DSP
+class SidechainDSP : public DSP
 {
 public:
 	// Set sidechain length in samples
 	void SetLength(uint32 length);
 
-	float gain = 0.5f;
+	// Volume multiplier for the sidechaing
+	float amount = 0.25f;
+
+	Interpolation::CubicBezier curve;
 
 	virtual void Process(float* out, uint32 numSamples);
 private:
+	uint32 m_length = 0;
 	size_t m_time = 0;
-	uint32 m_duration = 0;
+};
+
+class PitchShiftDSP : public DSP
+{
+public:
+	// Pitch change amount
+	float amount = 0.0f;
+
+	PitchShiftDSP();
+	~PitchShiftDSP();
+
+	virtual void Process(float* out, uint32 numSamples);
+private:
+	class PitchShiftDSP_Impl* m_impl;
 };
