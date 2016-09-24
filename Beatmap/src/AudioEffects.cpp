@@ -28,6 +28,17 @@ uint32 EffectDuration::Absolute(double noteDuration)
 		return (uint32)(rate * noteDuration);
 }
 
+// Sample based on laser input, or without parameters for just the actual value
+template<> EffectDuration EffectParam<EffectDuration>::Sample(float t) const
+{
+	if(isRange)
+	{
+		t = Math::Clamp(timeFunction(t), 0.0f, 1.0f);
+		return EffectDuration::Lerp(values[0], values[1], t);
+	}
+	return values[0];
+}
+
 static AudioEffect CreateDefault(EffectType type)
 {
 	AudioEffect ret;
