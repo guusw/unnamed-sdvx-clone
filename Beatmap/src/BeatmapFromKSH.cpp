@@ -156,7 +156,7 @@ static MultiParam ParseParam(const String& in)
 	if(in.find('.') != -1)
 	{
 		ret.type = MultiParam::Float;
-		sscanf_s(*in, "%f", &ret.fval);
+		sscanf(*in, "%f", &ret.fval);
 	}
 	else if(in.find('/') != -1)
 	{
@@ -168,12 +168,12 @@ static MultiParam ParseParam(const String& in)
 	else if(in.find("samples") != -1)
 	{
 		ret.type = MultiParam::Samples;
-		sscanf_s(*in, "%i", &ret.ival);
+		sscanf(*in, "%i", &ret.ival);
 	}
 	else
 	{
 		ret.type = MultiParam::Int;
-		sscanf_s(*in, "%i", &ret.ival);
+		sscanf(*in, "%i", &ret.ival);
 	}
 	return ret;
 }
