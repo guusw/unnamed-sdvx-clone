@@ -249,9 +249,32 @@ float KShootMap::TimeToFloat(const KShootTime& time) const
 }
 float KShootMap::TranslateLaserChar(char c) const
 {
-	return (float)((uint32_t)c - c_laserStart) / (float)c_laserRange;
+	class LaserCharacters : public Map<char, uint32>
+	{
+	public:
+		LaserCharacters()
+		{
+			uint32 numChars = 0;
+			auto AddRange = [&](char start, char end)
+			{
+				for(char c = start; c <= end; c++)
+				{
+					Add(c, numChars++);
+				}
+			};
+			AddRange('0', '9');
+			AddRange('A', 'Z');
+			AddRange('a', 'o');
+		}
+	};
+	static LaserCharacters laserCharacters;
+
+	uint32* index = laserCharacters.Find(c);
+	if(!index)
+	{
+		Logf("Invalid laser control point '%c'", Logger::Warning, c);
+		return 0.0f;
+	}
+	return (float)index[0] / (float)(laserCharacters.size()-1);
 }
 const char* KShootMap::c_sep = "--";
-const uint32_t KShootMap::c_laserStart = '0';
-const uint32_t KShootMap::c_laserEnd = 'o';
-const uint32_t KShootMap::c_laserRange = KShootMap::c_laserEnd - KShootMap::c_laserStart;
