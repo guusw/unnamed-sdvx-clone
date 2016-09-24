@@ -22,12 +22,7 @@ target_link_libraries(Tests.Shared Shared)
 target_link_libraries(Tests.Shared Tests)
 
 if(WIN32)
-	# Bundled libraries
-	target_link_libraries(Tests.Shared zlib)
 else()
 	set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/third_party)
 	include(FindLibraries)
-	target_link_libraries(Tests.Shared ${ZLIB_LIBRARIES})
-	target_link_libraries(Tests.Shared pthread) 
-	target_link_libraries(Tests.Shared dl)
 endif()
