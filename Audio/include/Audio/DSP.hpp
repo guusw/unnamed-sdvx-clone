@@ -3,6 +3,7 @@
 */
 #pragma once
 #include "AudioBase.hpp"
+#include <Shared/Interpolation.hpp>
 
 class PanDSP : public DSP
 {
@@ -217,10 +218,26 @@ public:
 	void SetLength(uint32 length);
 
 	// Volume multiplier for the sidechaing
-	float low = 0.25f;
+	float amount = 0.25f;
+
+	Interpolation::CubicBezier curve;
 
 	virtual void Process(float* out, uint32 numSamples);
 private:
 	uint32 m_length = 0;
 	size_t m_time = 0;
+};
+
+class PitchShiftDSP : public DSP
+{
+public:
+	// Pitch change amount
+	float amount = 0.0f;
+
+	PitchShiftDSP();
+	~PitchShiftDSP();
+
+	virtual void Process(float* out, uint32 numSamples);
+private:
+	class PitchShiftDSP_Impl* m_impl;
 };

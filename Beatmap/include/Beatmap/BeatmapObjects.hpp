@@ -107,6 +107,7 @@ struct ObjectTypeData_Button
 // A Hold button, extends a normal button with duration and effect type
 struct ObjectTypeData_Hold : public ObjectTypeData_Button
 {
+	TObjectState<ObjectTypeData_Hold>* GetRoot();
 	// Used for hold notes, 0 is a normal note
 	MapTime duration = 0;
 	// The sound effect on the note
@@ -114,6 +115,10 @@ struct ObjectTypeData_Hold : public ObjectTypeData_Button
 	// The parameter for effects that have it
 	// the maximum number of parameters is 2 (only echo uses this)
 	int16 effectParams[2] = { 0 };
+
+	// Set for hold notes that are a continuation of the previous one, but with a different effect
+	TObjectState<ObjectTypeData_Hold>* next = nullptr;
+	TObjectState<ObjectTypeData_Hold>* prev = nullptr;
 
 	static const ObjectType staticType = ObjectType::Hold;
 };

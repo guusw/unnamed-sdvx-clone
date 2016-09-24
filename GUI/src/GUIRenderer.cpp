@@ -14,6 +14,8 @@ bool GUIRenderer::Init(class OpenGL* gl, class Graphics::Window* window)
 	assert(gl);
 	m_gl = gl;
 
+	m_time = 0.0f;
+
 	// Font
 	CheckedLoad(font = FontRes::Create(gl, "fonts/segoeui.ttf"));
 
@@ -22,7 +24,13 @@ bool GUIRenderer::Init(class OpenGL* gl, class Graphics::Window* window)
 		String basePath = String("shaders/");
 		String vs = Path::Normalize(basePath + name + ".vs");
 		String fs = Path::Normalize(basePath + name + ".fs");
-		return MaterialRes::Create(gl, vs, fs);
+		String gs = Path::Normalize(basePath + name + ".gs");
+		Material ret = MaterialRes::Create(gl, vs, fs);
+		if(ret && Path::FileExists(gs))
+		{
+			ret->AssignShader(ShaderType::Geometry, Graphics::ShaderRes::Create(m_gl, ShaderType::Geometry, gs));
+		}
+		return ret;
 	};
 
 	// Load GUI shaders
@@ -49,6 +57,7 @@ bool GUIRenderer::Init(class OpenGL* gl, class Graphics::Window* window)
 }
 void GUIRenderer::Render(float deltaTime, Rect viewportSize, Ref<class GUIElementBase> rootElement)
 {
+	m_time += deltaTime;
 	m_viewportSize = viewportSize;
 
 	Begin();
@@ -87,7 +96,7 @@ void GUIRenderer::Render(float deltaTime, Rect viewportSize, Ref<class GUIElemen
 	m_mouseScrollDelta = 0;
 
 	// Shift mouse button state
-	memcpy(m_mouseButtonStateLast, m_mouseButtonState, sizeof(float)*3);
+	memcpy(m_mouseButtonStateLast, m_mouseButtonState, sizeof(bool)*3);
 
 	End();
 }
@@ -105,8 +114,8 @@ Graphics::RenderQueue& GUIRenderer::Begin()
 	RenderState guiRs;
 	guiRs.viewportSize = windowSize;
 	guiRs.projectionTransform = ProjectionMatrix::CreateOrthographic(0, windowSize.x, windowSize.y, 0.0f, -1.0f, 100.0f);
-	guiRs.time = 0.0f;
 	guiRs.aspectRatio = windowSize.y / windowSize.x;
+	guiRs.time = m_time;
 	m_renderQueue = new RenderQueue(m_gl, guiRs);
 
 	return *m_renderQueue;

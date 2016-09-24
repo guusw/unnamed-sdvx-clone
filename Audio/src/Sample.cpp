@@ -186,6 +186,19 @@ public:
 		}
 		m_lock.unlock();
 	}
+	const Buffer& GetData() const
+	{
+		return m_pcm;
+	}
+	uint32 GetBitsPerSample() const
+	{
+		return m_format.nBitsPerSample;
+	}
+	uint32 GetNumChannels() const
+	{
+		return m_format.nChannels;
+	}
+
 };
 
 Sample SampleRes::Create(Audio* audio, const String& path)

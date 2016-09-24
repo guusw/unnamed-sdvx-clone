@@ -255,6 +255,7 @@ void RetriggerDSP::SetLength(uint32 length)
 	float flength = (float)length / 1000.0f * (float)audio->GetSampleRate();
 	m_length = (uint32)flength;
 	SetGating(m_gating);
+	m_sampleBuffer.reserve(m_length + 100);
 }
 void RetriggerDSP::SetResetDuration(uint32 resetDuration)
 {
@@ -295,6 +296,12 @@ void RetriggerDSP::Process(float* out, uint32 numSamples)
 		{
 			m_currentSample -= m_length;
 			m_loops++;
+			if((m_loops * m_length) > m_resetDuration)
+			{
+				m_loops = 0;
+				m_currentSample = 0;
+				m_sampleBuffer.resize(0);
+			}
 		}
 	}
 }
@@ -470,14 +477,22 @@ void SidechainDSP::SetLength(uint32 length)
 }
 void SidechainDSP::Process(float* out, uint32 numSamples)
 {
+	if(m_length == 0)
+		return;
 	for(uint32 i = 0; i < numSamples; i++)
 	{
 		float r = (float)m_time / (float)m_length;
-		float sampleGain = 1.0f - low * (1.0f-r);
+		// FadeIn
+		const float fadeIn = 0.08f;
+		if(r < fadeIn)
+			r = 1.0f - r / fadeIn;
+		else
+			r = curve((r- fadeIn) / (1.0f- fadeIn));
+		float sampleGain = 1.0f - amount * (1.0f- r);
+		out[i * 2 + 0] *= sampleGain;
+		out[i * 2 + 1] *= sampleGain;
 		if(++m_time > m_length)
 		{
-			out[numSamples * 2 + 0] *= sampleGain;
-			out[numSamples * 2 + 1] *= sampleGain;
 			m_time = 0;
 		}
 	}
@@ -501,4 +516,62 @@ void CombinedFilterDSP::Process(float* out, uint32 numSamples)
 	peak.mix = mix;
 	a.Process(out, numSamples);
 	peak.Process(out, numSamples);
+}
+
+#include "SoundTouch.h"
+using namespace soundtouch;
+
+class PitchShiftDSP_Impl
+{
+public:
+	float pitch = 0.0f;
+	bool init = false;
+
+private:
+	SoundTouch m_soundtouch;
+	Vector<float> m_receiveBuffer;
+
+public:
+	PitchShiftDSP_Impl()
+	{
+	}
+	~PitchShiftDSP_Impl()
+	{
+	}
+	void Init(Audio_Impl* audio)
+	{
+		m_soundtouch.setChannels(2);
+		m_soundtouch.setSampleRate(audio->GetSampleRate());
+		m_soundtouch.setSetting(SETTING_USE_AA_FILTER, 0);
+		m_soundtouch.setSetting(SETTING_SEQUENCE_MS, 5);
+		//m_soundtouch.setSetting(SETTING_SEEKWINDOW_MS, 10);
+		//m_soundtouch.setSetting(SETTING_OVERLAP_MS, 10);
+	}
+	void Process(float* out, uint32 numSamples)
+	{
+		m_receiveBuffer.resize(numSamples*2);
+		m_soundtouch.setPitchSemiTones(pitch);
+		m_soundtouch.putSamples(out, numSamples);
+		uint32 receivedSamples = m_soundtouch.receiveSamples(m_receiveBuffer.data(), numSamples);
+		if(receivedSamples > 0)
+		{
+			memcpy(out, m_receiveBuffer.data(), receivedSamples * sizeof(float) * 2);
+		}
+	}
+};
+
+PitchShiftDSP::PitchShiftDSP()
+{
+	m_impl = new PitchShiftDSP_Impl();
+}
+PitchShiftDSP::~PitchShiftDSP()
+{
+	delete m_impl;
+}
+void PitchShiftDSP::Process(float* out, uint32 numSamples)
+{
+	m_impl->pitch = amount;
+	if(!m_impl->init)
+		m_impl->Init(audio);
+	m_impl->Process(out, numSamples);
 }

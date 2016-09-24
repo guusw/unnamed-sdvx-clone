@@ -50,7 +50,7 @@ public:
 	void SetEffect(uint32 index, HoldObjectState* object, class BeatmapPlayback& playback);
 	// Sets the hearability of the currently active button effect on 'index'
 	void SetEffectEnabled(uint32 index, bool enabled);
-	void ClearEffect(uint32 index);
+	void ClearEffect(uint32 index, HoldObjectState* object);
 
 	// Sets the effect to be used for lasers
 	void SetLaserEffect(EffectType type);
@@ -96,5 +96,6 @@ private:
 
 	GameAudioEffect m_buttonEffects[2];
 	class DSP* m_buttonDSPs[2] = { nullptr };
+	HoldObjectState* m_currentHoldEffects[2] = { nullptr };
 	float m_effectMix[2] = { 0.0f };
 };

@@ -945,7 +945,8 @@ public:
 	void OnFXEnd(HoldObjectState* object)
 	{
 		assert(object->index >= 4 && object->index <= 5);
-		m_audioPlayback.ClearEffect(object->index - 4);
+		uint32 index = object->index - 4;
+		m_audioPlayback.ClearEffect(index, object);
 	}
 
 	virtual void OnKeyPressed(Key key) override
