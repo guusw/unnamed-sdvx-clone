@@ -53,6 +53,7 @@ public:
 					uint8 channelFlags = ((m_dataSource[i + 3] & 0xC0) >> 6);
 					if(bitrateIndex == 0xF || rateIndex > 2) // bad
 					{
+						return false;
 						i++;
 						continue;
 					}
@@ -67,6 +68,7 @@ public:
 					uint32 frameLength = 144 * bitrate / sampleRate + padding;
 					if(frameLength == 0)
 					{
+						return false;
 						i++;
 						continue;
 					}
