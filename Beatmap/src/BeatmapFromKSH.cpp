@@ -163,7 +163,7 @@ static MultiParam ParseParam(const String& in)
 		ret.type = MultiParam::Float;
 		String a, b;
 		in.Split("/", &a, &b);
-		ret.fval = atof(*a) / atof(*b);
+		ret.fval = (float)(atof(*a) / atof(*b));
 	}
 	else if(in.find("samples") != -1)
 	{
