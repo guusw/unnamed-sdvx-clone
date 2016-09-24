@@ -78,9 +78,6 @@ public:
 	Map<String, KShootEffectDefinition> fxDefines;
 
 private:
-	static const uint32_t c_laserStart;
-	static const uint32_t c_laserEnd;
-	static const uint32_t c_laserRange;
 	static const char* c_sep;
 
 };
