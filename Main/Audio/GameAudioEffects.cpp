@@ -99,6 +99,29 @@ DSP* GameAudioEffect::CreateDSP(class AudioBase* audioTrack, AudioPlayback& play
 		ret = fl;
 		break;
 	}
+	case EffectType::SideChain:
+	{
+		SidechainDSP* sc = new SidechainDSP();
+		audioTrack->AddDSP(sc);
+		sc->SetLength(actualLength);
+		sc->amount = 1.0f;
+		sc->curve = Interpolation::CubicBezier(0.39, 0.575, 0.565, 1);
+		ret = sc;
+		break;
+	}
+	case EffectType::PitchShift:
+	{
+		PitchShiftDSP* ps = new PitchShiftDSP();
+		audioTrack->AddDSP(ps);
+		ps->amount = pitchshift.amount.Sample(filterInput);
+		ret = ps;
+		break;
+	}
+	}
+
+	if(!ret)
+	{
+		Logf("Failed to create game audio effect for type \"%s\"", Logger::Warning, Enum_EffectType::ToString(type));
 	}
 
 	return ret;
@@ -155,6 +178,12 @@ void GameAudioEffect::SetParams(DSP* dsp, AudioPlayback& playback, HoldObjectSta
 		double delay = (noteDuration) / 1000.0;
 		fl->SetLength((uint32)(noteDuration / object->effectParams[0]));
 		fl->SetDelayRange(2, 40);
+		break;
+	}
+	case EffectType::PitchShift:
+	{
+		PitchShiftDSP* ps = (PitchShiftDSP*)dsp;
+		ps->amount = (float)object->effectParams[0];
 		break;
 	}
 	}

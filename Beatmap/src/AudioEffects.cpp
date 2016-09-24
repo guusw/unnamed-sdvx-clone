@@ -74,7 +74,7 @@ static AudioEffect CreateDefault(EffectType type)
 		break;
 	case EffectType::Retrigger:
 		ret.retrigger.gate = 0.7f;
-		ret.retrigger.reset = TimeRange(0);
+		ret.retrigger.reset = TimeRange(0.5f);
 		break;
 	case EffectType::Echo:
 		ret.echo.feedback = FloatRange(0.25f);

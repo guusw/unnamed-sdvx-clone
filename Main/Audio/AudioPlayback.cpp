@@ -17,6 +17,8 @@ AudioPlayback::~AudioPlayback()
 bool AudioPlayback::Init(class BeatmapPlayback& playback, const String& mapRootPath)
 {
 	// Cleanup exising DSP's
+	m_currentHoldEffects[0] = nullptr;
+	m_currentHoldEffects[1] = nullptr;
 	m_CleanupDSP(m_buttonDSPs[0]);
 	m_CleanupDSP(m_buttonDSPs[1]);
 	m_CleanupDSP(m_laserDSP);
@@ -119,7 +121,8 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 		return;
 
 	assert(index >= 0 && index <= 1);
-	ClearEffect(index);
+	m_CleanupDSP(m_buttonDSPs[index]);
+	m_currentHoldEffects[index] = object;
 
 	// For Time based effects
 	const TimingPoint* timingPoint = playback.GetTimingPointAt(object->time);
@@ -127,7 +130,6 @@ void AudioPlayback::SetEffect(uint32 index, HoldObjectState* object, class Beatm
 	double barDelay = timingPoint->numerator * timingPoint->beatDuration;
 
 	DSP*& dsp = m_buttonDSPs[index];
-	bool shouldAdd = false;
 
 	m_buttonEffects[index] = m_beatmap->GetEffect(object->effectType);
 	dsp = m_buttonEffects[index].CreateDSP(m_GetDSPTrack().GetData(), *this);
@@ -148,10 +150,14 @@ void AudioPlayback::SetEffectEnabled(uint32 index, bool enabled)
 		m_buttonDSPs[index]->mix = m_effectMix[index];
 	}
 }
-void AudioPlayback::ClearEffect(uint32 index)
+void AudioPlayback::ClearEffect(uint32 index, HoldObjectState* object)
 {
 	assert(index >= 0 && index <= 1);
-	m_CleanupDSP(m_buttonDSPs[index]);
+	if(m_currentHoldEffects[index] == object)
+	{
+		m_CleanupDSP(m_buttonDSPs[index]);
+		m_currentHoldEffects[index] = nullptr;
+	}
 }
 void AudioPlayback::SetLaserEffect(EffectType type)
 {
@@ -263,7 +269,7 @@ void AudioPlayback::m_SetLaserEffectParameter(float input)
 	if(input < 0.1f)
 		mix *= input / 0.1f;
 
-	switch(m_laserEffectType)
+	switch(m_laserEffect.type)
 	{
 	case EffectType::Bitcrush:
 	{
@@ -296,6 +302,12 @@ void AudioPlayback::m_SetLaserEffectParameter(float input)
 	{
 		BQFDSP* bqfDSP = (BQFDSP*)m_laserDSP;
 		bqfDSP->SetHighPass(m_laserEffect.hpf.q.Sample(input)  * mix + 0.1f, m_laserEffect.hpf.freq.Sample(input));
+		break;
+	}
+	case EffectType::PitchShift:
+	{
+		PitchShiftDSP* ps = (PitchShiftDSP*)m_laserDSP;
+		ps->amount = m_laserEffect.pitchshift.amount.Sample(input);
 		break;
 	}
 	}

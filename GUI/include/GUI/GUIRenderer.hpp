@@ -111,6 +111,9 @@ private:
 	bool m_mouseButtonState[3] = { 0 };
 	bool m_mouseButtonStateLast[3] = { 0 };
 
+	// Internal timer for sending to shaders that use it and maybe other uses
+	float m_time;
+
 	Vector2i m_mousePos;
 	Vector2i m_mouseDelta;
 	int32 m_mouseScrollDelta = 0;

@@ -224,6 +224,22 @@ bool Scoring::IsObjectHeld(ObjectState* object)
 		// Select root node of laser
 		object = *((LaserObjectState*)object)->GetRoot();
 	}
+	else if(object->type == ObjectType::Hold)
+	{
+		// Check all hold notes in a hold sequence to see if it is held
+		bool held = false;
+		HoldObjectState* root = ((HoldObjectState*)object)->GetRoot();
+		while(root != nullptr)
+		{
+			if(m_heldObjects.Contains(*root))
+			{
+				held = true;
+				break;
+			}
+			root = root->next;
+		}
+		return held;
+	}
 
 	return m_heldObjects.Contains(object);
 }

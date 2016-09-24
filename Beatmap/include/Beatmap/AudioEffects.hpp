@@ -18,6 +18,7 @@ DefineEnum(EffectType,
 	SideChain,
 	Echo,
 	Panning,
+	PitchShift,
 	LowPassFilter,
 	HighPassFilter,
 	PeakingFilter,
@@ -194,6 +195,11 @@ struct AudioEffect
 			// Panning position, 0 is center (-1-1)
 			EffectParam<float> panning;
 		} panning;
+		struct  
+		{
+			// Pitch shift amount, in semitones
+			EffectParam<float> amount;
+		} pitchshift;
 		struct
 		{
 			// Peak Q factor (>=0)

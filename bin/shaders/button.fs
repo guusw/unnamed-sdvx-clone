@@ -12,5 +12,4 @@ void main()
 	vec4 mainColor = texture(mainTex, fsTex.xy);
 	target = mainColor;
 	target.xyz = target.xyz * (1.0f + objectGlow * 1.5);
-	//target.a = 1.0;
 }
