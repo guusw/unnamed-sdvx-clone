@@ -68,6 +68,12 @@ public:
 	Type type;
 };
 
+template<typename T> T InterpolateEffectParamValue(T a, T b, float t)
+{
+	return T(a + (b - a) * t);
+}
+EffectDuration InterpolateEffectParamValue(EffectDuration a, EffectDuration b, float t);
+
 /*
 	Effect parameter that allows all the values which can be set for effects
 */
@@ -93,7 +99,7 @@ public:
 	T Sample(float t = 0.0f) const 
 	{
 		t = Math::Clamp(timeFunction(t), 0.0f, 1.0f);
-		return T(isRange ? (values[0] + (values[1] - values[0]) * t) : values[0]);
+		return isRange ? InterpolateEffectParamValue(values[0], values[1], t) : values[0];
 	}
 
 	Interpolation::TimeFunction timeFunction;
@@ -104,9 +110,6 @@ public:
 	// When set to true, this means the parameter is a range
 	bool isRange;
 };
-
-// Sample based on laser input, or without parameters for just the actual value
-template<> EffectDuration EffectParam<EffectDuration>::Sample(float t) const;
 
 struct AudioEffect
 {
