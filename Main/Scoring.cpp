@@ -387,9 +387,9 @@ void Scoring::m_OnObjectEntered(ObjectState* obj)
 		{
 			ScoreTick* t = m_ticks[hold->index].Add(new ScoreTick(obj));
 			t->SetFlag(TickFlags::Hold);
-			if(i == 0)
+			if(i == 0 && !hold->prev)
 				t->SetFlag(TickFlags::Start);
-			if(i == holdTicks.size() - 1)
+			if(i == holdTicks.size() - 1 && !hold->next)
 				t->SetFlag(TickFlags::End);
 			t->time = holdTicks[i];
 		}
