@@ -312,7 +312,7 @@ public:
 					m_mixer->Mix(data, numSamples);
 				End(numSamples);
 			}
-			std::this_thread::yield();
+			std::this_thread::sleep_for(std::chrono::microseconds(100));
 		}
 	}
 };

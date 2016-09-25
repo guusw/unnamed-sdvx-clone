@@ -5,6 +5,7 @@
 #include "Log.hpp"
 #include "Thread.hpp"
 #include <thread>
+#include "Timer.hpp"
 
 JobFlags operator|(JobFlags a, JobFlags b)
 {
@@ -24,6 +25,8 @@ struct JobThread
 
 	// Job currently being processed
 	Job activeJob;
+
+	Timer idleDuration;
 
 	// Terminate this thread
 	void Terminate()
@@ -138,6 +141,8 @@ private:
 				m_lock.lock();
 				if(!m_jobQueue.empty())
 				{
+					myThread->idleDuration.Restart();
+
 					// Process a job
 					Job peekJob = m_jobQueue.front();
 					if((peekJob->jobFlags & JobFlags::IO) != JobFlags::IO || (myThread->index != 0)) // Only perform IO on first thread
@@ -169,9 +174,13 @@ private:
 				}
 			}
 
-			// Idle
-			/// TODO: Add idle detection and sleep for a longer time
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			// Various idle levels
+			if(myThread->idleDuration.Minutes() > 1)
+				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			if(myThread->idleDuration.Seconds() > 1)
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			else
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 	}
 };
