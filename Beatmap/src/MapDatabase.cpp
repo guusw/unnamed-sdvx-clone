@@ -19,6 +19,7 @@ public:
 
 	thread m_thread;
 	bool m_searching = false;
+	bool m_interruptSearch = false;
 	Set<String> m_searchPaths;
 	Database m_database;
 
@@ -123,11 +124,13 @@ public:
 
 		// Create initial data set to compare to when evaluating if a file is added/removed/updated
 		m_LoadInitialData();
+		m_interruptSearch = false;
 		m_searching = true;
 		m_thread = thread(&MapDatabase_Impl::m_SearchThread, this);
 	}
 	void StopSearching()
 	{
+		m_interruptSearch = true;
 		m_searching = false;
 		if(m_thread.joinable())
 		{
@@ -195,6 +198,7 @@ public:
 				stmt += " AND";
 			stmt += " (artist LIKE \"%" + term + "%\"" + 
 				" OR title LIKE \"%" + term + "%\"" +
+				" OR path LIKE \"%" + term + "%\"" +
 				" OR tags LIKE \"%" + term + "%\")";
 			i++;
 		}
@@ -510,7 +514,9 @@ private:
 			ProfilerScope $("Map Database - Enumerate Files and Folders");
 			for(String rootSearchPath : m_searchPaths)
 			{
-				Vector<FileInfo> files = Files::ScanFilesRecursive(rootSearchPath, "ksh");
+				Vector<FileInfo> files = Files::ScanFilesRecursive(rootSearchPath, "ksh", &m_interruptSearch);
+				if(m_interruptSearch)
+					return;
 				for(FileInfo& fi : files)
 				{
 					fileList.Add(fi.fullPath, fi);
