@@ -375,6 +375,7 @@ void Application::m_MainLoop()
 				return;
 
 			m_Tick();
+			timeSinceRender = 0.0f;
 
 			// Garbage collect resources
 			ResourceManagers::TickAll();
@@ -383,6 +384,13 @@ void Application::m_MainLoop()
 		// Tick job sheduler
 		// processed callbacks for finished tasks
 		g_jobSheduler->Update();
+
+		if(timeSinceRender < targetRenderTime)
+		{
+			float timeLeft = (targetRenderTime - timeSinceRender);
+			uint32 sleepMicroSecs = (uint32)(timeLeft*1000000.0f * 0.75f);
+			std::this_thread::sleep_for(std::chrono::microseconds(sleepMicroSecs));
+		}
 	}
 }
 
