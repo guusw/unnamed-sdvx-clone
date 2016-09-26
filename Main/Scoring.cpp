@@ -469,7 +469,10 @@ void Scoring::m_UpdateTicks()
 						// Snap to first laser tick
 						/// TODO: Find better solution
 						if (tick->HasFlag(TickFlags::Start))
+						{
 							laserPositions[laserObject->index] = laserTargetPositions[laserObject->index];
+							m_autoLaserTick[laserObject->index] = 2;
+						}
 
 						// Check laser input
 						float laserDelta = abs(laserPositions[laserObject->index] - laserTargetPositions[laserObject->index]);\
@@ -477,7 +480,8 @@ void Scoring::m_UpdateTicks()
 						if(laserDelta < laserDistanceLeniency)
 						{
 							m_TickHit(tick, buttonCode);
-							m_autoLaserTick[laserObject->index] = false;
+							if(m_autoLaserTick[laserObject->index] > 0)
+								m_autoLaserTick[laserObject->index] -= 1;
 							processed = true;
 						}
 					}
@@ -749,7 +753,8 @@ void Scoring::m_UpdateLasers(float deltaTime)
 			else if (laserDir == 0.0f && abs(positionDelta) < laserDistanceLeniency)
 			{
 				laserPositions[i] = laserTargetPositions[i];
-				m_autoLaserTick[i] = true;
+				if (m_autoLaserTick[i] < m_assistLevel)
+					m_autoLaserTick[i] += 1;
 			}
 			else if(inputDir != 0.0f)
 			{
@@ -769,9 +774,9 @@ void Scoring::m_UpdateLasers(float deltaTime)
 						laserPositions[i] = Math::Max(laserPositions[i] + input, laserTargetPositions[i]);
 				}
 				notAffectingGameplay = false;
-				if (inputDir == moveDir && positionDelta < laserDistanceLeniency)
+				if (inputDir == moveDir && positionDelta < laserDistanceLeniency && m_autoLaserTick[i] < m_assistLevel)
 				{
-					m_autoLaserTick[i] = true;
+					m_autoLaserTick[i] += 1;
 				}
 				
 
@@ -783,7 +788,7 @@ void Scoring::m_UpdateLasers(float deltaTime)
 		{
 			timeSinceLaserUsed[i] += deltaTime;
 		}
-		if (autoplay || m_autoLaserTick[i])
+		if (autoplay || m_autoLaserTick[i] > 0)
 		{
 			laserPositions[i] = laserTargetPositions[i];
 		}
