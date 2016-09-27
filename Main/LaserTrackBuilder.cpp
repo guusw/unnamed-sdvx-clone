@@ -30,6 +30,11 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 		left = laser->points[0] * effectiveWidth - effectiveWidth * 0.5f;
 		right = laser->points[1] * effectiveWidth - effectiveWidth * 0.5f;
 
+		if ((laser->flags & LaserObjectState::flag_Extended) != 0)
+		{
+			left = (laser->points[0] * 2.0f - 0.5f) * effectiveWidth - effectiveWidth * 0.5f;
+			right = (laser->points[1] * 2.0f - 0.5f) * effectiveWidth - effectiveWidth * 0.5f;
+		}
 
 		// If corners should be placed, connecting the texture to the previous laser
 		bool swapped = false;
@@ -131,12 +136,16 @@ Mesh LaserTrackBuilder::GenerateTrackMesh(class BeatmapPlayback& playback, Laser
 			prevLength = playback.DurationToViewDistanceAtTime(laser->prev->time, slamDuration) * laserLengthScale;
 		}
 
+		Vector2 points[2];
+
 		// Connecting center points
-		Vector2 points[2] =
+		points[0] = Vector2(laser->points[0] * effectiveWidth - effectiveWidth * 0.5f, prevLength); // Bottom
+		points[1] = Vector2(laser->points[1] * effectiveWidth - effectiveWidth * 0.5f, length * laserLengthScale); // Top
+		if ((laser->flags & LaserObjectState::flag_Extended) != 0)
 		{
-			Vector2(laser->points[0] * effectiveWidth - effectiveWidth * 0.5f, prevLength), // Bottom
-			Vector2(laser->points[1] * effectiveWidth - effectiveWidth * 0.5f, length * laserLengthScale), // Top
-		};
+			points[0] = Vector2((laser->points[0] * 2.0f - 0.5f) * effectiveWidth - effectiveWidth * 0.5f, prevLength); // Bottom
+			points[1] = Vector2((laser->points[1] * 2.0f - 0.5f) * effectiveWidth - effectiveWidth * 0.5f, length * laserLengthScale); // Top
+		}
 
 		float uMin = 0.0f;
 		float uMax = 1.0f;
@@ -176,7 +185,11 @@ Mesh LaserTrackBuilder::GenerateTrackEntry(class BeatmapPlayback& playback, Lase
 
 	// Starting point of laser
 	float startingX = laser->points[0] * effectiveWidth - effectiveWidth * 0.5f;
-	
+	if ((laser->flags & LaserObjectState::flag_Extended) != 0)
+		startingX = (laser->points[0] * 2.0f - 0.5f) * effectiveWidth - effectiveWidth * 0.5f;
+
+
+
 	// Length of the tail
 	float length = (float)laserEntryTextureSize.y / (float)laserEntryTextureSize.x * actualLaserWidth;
 
@@ -204,6 +217,8 @@ Mesh LaserTrackBuilder::GenerateTrackExit(class BeatmapPlayback& playback, Laser
 
 	// Ending point of laser 
 	float startingX = laser->points[1] * effectiveWidth - effectiveWidth * 0.5f;
+	if ((laser->flags & LaserObjectState::flag_Extended) != 0)
+		startingX = (laser->points[1] * 2.0f - 0.5f) * effectiveWidth - effectiveWidth * 0.5f;
 
 	// Length of the tail
 	float length = (float)laserExitTextureSize.y / (float)laserExitTextureSize.x * actualLaserWidth;

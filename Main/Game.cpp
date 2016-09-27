@@ -311,7 +311,10 @@ public:
 		// Get render state from the camera
 		float rollA = m_scoring.GetLaserRollOutput(0);
 		float rollB = m_scoring.GetLaserRollOutput(1);
-		m_camera.SetTargetRoll((rollA + rollB) * m_rollIntensity);
+		bool laserActive = m_scoring.GetLaserActive();
+		m_camera.SetTargetRoll(rollA + rollB);
+		m_camera.SetLasersActive(laserActive);
+		m_camera.SetRollIntensity(m_rollIntensity);
 
 		// Set track zoom
 		if(!m_settingsBar->IsShown()) // Overridden settings?
@@ -320,7 +323,7 @@ public:
 			m_camera.zoomTop = m_playback.GetZoom(1);
 		}
 		m_camera.track = m_track;
-		m_camera.Tick(deltaTime);
+		m_camera.Tick(deltaTime,m_playback);
 		RenderState rs = m_camera.CreateRenderState(true);
 
 		// Draw BG first
@@ -362,9 +365,19 @@ public:
 		rs = m_camera.CreateRenderState(false);
 		RenderQueue scoringRq(g_gl, rs);
 
-		// Copy over laser position
+		// Copy over laser position and extend info
 		for(uint32 i = 0; i < 2; i++)
 		{
+			if(m_scoring.IsLaserHeld(i))
+			{
+				m_track->laserPositions[i] = m_scoring.laserTargetPositions[i];
+				m_track->lasersAreExtend[i] = m_scoring.lasersAreExtend[i];
+			}
+			else
+			{
+				m_track->laserPositions[i] = m_scoring.laserPositions[i];
+				m_track->lasersAreExtend[i] = m_scoring.lasersAreExtend[i];
+			}
 			m_track->laserPositions[i] = m_scoring.laserPositions[i];
 			m_track->laserPointerOpacity[i] = (1.0f - Math::Clamp<float>(m_scoring.timeSinceLaserUsed[i] / 0.5f - 1.0f, 0, 1));
 		}
@@ -386,7 +399,11 @@ public:
 					m_laserFollowEmitters[i] = CreateTrailEmitter(m_track->laserColors[i]);
 
 				// Set particle position to follow laser
-				m_laserFollowEmitters[i]->position.x = m_track->trackWidth * m_scoring.laserTargetPositions[i] - m_track->trackWidth * 0.5f;
+				float followPos = m_scoring.laserTargetPositions[i];
+				if (m_scoring.lasersAreExtend[i])
+					followPos = followPos * 2.0f - 0.5f; 
+
+				m_laserFollowEmitters[i]->position.x = m_track->trackWidth * followPos - m_track->trackWidth * 0.5f;
 			}
 			else
 			{
@@ -909,7 +926,7 @@ public:
 				m_rollIntensity = 0;
 			else
 			{
-				m_rollIntensity = m_rollIntensityBase + (float)(i - 1) * 0.03f;
+				m_rollIntensity = m_rollIntensityBase + (float)(i - 1) * 0.0125f;
 			}
 		}
 		else if(key == EventKey::SlamVolume)
