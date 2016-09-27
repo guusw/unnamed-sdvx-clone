@@ -8,7 +8,7 @@ class TestFailure
 public:
 	TestFailure(String expression = String()) : expression(expression)
 	{
-		trace = Debug::GetStackTrace();
+//		trace = Debug::GetStackTrace();
 	}
 	String expression;
 	Debug::StackTrace trace;

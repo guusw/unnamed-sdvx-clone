@@ -28,7 +28,7 @@ public:
 	// Finds files in a given folder
 	// uses the given extension filter if specified
 	// Additional interruptible flag can contain a boolean which can interrupt the search when set to true
-	static Vector<FileInfo> ScanFiles(const String& folder, String extFilter = String(), bool* interrupt = nullptr);
+    static Vector<FileInfo> ScanFiles(const String& folder, String extFilter = String(), bool* interrupt = nullptr);
 
 	// Finds files in a given folder, recursively
 	// uses the given extension filter if specified

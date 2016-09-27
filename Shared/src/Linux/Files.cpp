@@ -93,11 +93,11 @@ static Vector<FileInfo> _ScanFiles(String rootFolder, String extFilter, bool rec
 	return move(ret);
 }
 
-Vector<FileInfo> Files::ScanFiles(const String& folder, String extFilter /*= String()*/)
+Vector<FileInfo> Files::ScanFiles(const String& folder, String extFilter, bool* interrupt)
 {
 	return _ScanFiles(folder, extFilter, false);
 }
-Vector<FileInfo> Files::ScanFilesRecursive(const String& folder, String extFilter /*= String()*/)
+Vector<FileInfo> Files::ScanFilesRecursive(const String& folder, String extFilter, bool* interrupt)
 {
 	return _ScanFiles(folder, extFilter, true);
 }
