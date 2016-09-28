@@ -21,6 +21,9 @@ void Audio_Impl::Mix(float* data, uint32& numSamples)
 	uint32* guardBuffer = (uint32*)tempData + 2 * m_sampleBufferLength;
 	double adv = GetSecondsPerSample();
 
+	uint32 outputChannels = this->output->GetNumChannels();
+	memset(data, 0, numSamples * sizeof(float) * outputChannels);
+
 	uint32 currentNumberOfSamples = 0;
 	while(currentNumberOfSamples < numSamples)
 	{
@@ -82,7 +85,17 @@ void Audio_Impl::Mix(float* data, uint32& numSamples)
 		// Copy samples from sample buffer
 		uint32 sampleOffset = m_sampleBufferLength - m_remainingSamples;
 		uint32 maxSamples = Math::Min(numSamples - currentNumberOfSamples, m_remainingSamples);
-		memcpy(data + currentNumberOfSamples * 2, m_sampleBuffer + sampleOffset * 2, sizeof(float) * maxSamples * 2);
+		for(uint32 c = 0; c < outputChannels; c++)
+		{
+			if(c < 2)
+			{
+				for(uint32 i = 0; i < maxSamples; i++)
+				{
+					data[(currentNumberOfSamples + i) * outputChannels + c] = m_sampleBuffer[(sampleOffset + i) * 2 + c];
+				}
+			}
+			// TODO: Mix to surround channels as well?
+		}
 		m_remainingSamples -= maxSamples;
 		currentNumberOfSamples += maxSamples;
 	}
