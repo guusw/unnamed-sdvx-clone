@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-static Vector<FileInfo> _ScanFiles(String rootFolder, String extFilter, bool recurse)
+static Vector<FileInfo> _ScanFiles(String rootFolder, String extFilter, bool recurse, bool* interrupt)
 {
 	Vector<FileInfo> ret;
 	if(!Path::IsDirectory(rootFolder))
@@ -26,7 +26,7 @@ static Vector<FileInfo> _ScanFiles(String rootFolder, String extFilter, bool rec
 	bool filterByExtension = !extFilter.empty();
 	extFilter.TrimFront('.'); // Remove possible leading dot
 							  // Recursive folder search
-	while(!folderQueue.empty())
+	while(!folderQueue.empty() && (!interrupt || !*interrupt))
 	{
 		String searchPath = folderQueue.front();
 		folderQueue.pop_front();
@@ -84,7 +84,7 @@ static Vector<FileInfo> _ScanFiles(String rootFolder, String extFilter, bool rec
 						ret.Add(info);
 					}
 				}
-			} while(ent = readdir(dir));
+			} while(ent = readdir(dir) && (!interrupt || !*interrupt));
 		}
 
 		closedir(dir);
@@ -93,11 +93,11 @@ static Vector<FileInfo> _ScanFiles(String rootFolder, String extFilter, bool rec
 	return move(ret);
 }
 
-Vector<FileInfo> Files::ScanFiles(const String& folder, String extFilter /*= String()*/)
+Vector<FileInfo> Files::ScanFiles(const String& folder, String extFilter, bool* interrupt)
 {
-	return _ScanFiles(folder, extFilter, false);
+	return _ScanFiles(folder, extFilter, false, interrupt);
 }
-Vector<FileInfo> Files::ScanFilesRecursive(const String& folder, String extFilter /*= String()*/)
+Vector<FileInfo> Files::ScanFilesRecursive(const String& folder, String extFilter, bool* interrupt)
 {
-	return _ScanFiles(folder, extFilter, true);
+	return _ScanFiles(folder, extFilter, true, interrupt);
 }
