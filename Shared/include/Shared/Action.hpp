@@ -120,19 +120,3 @@ protected:
 	}
 	T m_value;
 };
-
-
-// Property macros that make C# like definition possible:
-//		Property<float> MyProperty
-//		{
-//			get
-//			{
-//				return privateFloat;
-//			}
-//			set
-//			{
-//				privateFloat = value;
-//			}
-//		};
-#define get [&]()
-#define set ,[&](auto value)
