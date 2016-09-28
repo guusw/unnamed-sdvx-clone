@@ -84,7 +84,7 @@ static Vector<FileInfo> _ScanFiles(String rootFolder, String extFilter, bool rec
 						ret.Add(info);
 					}
 				}
-			} while(ent = readdir(dir) && (!interrupt || !*interrupt));
+			} while((ent = readdir(dir)) && (!interrupt || !*interrupt));
 		}
 
 		closedir(dir);
