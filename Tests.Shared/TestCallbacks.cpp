@@ -1,6 +1,5 @@
-#include <Shared/Shared.hpp>
+#include "stdafx.h"
 #include <Shared/Action.hpp>
-#include <Tests/Tests.hpp>
 
 // Testing callbacks
 static int callCounter = 0;

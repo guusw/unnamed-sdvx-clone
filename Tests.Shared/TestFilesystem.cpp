@@ -1,6 +1,5 @@
-#include <Shared/Shared.hpp>
+#include "stdafx.h"
 #include <Shared/Enum.hpp>
-#include <Tests/Tests.hpp>
 #include <Shared/Files.hpp>
 
 void CreateDummyFile(const String& filename)

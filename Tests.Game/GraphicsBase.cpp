@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GraphicsBase.hpp"
 
-GraphicsTest::~GraphicsTest()
+GraphicsTestBase::~GraphicsTestBase()
 {
 	if(m_gl)
 		delete m_gl;
@@ -9,7 +9,7 @@ GraphicsTest::~GraphicsTest()
 		delete m_window;
 }
 
-bool GraphicsTest::Run()
+bool GraphicsTestBase::Run()
 {
 	m_window = new Graphics::Window();
 
@@ -21,6 +21,8 @@ bool GraphicsTest::Run()
 		return false;
 	}
 	m_window->Show();
+
+	Init();
 
 	Timer t;
 	while(m_window->Update())

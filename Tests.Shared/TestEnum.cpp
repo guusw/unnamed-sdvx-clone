@@ -1,6 +1,5 @@
-#include <Shared/Shared.hpp>
+#include "stdafx.h"
 #include <Shared/Enum.hpp>
-#include <Tests/Tests.hpp>
 
 DefineEnum(TestEnum,
 	A = 0x0,

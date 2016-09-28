@@ -9,6 +9,7 @@ enable_cpp11()
 include_directories(.)
 add_executable(Tests.Shared ${Main_src})
 set_output_postfixes(Tests.Shared)
+enable_precompiled_headers("${Main_src}" stdafx.cpp)
 
 if(MSVC)
 	# SEH and Debug

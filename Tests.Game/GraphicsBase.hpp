@@ -3,10 +3,11 @@
 #include <Graphics/Graphics.hpp>
 using namespace Graphics;
 
-class GraphicsTest : public Unique
+class GraphicsTestBase : public Unique
 {
 public:
-	~GraphicsTest();
+	~GraphicsTestBase();
+	virtual void Init() {};
 	virtual void Render(float deltaTime) = 0;
 	bool Run();
 

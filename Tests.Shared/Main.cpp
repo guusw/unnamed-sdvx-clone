@@ -1,5 +1,4 @@
-#include <Shared/Shared.hpp>
-#include <Tests/Tests.hpp>
+#include "stdafx.h"
 
 int main(void)
 {
