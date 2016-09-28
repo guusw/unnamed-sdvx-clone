@@ -1,14 +1,20 @@
 #include "stdafx.h"
-#include <Shared/PropertyHierarchy.hpp>
-using namespace PropertyHierarchy;
+#include <Data/PropertyHierarchy.hpp>
+#include <Data/Serializer.hpp>
+using namespace Data;
 
-Test("PropertyHierarchy")
+Test("Data.PropertyHierarchy")
 {
 	Object a("Root");
-	a.Set("MyList", PropertyHierarchy::List("Test"));
-	PropertyHierarchy::List* list = dynamic_cast<PropertyHierarchy::List*>(a.Get("MyList"));
+	a.Set("MyList", Data::List("Test"));
+	Data::List* list = dynamic_cast<Data::List*>(a.Get("MyList"));
 	TestEnsure(list != nullptr);
 	list->Add(Object("1"));
 	list->Add(Object("2"));
 	TestEnsure(list->GetSize() == 2);
+}
+
+Test("Data.Serializer")
+{
+
 }

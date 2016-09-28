@@ -21,6 +21,7 @@ endif()
 # Dependencies
 target_link_libraries(Tests.Shared Shared)
 target_link_libraries(Tests.Shared Tests)
+target_link_libraries(Tests.Shared Data)
 
 if(WIN32)
 else()

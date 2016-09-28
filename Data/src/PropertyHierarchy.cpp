@@ -1,9 +1,8 @@
 #include "stdafx.h"
 #include "PropertyHierarchy.hpp"
 
-namespace PropertyHierarchy
+namespace Data
 {
-
 	NodeBase::NodeBase(const String& name /*= String()*/)
 	{
 		m_name = name;

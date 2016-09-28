@@ -85,7 +85,7 @@ public:
 	{
 	}
 	Property(Action<T> get, Action<void, T> set)
-		: Get(move(get)), Set(move(set))
+		: Get(std::move(get)), Set(std::move(set))
 	{
 	}
 
@@ -120,3 +120,19 @@ protected:
 	}
 	T m_value;
 };
+
+
+// Property macros that make C# like definition possible:
+//		Property<float> MyProperty
+//		{
+//			get
+//			{
+//				return privateFloat;
+//			}
+//			set
+//			{
+//				privateFloat = value;
+//			}
+//		};
+#define get [&]()
+#define set ,[&](auto value)

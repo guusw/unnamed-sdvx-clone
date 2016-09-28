@@ -2,12 +2,8 @@
 	Header file for the property hierarchies
 */
 #pragma once
-#include "String.hpp"
-#include "Vector.hpp"
-#include "Map.hpp"
-#include "Unique.hpp"
 
-namespace PropertyHierarchy
+namespace Data
 {
 	class NodeBase : public Unique
 	{
