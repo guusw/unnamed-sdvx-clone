@@ -22,7 +22,11 @@ void GameConfig::InitDefaults()
 	Set(GameConfigKeys::ScreenY, -1);
 	Set(GameConfigKeys::HiSpeed, 1.0f);
 	Set(GameConfigKeys::GlobalOffset, 0);
+	Set(GameConfigKeys::InputOffset, 0);
+	Set(GameConfigKeys::FPSTarget, 0);
+	Set(GameConfigKeys::LaserAssistLevel, 2);
 	Set(GameConfigKeys::SongFolder, "songs");
+
 
 	// Input settings
 	SetEnum<Enum_InputDevice>(GameConfigKeys::ButtonInputDevice, InputDevice::Keyboard);

@@ -78,8 +78,12 @@ public:
 	// Updates the list of objects that are possible to hit
 	void Tick(float deltaTime);
 
-	float GetLaserRollOutput(uint32 index);
-	float GetLaserOutput();
+	// Single laser output
+	float GetLaserRollOutput(uint32 index) const;
+	// Comined laser output
+	float GetLaserOutput() const;
+	// True if any lasers are active
+	bool GetLasersActive() const;
 
 	// Check if an object is currently held
 	//	works only for lasers and hold buttons

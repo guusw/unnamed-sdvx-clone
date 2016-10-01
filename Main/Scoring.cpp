@@ -104,7 +104,7 @@ void Scoring::Tick(float deltaTime)
 	m_UpdateTicks();
 }
 
-float Scoring::GetLaserRollOutput(uint32 index)
+float Scoring::GetLaserRollOutput(uint32 index) const
 {
 	assert(index >= 0 && index <= 1);
 	if(m_currentLaserSegments[index])
@@ -118,11 +118,22 @@ float Scoring::GetLaserRollOutput(uint32 index)
 }
 
 static const float laserOutputInterpolationDuration = 0.1f;
-float Scoring::GetLaserOutput()
+float Scoring::GetLaserOutput() const
 {
 	float f = Math::Min(1.0f, m_timeSinceOutputSet / laserOutputInterpolationDuration);
 	return m_laserOutputSource + (m_laserOutputTarget - m_laserOutputSource) * f;
 }
+
+bool Scoring::GetLasersActive() const
+{
+	for(uint32 i = 0; i < 2; i++)
+	{
+		if(m_currentLaserSegments[i])
+			return true;
+	}
+	return false;
+}
+
 float Scoring::m_GetLaserOutputRaw()
 {
 	float val = 0.0f;

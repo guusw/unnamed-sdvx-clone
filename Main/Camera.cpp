@@ -11,31 +11,40 @@ Camera::~Camera()
 {
 
 }
-void Camera::Tick(float deltaTime)
+void Camera::Tick(float deltaTime, class BeatmapPlayback& playback)
 {
-	// Caluclate new force for the camera roll rotation
-	// Like gravity but for roll
-	float angle = m_roll * Math::pi;
-	Vector3 wanted = Vector3(sin(m_targetRoll), cos(m_targetRoll), 0.0f);
-	Vector3 rod = Vector3(sin(m_roll), cos(m_roll), 0.0f);
-	float rollForce = VectorMath::Cross(wanted, rod).z * 100.0f;
-
-	// Decay roll velocity
-	m_rollVelocity -= m_rollVelocity * Math::Min(1.0f, 8.0f * deltaTime);
-
-	float rollDelta = m_targetRoll - m_roll;
-	//if(m_targetRollSet && abs(rollDelta) < 0.0001f) // Apply directly if delta is small enough
-	//{
-	//	m_roll = m_targetRoll;
-	//}
-	//else // Apply regular force otherwise
+	if(m_lasersActive)
 	{
-		// Apply force
-		m_rollVelocity += rollForce * deltaTime;
+		const TimingPoint& currentTimingPoint = playback.GetCurrentTimingPoint();
+		//Calculate camera roll
+		//Follow the laser track exactly but with a roll speed limit
+		float rollSpeedLimit = (float)((m_rollIntensity / (currentTimingPoint.beatDuration / 1000.0)) * deltaTime);
+		rollSpeedLimit /= m_lasersActive ? 1.0f : 2.0f;
 
-		// Apply velocity
-		m_roll += m_rollVelocity * deltaTime;
-		m_roll = m_ClampRoll(m_roll);
+		float rollDelta = m_targetRoll - m_roll;
+		rollSpeedLimit *= Math::Sign(rollDelta);
+		m_roll += (abs(rollDelta) < abs(rollSpeedLimit)) ? rollDelta : rollSpeedLimit;
+	}
+	else
+	{
+		// Caluclate new force for the camera roll rotation
+		// Like gravity but for roll
+		float angle = m_roll * Math::pi;
+		Vector3 wanted = Vector3(sin(m_targetRoll), cos(m_targetRoll), 0.0f);
+		Vector3 rod = Vector3(sin(m_roll), cos(m_roll), 0.0f);
+		float rollForce = VectorMath::Cross(wanted, rod).z * 100.0f;
+
+		// Decay roll velocity
+		m_rollVelocity -= m_rollVelocity * Math::Min(1.0f, 8.0f * deltaTime);
+
+		{
+			// Apply force
+			m_rollVelocity += rollForce * deltaTime;
+
+			// Apply velocity
+			m_roll += m_rollVelocity * deltaTime;
+			m_roll = m_ClampRoll(m_roll);
+		}
 	}
 
 	if(!rollKeep)
@@ -137,25 +146,31 @@ RenderState Camera::CreateRenderState(bool clipped)
 
 void Camera::SetTargetRoll(float target)
 {
+	float actualTarget = target * m_rollIntensity;
 	if(!rollKeep)
 	{
-		m_targetRoll = target;
+		m_targetRoll = actualTarget;
 		m_targetRollSet = true;
 	}
 	else
 	{
-		if(m_targetRoll == 0.0f || Math::Sign(m_targetRoll) == Math::Sign(target))
+		m_targetRoll = m_roll;
+		if (m_roll == 0.0f || Math::Sign(m_roll) == Math::Sign(actualTarget))
 		{
-			if(m_targetRoll == 0)
-				m_targetRoll = target;
-			if(m_targetRoll < 0 && target < m_targetRoll)
-				m_targetRoll = target;
-			else if(target > m_targetRoll)
-				m_targetRoll = target;
-
+			if (m_roll == 0)
+				m_targetRoll = actualTarget;
+			if (m_roll < 0 && actualTarget < m_roll)
+				m_targetRoll = actualTarget;
+			else if (actualTarget > m_roll)
+				m_targetRoll = actualTarget;
 		}
 		m_targetRollSet = true;
 	}
+}
+
+void Camera::SetLasersActive(bool lasersActive)
+{
+	m_lasersActive = lasersActive;
 }
 
 float Camera::GetRoll() const

@@ -376,7 +376,7 @@ void Track::DrawObjectState(RenderQueue& rq, class BeatmapPlayback& playback, Ob
 		DrawSegment(laserMesh, laserTexture);
 
 		// Draw exit?
-		if(!laser->next)
+		if(!laser->next && (laser->flags & LaserObjectState::flag_Instant) != 0) // Only draw exit on slams
 		{
 			Mesh laserTail = m_laserTrackBuilder[laser->index]->GenerateTrackExit(playback, laser);
 			DrawSegment(laserTail, laserTailTextures[1]);

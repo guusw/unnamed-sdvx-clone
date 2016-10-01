@@ -84,7 +84,7 @@ private:
 	AudioPlayback m_audioPlayback;
 	// Applied audio offset
 	int32 m_audioOffset = 0;
-
+	int32 m_fpsTarget = 0;
 	// The play field
 	Track* m_track = nullptr;
 
@@ -185,6 +185,9 @@ public:
 		// Load beatmap audio
 		if(!m_audioPlayback.Init(m_playback, m_mapRootPath))
 			return false;
+
+		// Get fps limit
+		m_fpsTarget = g_gameConfig.GetInt(GameConfigKeys::FPSTarget);
 
 		ApplyAudioLeadin();
 
@@ -311,7 +314,10 @@ public:
 		// Get render state from the camera
 		float rollA = m_scoring.GetLaserRollOutput(0);
 		float rollB = m_scoring.GetLaserRollOutput(1);
-		m_camera.SetTargetRoll((rollA + rollB) * m_rollIntensity);
+		bool laserActive = m_scoring.GetLasersActive();
+		m_camera.SetTargetRoll(rollA + rollB);
+		m_camera.SetLasersActive(laserActive);
+		m_camera.SetRollIntensity(m_rollIntensity);
 
 		// Set track zoom
 		if(!m_settingsBar->IsShown()) // Overridden settings?
@@ -320,7 +326,7 @@ public:
 			m_camera.zoomTop = m_playback.GetZoom(1);
 		}
 		m_camera.track = m_track;
-		m_camera.Tick(deltaTime);
+		m_camera.Tick(deltaTime,m_playback);
 		RenderState rs = m_camera.CreateRenderState(true);
 
 		// Draw BG first
@@ -1011,7 +1017,7 @@ public:
 	{
 		if(!m_audioPlayback.IsPaused())
 		{
-			rate = 0; // Unlimited frames while playing
+			rate = m_fpsTarget;
 			return true;
 		}
 		return false; // Default otherwise

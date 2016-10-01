@@ -14,7 +14,10 @@ DefineEnum(GameConfigKeys,
 	// Game settings
 	HiSpeed,
 	GlobalOffset,
+	InputOffset,
 	SongFolder,
+	FPSTarget,
+	LaserAssistLevel,
 
 	// Input device setting per element
 	LaserInputDevice,
