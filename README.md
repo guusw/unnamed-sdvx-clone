@@ -1,43 +1,46 @@
 # Unnamed SDVX clone
-Trying to create a game based on [KShoot](http://kshoot.client.jp/)/[SDVX](https://www.youtube.com/watch?v=JBHKNl87juA).
+A game based on [KShoot](http://kshoot.client.jp/) and [SDVX](https://www.youtube.com/watch?v=JBHKNl87juA).
 
-[![Demo Video](http://img.youtube.com/vi/finlBLaO9Fw/0.jpg)](http://tdrz.nl/oo9LIJXk)
-
+# Download
 [![Build](https://ci.appveyor.com/api/projects/status/github/guusw/unnamed-sdvx-clone?branch=master&svg=true&retina=true)](https://ci.appveyor.com/project/guusw/unnamed-sdvx-clone)
+
 [Download latest build](http://tdrz.nl/sdvx-releases/bin/artifacts.zip)
 
-Only tested to compile with Visual Studio 2015 or Linux with gcc 6.0
+Demo Videos (Song Select/ Gameplay / Realtime effects):
 
-### Currently implemented features:
-- Fonts
+[![Song Select Video](http://img.youtube.com/vi/GYOHy5CY2pU/1.jpg)](https://www.youtube.com/watch?v=GYOHy5CY2pU)
+[![Gameplay Video](http://img.youtube.com/vi/dfEbmBzdvYA/1.jpg)](https://www.youtube.com/watch?v=dfEbmBzdvYA)
+[![Realtime Effects Video](http://img.youtube.com/vi/PVIAENg13OU/1.jpg)](https://www.youtube.com/watch?v=PVIAENg13OU)
+
+### Current features:
 - Basic GUI (Buttons, Sliders, Scroll Boxes)
-- jpeg and png image loading
-- OGG audio streaming with timing management, WAV samples.
-- Loading KShoot format maps (*.ksh)
-- Gameplay + Scoring + Autoplay
-- Real-time laser sound Filters and button Effects.
-- Extended lasers
-- Track zoom
-- Track roll animations
-- Song database (sqlite3)
-- Song selection screen
+- OGG/MP3 Audio streaming (with preloading for gameplay performance)
+- Loading KShoot format maps (*.ksh) (1.6 supported)
+- Functional gameplay and scoring
+- Autoplay
+- Basic controller support (Still some issues with TC+)
+- Changable settings and key mapping in configuration file
+- Real time sound effect and effect track support
+- Song database for near-instant game startup (sqlite3)
+- Song database searching
+- Linux/Windows support
 
-### Features currently in the queue / in progress:
-- Linux port
-- Customizable controls
-- Mouse/Controller input while in game
-- Score screen
+### Features currently on hold / in progress:
+- GUI System rewrite
+- Saving of local scores
+- Song select UI/Controls to change hispeed and other game settings
 
 ### How to build:
 - Install CMake (https://cmake.org/download/)
-- linux> check 'build.linux' for libraries to install
+- **linux** check 'build.linux' for libraries to install
 - Run 'cmake .' from the root of the project
-- windows> build the generated visual studio project 'FX.sln'
-- linux> run 'make' from the project root
-- Binaries get build to the 'bin' folder
+- **windows** build the generated visual studio project 'FX.sln'
+- **linux** run 'make' from the project root
+- Binaries get build to the 'bin' folder, run the excutable from there
+- **windows** to run from visual studio, goto properties for Main > Debugging > Working Directory and set it to $(OutDir) or ..\bin
 
 ### How to run:
-- Run the application
+- Just run Main_Release or Main_Debug from within the bin folder
 - You can also run the application with the full path to a .ksh file as the first argument to play that map immediatly, this can be combined with any of the additional command line switches below.
 
 Additional command line parameters:
@@ -49,7 +52,7 @@ Additional command line parameters:
 - '-test' runs test scene, only used for development purposed without running the game.
 - '-autobuttons' makes all BT/FX object be played automatically. so you only have to control the lasers
 
-### Game Controls (to be customizable soon):
+### Game Controls (Customizable, read **Readme_Input.txt**):
 - White buttons = [S] [D] [K] [L]
 - Yellow notes = [C] [M] 
 - Left Laser = [W] [E] 
