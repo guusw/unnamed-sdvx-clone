@@ -314,7 +314,16 @@ public:
 		// Get render state from the camera
 		float rollA = m_scoring.GetLaserRollOutput(0);
 		float rollB = m_scoring.GetLaserRollOutput(1);
-		bool laserActive = m_scoring.GetLasersActive();
+		// Only use the fixed camera mode when moving lasers
+		bool laserActive = false;
+		for(uint32 i = 0; i < 2; i++)
+		{
+			if(m_scoring.GetLaserDirection(i) != 0)
+			{
+				laserActive = true;
+				break;
+			}
+		}
 		m_camera.SetTargetRoll(rollA + rollB);
 		m_camera.SetLasersActive(laserActive);
 		m_camera.SetRollIntensity(m_rollIntensity);
@@ -774,6 +783,8 @@ public:
 
 		textPos.y += RenderText(Utility::Sprintf("Track Zoom Top: %f", m_camera.zoomTop), textPos).y;
 		textPos.y += RenderText(Utility::Sprintf("Track Zoom Bottom: %f", m_camera.zoomBottom), textPos).y;
+
+		textPos.y += RenderText(Utility::Sprintf("Camera Lasers Active: %s", m_camera.GetLasersActive() ? "True" : "False"), textPos).y;
 
 		Vector2 buttonStateTextPos = Vector2(g_resolution.x - 200.0f, 100.0f);
 		RenderText(g_input.GetControllerStateString(), buttonStateTextPos);

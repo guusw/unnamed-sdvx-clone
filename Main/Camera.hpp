@@ -32,6 +32,7 @@ public:
 	// Changes the amount of roll applied when lasers are controlled, default = 1
 	void SetRollIntensity(float val);
 	void SetLasersActive(bool lasersActive);
+	bool GetLasersActive() const { return m_lasersActive; }
 	void SetTargetRoll(float target);
 	float GetRoll() const;
 

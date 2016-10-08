@@ -82,6 +82,7 @@ public:
 	float GetLaserRollOutput(uint32 index) const;
 	// Comined laser output
 	float GetLaserOutput() const;
+	float GetLaserDirection(uint32 index) const;
 	// True if any lasers are active
 	bool GetLasersActive() const;
 

@@ -124,6 +124,13 @@ float Scoring::GetLaserOutput() const
 	return m_laserOutputSource + (m_laserOutputTarget - m_laserOutputSource) * f;
 }
 
+float Scoring::GetLaserDirection(uint32 index) const
+{
+	if(m_currentLaserSegments[index] && (m_currentLaserSegments[index]->flags & LaserObjectState::flag_Instant) == 0)
+		return m_currentLaserSegments[index]->GetDirection();
+	return 0.0f;
+}
+
 bool Scoring::GetLasersActive() const
 {
 	for(uint32 i = 0; i < 2; i++)
