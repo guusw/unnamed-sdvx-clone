@@ -32,7 +32,7 @@ public:
 					if(charValue != -1) // Probably a char value
 						idLast = (size_t)valueStr[charValue + 1];
 					else // Hex or decimal value
-						idLast = strtol(*valueStr, NULL, 0);
+						idLast = strtol(*valueStr, nullptr, 0);
 			}
 			e = (EnumType)idLast++;
 			seg.Trim();

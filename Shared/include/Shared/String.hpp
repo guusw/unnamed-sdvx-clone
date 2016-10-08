@@ -219,3 +219,15 @@ const T* StringBase<T>::GetData() const
 		return nullptr;
 	return &front();
 }
+
+// String hash for use with UnorderedMap or other hashing usage
+struct StringHash
+{
+	size_t operator()(const String& key) const;
+};
+
+// WString hash, see StringHash
+struct WStringHash
+{
+	size_t operator()(const WString& key) const;
+};

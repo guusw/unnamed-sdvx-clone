@@ -1,41 +1,34 @@
 #pragma once
-#include "Data/PropertyHierarchy.hpp"
+#include "Data/Yaml.hpp"
+#include "Shared/Action.hpp"
+#include "Shared/Macro.hpp"
 #include <typeinfo>
 
 namespace Data
 {
+	using namespace Yaml;
+	class ITypeSerializer
+	{
+	public:
+		virtual ~ITypeSerializer() = default;
+		// Convert an data node to an object
+		virtual bool Deserialize(Node& data, void* object) = 0;
+		// Creates a data node from an object
+		virtual bool Serialize(const void* object, Node*& data) = 0;
+	};
+
 	/*
 		Serializes objects to and from a textual representatation
 	*/
 	class Serializer
 	{
 	public:
-	};
+		template<typename T>
+		static ITypeSerializer* Find() { return Find(typeid(T).hash_code()); }
+		static ITypeSerializer* Find(size_t type);
 
-	/*
-		Generic base class that has a common interface for text serializable objects
-	*/
-	class TypeSerializerBase
-	{
-	public:
-		virtual ~TypeSerializerBase() = default;
-		// Store the text representatation of object in out
-		virtual bool ToString(const NodeBase& object, String& out) = 0;
-		// Store the parsed object allocated with 'new' in out
-		virtual bool FromString(const String& input, NodeBase* out) = 0;
-
-		void AddMember(type_info type, void* handle);
-	};
-
-	/*
-		Templated base class for all types that want to implement text serialization
-	*/
-	template<typename T>
-	class TypeSerializer : public TypeSerializerBase
-	{
-	public:
-		TypeSerializer();
-
-		void AddMember();
+		template<typename T>
+		static void Register(ITypeSerializer* serializerInstance) { Register(typeid(T), serializerInstance); }
+		static void Register(const type_info& type, ITypeSerializer* serializerInstance);
 	};
 }

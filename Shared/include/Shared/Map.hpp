@@ -30,7 +30,7 @@ public:
 	}
 	V& Add(const K& k, const V& v = V())
 	{
-		return FindOrAdd(k) = v;
+		return FindOrAdd(k, v);
 	}
 	
 	// Finds the value in the map or returns null
@@ -47,33 +47,6 @@ public:
 		if(it == end())
 			return nullptr;
 		return &it->second;
-	}
-
-	// Finds the value that lies either on of before 'key'
-	// O(N)
-	K* FindBefore(const K& key)
-	{
-		K* res = nullptr;
-		for(auto it = begin(); it != end(); it++)
-		{
-			if(it->first > key)
-				break;
-			res = &it->second;
-		}
-		return res;
-	}
-	// Finds the first value that lies after 'key'
-	// O(N)
-	K* FindAfter(const K& key)
-	{
-		for(auto it = begin(); it != end(); it++)
-		{
-			if(it->first > key)
-			{
-				return &it->second;
-			}
-		}
-		return nullptr;
 	}
 };
 

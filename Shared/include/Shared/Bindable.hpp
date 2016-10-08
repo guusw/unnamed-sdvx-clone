@@ -7,6 +7,7 @@ struct IFunctionBinding
 {
 	virtual ~IFunctionBinding() {};
 	virtual R Call(A... args) = 0;
+	virtual IFunctionBinding* Clone() = 0;
 };
 
 /* Member function binding */
@@ -17,6 +18,10 @@ struct ObjectBinding : public IFunctionBinding<R, A...>
 	virtual R Call(A... args) override
 	{
 		return ((object)->*func)(args...);
+	}
+	virtual IFunctionBinding* Clone()
+	{
+		return new ObjectBinding(object, func);
 	}
 
 	Class* object;
@@ -32,6 +37,11 @@ struct StaticBinding : public IFunctionBinding<R, A...>
 	{
 		return (*func)(args...);
 	}
+	virtual IFunctionBinding* Clone()
+	{
+		return new StaticBinding(func);
+	}
+
 	R(*func)(A...);
 };
 
@@ -40,11 +50,19 @@ template<typename T, typename R, typename... A>
 struct LambdaBinding : public IFunctionBinding<R, A...>
 {
 	// Copies the given lambda
-	LambdaBinding(T&& lambda) : lambda(std::forward<T>(lambda)) {};
+	LambdaBinding(const T& lambda) 
+		: lambda(lambda) 
+	{
+	}
 	virtual R Call(A... args) override
 	{
 		return lambda(args...);
 	}
+	virtual IFunctionBinding* Clone()
+	{
+		return new LambdaBinding(lambda);
+	}
+
 	T lambda;
 };
 
@@ -57,5 +75,10 @@ struct ConstantBinding : public IFunctionBinding<R, A...>
 	{
 		return value;
 	}
+	virtual IFunctionBinding* Clone()
+	{
+		return new ConstantBinding(value);
+	}
+
 	R value;
 };

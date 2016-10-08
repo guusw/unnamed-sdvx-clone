@@ -5,7 +5,7 @@
 	Action is an objects that holds the neccesary information to call a single static function / member function / lambda
 */
 template<typename R = void, typename... A>
-class Action : public Unique
+class Action
 {
 public:
 	Action() = default;
@@ -30,6 +30,20 @@ public:
 		other.m_binding = nullptr;
 		return *this;
 	}
+	Action(const Action& other)
+	{
+		if(other.m_binding)
+			m_binding = other.m_binding->Clone();
+		else
+			m_binding = nullptr;
+	}
+	Action& operator=(Action& other)
+	{
+		Clear();
+		if(other.m_binding)
+			m_binding = other.m_binding->Clone();
+		return *this;
+	}
 	void Bind(R(*staticFunction)(A...))
 	{
 		Clear();
@@ -51,11 +65,14 @@ public:
 	{
 		Clear();
 	}
+	
+	R operator()(A... args) { return Call(args...); }
 	R Call(A... args)
 	{
 		assert(IsBound());
 		return m_binding->Call(args...);
 	}
+
 	bool IsBound() const
 	{
 		return m_binding != nullptr;

@@ -100,7 +100,6 @@ bool TestManager::m_Begin()
 
 void TestManager::m_End()
 {
-
 	// Remove intermediate folder
 	Path::DeleteDir(m_testBasePath);
 

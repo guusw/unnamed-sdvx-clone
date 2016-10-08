@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="Yaml::Mapping">
+    <DisplayString Condition="m_tag._Mypair._Myval2._Mysize == 0">
+      [Mapping] (size={m_orderedKeys._Mypair._Myval2._Mysize})
+    </DisplayString>
+    <DisplayString Condition="m_tag._Mypair._Myval2._Mysize != 0">
+      [Mapping] {m_tag,sb} (size={m_orderedKeys._Mypair._Myval2._Mysize})
+    </DisplayString>
+    <Expand>
+      <Item Name="[Tag]" Condition="m_tag._Mypair._Myval2._Mysize != 0">m_tag,sb</Item>
+      <CustomListItems>
+        <Variable Name="ks" InitialValue="m_orderedKeys._Mypair._Myval2._Myhead"/>
+        <Variable Name="vs" InitialValue="m_orderedValues._Mypair._Myval2._Myfirst"/>
+        <Variable Name="i" InitialValue="m_orderedKeys._Mypair._Myval2._Mysize"/>
+        <Exec>ks = ks-&gt;_Next</Exec>
+        <Loop Condition="i&gt;0">
+          <Item Name="{ks-&gt;_Myval-&gt;m_data,b}">*vs,na</Item>
+          <Exec>vs++</Exec>
+          <Exec>ks = ks-&gt;_Next</Exec>
+          <Exec>i--</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+  
+  <Type Name="Yaml::Sequence">
+    <DisplayString Condition="m_tag._Mypair._Myval2._Mysize == 0">
+      [Sequence] (size={m_items._Mypair._Myval2._Mylast - m_items._Mypair._Myval2._Myfirst})
+    </DisplayString>
+    <DisplayString Condition="m_tag._Mypair._Myval2._Mysize != 0">
+      [Sequence] {m_tag,sb} (size={m_items._Mypair._Myval2._Mylast - m_items._Mypair._Myval2._Myfirst})
+    </DisplayString>
+    <Expand>
+      <Item Name="[Tag]" Condition="m_tag._Mypair._Myval2._Mysize != 0">m_tag,sb</Item>
+      <CustomListItems>
+        <Variable Name="ks" InitialValue="m_items._Mypair._Myval2._Myfirst"/>
+        <Variable Name="kl" InitialValue="m_items._Mypair._Myval2._Mylast"/>
+        <Variable Name="i" InitialValue="0"/>
+        <Loop Condition="ks != kl">
+          <Item Name="[{i}]">*ks,na</Item>
+          <Exec>ks++</Exec>
+          <Exec>i++</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+  
+  <Type Name="Yaml::Scalar">
+    <DisplayString Condition="m_tag._Mypair._Myval2._Mysize == 0">
+      {m_data,s}
+    </DisplayString>
+    <DisplayString Condition="m_tag._Mypair._Myval2._Mysize != 0">
+      {m_tag,sb} {m_data,s}
+    </DisplayString>
+    <Expand>
+      <Item Name="[Data]">m_data</Item>
+      <Item Name="[Type]">m_detectedType</Item>
+      <Item Name="[Tag]" Condition="m_tag._Mypair._Myval2._Mysize != 0">m_tag,sb</Item>
+    </Expand>
+  </Type>
+</AutoVisualizer>

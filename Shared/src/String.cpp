@@ -28,3 +28,14 @@ namespace Utility
 		return res;
 	}
 }
+
+size_t StringHash::operator()(const String& key) const
+{
+	static std::hash<std::string> stdHash;
+	return stdHash(key);
+}
+size_t WStringHash::operator()(const WString& key) const
+{
+	static std::hash<std::wstring> stdHash;
+	return stdHash(key);
+}

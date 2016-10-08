@@ -5,11 +5,23 @@
 namespace VectorMath
 {
 	template<typename T, size_t num>
-	class VectorBase {};
+	class VectorBase 
+	{
+	};
+
+	template<typename T, size_t num>
+	class VectorComparable
+	{
+	public:
+		bool operator==(const VectorComparable& r) const
+		{
+			return memcmp(this, &r, sizeof(T) * num) == 0;
+		}
+	};
 
 	/* Vector 4 */
 	template<typename T>
-	class VectorBase<T, 4>
+	class VectorBase<T, 4> : public VectorComparable<T,4>
 	{
 	public:
 		T x, y, z, w;
@@ -114,7 +126,7 @@ namespace VectorMath
 	};
 	/* Vector 3 */
 	template<typename T>
-	class VectorBase<T, 3>
+	class VectorBase<T, 3> : public VectorComparable<T, 3>
 	{
 	public:
 		T x, y, z;
@@ -206,7 +218,7 @@ namespace VectorMath
 	};
 	/* Vector 2 */
 	template<typename T>
-	class VectorBase<T, 2>
+	class VectorBase<T, 2> : public VectorComparable<T, 2>
 	{
 	public:
 		T x, y;

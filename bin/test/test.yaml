@@ -1,0 +1,15 @@
+Name: Root
+Children:
+  - !LayoutBox
+    Layout: Horizontal
+    Anchor: {x: 0,y: 0}
+    AutoSize: true
+    Children:
+      - !Panel
+        Size: &panelSize {x: 200,y: 200}
+        Color: {r: 1,g: 0,b: 0}
+      - !Panel
+        Size: *panelSize
+        Color: {r: 1,g: 0,b: 0.5,a: 0.5}
+      - !Label
+        Text: Single line string
