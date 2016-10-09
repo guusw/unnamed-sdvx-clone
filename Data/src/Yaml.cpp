@@ -37,10 +37,12 @@ namespace Yaml
 	}
 	void Node::IncRef()
 	{
+		assert(m_ref >= 0);
 		m_ref++;
 	}
 	void Node::DecRef()
 	{
+		assert(m_ref > 0);
 		if(--m_ref == 0)
 			delete this;
 	}

@@ -30,7 +30,7 @@ public:
 	}
 	V& Add(const K& k, const V& v = V())
 	{
-		return FindOrAdd(k, v);
+		return FindOrAdd(k, v) = v;
 	}
 	
 	// Finds the value in the map or returns null

@@ -2,7 +2,7 @@ Name: Root
 Children:
   - !LayoutBox
     Layout: Horizontal
-    Anchor: {x: 0,y: 0}
+    Anchor: {x: 0,y: 0.5}
     AutoSize: true
     Children:
       - !Panel

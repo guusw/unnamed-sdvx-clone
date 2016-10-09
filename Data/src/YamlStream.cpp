@@ -14,6 +14,11 @@ namespace Yaml
 		*size_read = stream->Serialize(buffer, size);
 		return 1;
 	}
+	int WriteHandler(BinaryStream* stream, unsigned char *buffer, size_t size)
+	{
+		stream->Serialize(buffer, size);
+		return 1;
+	}
 
 	// Build structures
 	enum class NodeType
@@ -237,5 +242,134 @@ namespace Yaml
 		if(!parser.Parse(ret, stream))
 			return Ref<Node>();
 		return Ref<Node>(ret);
+	}
+
+	bool CollectEvents(Vector<yaml_event_t>& events, Node& node, NodeType hint = NodeType::Undefined)
+	{
+		yaml_event_t event = {};
+		String tagString = node.GetTag();
+		auto tag = tagString.empty() ? nullptr : (yaml_char_t*)*tagString;
+
+		if(hint == NodeType::Mapping)
+		{
+			if(!yaml_mapping_start_event_initialize(&event, nullptr, tag, tag ? 0 : 1, YAML_ANY_MAPPING_STYLE))
+				return false;
+			events.Add(event);
+
+			for(auto& inner : node.AsMapping())
+			{
+				if(!CollectEvents(events, *inner.key, NodeType::Scalar))
+					return false;
+				if(!CollectEvents(events, *inner.value, NodeType::Undefined))
+					return false;
+			}
+
+			memset(&event, 0, sizeof(yaml_event_t));
+			yaml_mapping_end_event_initialize(&event);
+			events.Add(event);
+		}
+		else if(hint == NodeType::Scalar)
+		{
+			String scalarString = node.AsScalar().ToString();
+			auto value = (yaml_char_t*)*scalarString;
+			if(!yaml_scalar_event_initialize(&event, nullptr, tag, value, (int)scalarString.size(), 
+				tag ? 0 : 1, tag ? 0 : 1, YAML_ANY_SCALAR_STYLE))
+				return false;
+			events.Add(event);
+		}
+		else if(hint == NodeType::Sequence)
+		{
+			if(!yaml_sequence_start_event_initialize(&event, nullptr, tag, tag ? 0 : 1, YAML_ANY_SEQUENCE_STYLE))
+				return false;
+			events.Add(event);
+
+			for(auto inner : node.AsSequence())
+			{
+				if(!CollectEvents(events, *inner, NodeType::Undefined))
+					return false;
+			}
+
+			memset(&event, 0, sizeof(yaml_event_t));
+			yaml_sequence_end_event_initialize(&event);
+			events.Add(event);
+		}
+		else if(hint == NodeType::Undefined)
+		{
+			if(node.IsMapping())
+			{
+				return CollectEvents(events, node, NodeType::Mapping);
+			}
+			else if(node.IsSequence())
+			{
+				return CollectEvents(events, node, NodeType::Sequence);
+			}
+			else if(node.IsScalar())
+			{
+				return CollectEvents(events, node, NodeType::Scalar);
+			}
+		}
+		return true;
+	}
+	bool YamlStream::Write(class BinaryStream& stream, Yaml::Node& rootNode)
+	{
+		yaml_emitter_t emitter;
+		Vector<yaml_event_t> events;
+		bool success = true;
+
+		yaml_emitter_initialize(&emitter);
+
+		// Setup the emitter to write to the stream
+		union
+		{
+			int(*myWriteHandler)(BinaryStream *data, unsigned char *buffer, size_t size);
+			yaml_write_handler_t* writeHandler;
+		};
+		myWriteHandler = WriteHandler;
+
+		yaml_emitter_set_output(&emitter, writeHandler, &stream);
+
+		yaml_event_t event;
+
+		// STREAM START
+		yaml_stream_start_event_initialize(&event, YAML_UTF8_ENCODING);
+		if(!yaml_emitter_emit(&emitter, &event))
+			goto _fail;
+		yaml_event_delete(&event);
+
+		// DOC START
+		yaml_document_start_event_initialize(&event, nullptr, nullptr, nullptr, 1);
+		if(!yaml_emitter_emit(&emitter, &event))
+			goto _fail;
+		yaml_event_delete(&event);
+
+		// Collect events
+		if(!CollectEvents(events, rootNode))
+			goto _fail;
+
+		for(auto& event : events)
+		{
+			yaml_emitter_emit(&emitter, &event);
+		}
+
+		// DOC END
+		yaml_document_end_event_initialize(&event, 1);
+		if(!yaml_emitter_emit(&emitter, &event))
+			goto _fail;
+		yaml_event_delete(&event);
+
+		yaml_stream_end_event_initialize(&event);
+		if(!yaml_emitter_emit(&emitter, &event))
+			goto _fail;
+		yaml_event_delete(&event);
+
+		goto _end;
+
+	_fail:
+		success = false;
+	_end:
+
+		// Cleanup emitter
+		yaml_emitter_delete(&emitter);
+		return success;
 	}
 }

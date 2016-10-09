@@ -34,8 +34,10 @@ namespace Yaml
 		SequenceIterator begin();
 		SequenceIterator end();
 
+		Node& operator[](size_t index);
+
 		uint32 GetSize() const;
-		Node* Get(uint32 index);
+		Node& Get(uint32 index);
 		void Remove(uint32 index);
 		void Add(Scalar&& scalar);
 		void Add(Node* object);

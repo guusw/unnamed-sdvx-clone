@@ -18,6 +18,25 @@ namespace Data
 				return false;
 			Sequence& sequence = data.AsSequence();
 
+			return Deserialize(sequence, vec);
+		}
+		virtual bool Serialize(const void* object, Node*& data) override
+		{
+			VectorType& vec = *(VectorType*)object;
+
+			Sequence* sequence = new Yaml::Sequence();
+			data = sequence;
+			
+			if(!Serialize(vec, *sequence))
+			{
+				delete sequence;
+				return false;
+			}
+			return true;
+		}
+
+		virtual bool Deserialize(Sequence& sequence, VectorType& vec)
+		{
 			ITypeSerializer* innerTypeSerializer = Serializer::Find<T>();
 			if(!innerTypeSerializer)
 				return false;
@@ -34,17 +53,11 @@ namespace Data
 
 			return true;
 		}
-		virtual bool Serialize(const void* object, Node*& data) override
+		virtual bool Serialize(const VectorType& vec, Sequence& sequence)
 		{
-			VectorType& vec = *(VectorType*)object;
-
-			Sequence* sequence = new Yaml::Sequence();
-			data = sequence;
-
 			ITypeSerializer* innerTypeSerializer = Serializer::Find<T>();
 			if(!innerTypeSerializer)
 			{
-				delete sequence;
 				return false;
 			}
 
@@ -53,10 +66,9 @@ namespace Data
 				Node* elementNode;
 				if(!innerTypeSerializer->Serialize(&item, elementNode))
 				{
-					delete sequence;
 					return false;
 				}
-				sequence->Add(elementNode);
+				sequence.Add(elementNode);
 			}
 
 			return true;
@@ -76,8 +88,27 @@ namespace Data
 			// Should be a mapping
 			if(!data.IsMapping())
 				return false;
-			Mapping& mapping = data.AsMapping();
 
+			return Deserialize(data.AsMapping(), map);
+		}
+		virtual bool Serialize(const void* object, Node*& data) override
+		{
+			MapType& map = *(MapType*)object;
+
+			// Create new mapping
+			Mapping* mapping = new Yaml::Mapping();
+			data = mapping;
+
+			if(!Serialize(map, *mapping))
+			{
+				delete mapping;
+				return false;
+			}
+			return true;
+		}
+
+		virtual bool Deserialize(Mapping& mapping, MapType& map)
+		{
 			ITypeSerializer* keySerializer = Serializer::Find<K>();
 			ITypeSerializer* valueSerializer = Serializer::Find<V>();
 			if(!keySerializer || !valueSerializer)
@@ -98,18 +129,12 @@ namespace Data
 
 			return true;
 		}
-		virtual bool Serialize(const void* object, Node*& data) override
+		virtual bool Serialize(const MapType& map, Mapping& mapping)
 		{
-			MapType& map = *(MapType*)object;
-
-			Mapping* mapping = new Mapping();
-			data = mapping;
-
 			ITypeSerializer* keySerializer = Serializer::Find<K>();
 			ITypeSerializer* valueSerializer = Serializer::Find<V>();
 			if(!keySerializer || !valueSerializer)
 			{
-				delete mapping;
 				return false;
 			}
 
@@ -119,16 +144,14 @@ namespace Data
 				Node* valueNode;
 				if(!keySerializer->Serialize(&item.first, keyNode) || !keyNode->IsScalar())
 				{
-					delete mapping;
 					return false;
 				}
 				if(!valueSerializer->Serialize(&item.second, valueNode))
 				{
-					delete mapping;
 					delete keyNode;
 					return false;
 				}
-				mapping->Add((Scalar*)keyNode, valueNode);
+				mapping.Add((Scalar*)keyNode, valueNode);
 			}
 
 			return true;

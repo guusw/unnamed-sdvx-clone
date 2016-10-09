@@ -27,7 +27,9 @@ namespace Data
 		for(auto member : m_members)
 		{
 			uint8* memberData = objectData + member->offset;
-			ITypeSerializer* memberSerializer = Serializer::Find(member->type);
+
+			ITypeSerializer* memberSerializer = member->customSerializer ?
+				member->customSerializer : Serializer::Find(member->type);
 			if(!memberSerializer)
 			{
 				return false; // TODO: log a useful error message
@@ -50,7 +52,9 @@ namespace Data
 			if(child)
 			{
 				uint8* memberData = objectData + member->offset;
-				ITypeSerializer* memberSerializer = Serializer::Find(member->type);
+
+				ITypeSerializer* memberSerializer = member->customSerializer ? 
+					member->customSerializer : Serializer::Find(member->type);
 				if(!memberSerializer)
 				{
 					return false; // TODO: log a useful error message
@@ -61,6 +65,7 @@ namespace Data
 		}
 		return true;
 	}
+
 	void ClassSerializerBase::AddMember(const String& name, const type_info& type, uint32 offset, Action<uint8*> defaultInitializer)
 	{
 		// Check if name is not already mapped 
@@ -71,6 +76,22 @@ namespace Data
 		newMember->id = (uint32)m_members.size();
 		newMember->offset = offset;
 		newMember->name = name;
+		newMember->defaultInitializer = std::move(defaultInitializer);
+
+		// Register
+		m_members.Add(newMember);
+		m_membersByName.Add(name, newMember);
+	}
+	void ClassSerializerBase::AddMember(const String& name, uint32 offset, ITypeSerializer* customSerializer, Action<uint8*> defaultInitializer)
+	{
+		// Check if name is not already mapped 
+		assert(!m_membersByName.Contains(name));
+
+		Member* newMember = new Member();
+		newMember->id = (uint32)m_members.size();
+		newMember->offset = offset;
+		newMember->name = name;
+		newMember->customSerializer = customSerializer;
 		newMember->defaultInitializer = std::move(defaultInitializer);
 
 		// Register

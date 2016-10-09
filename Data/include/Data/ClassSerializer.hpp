@@ -22,6 +22,7 @@ namespace Data
 		// Adds a data member to serialize
 		// must pass the type_info of the type and it's offset in this class
 		void AddMember(const String& name, const type_info& type, uint32 offset, Action<uint8*> defaultInitializer = Action<uint8*>());
+		void AddMember(const String& name, uint32 offset, ITypeSerializer* customSerializer, Action<uint8*> defaultInitializer = Action<uint8*>());
 
 	protected:
 		struct Member
@@ -36,6 +37,8 @@ namespace Data
 			uint32 id;
 			// The default initializer
 			Action<uint8*> defaultInitializer;
+			// Serializer for custom members
+			ITypeSerializer* customSerializer;
 		};
 
 		Vector<Member*> m_members;
@@ -51,7 +54,7 @@ namespace Data
 	{
 	public:
 		typedef ClassSerializer<T> Base;
-		typedef T ClassType;
+		typedef T SerializedType;
 
 		virtual bool Deserialize(Mapping& map, void* object) override
 		{
@@ -113,7 +116,7 @@ namespace Data
 
 #define RegisterSerializer(__serializerType)\
 static Data::RegisterSerializerHelper* CONCAT(__rsh, __LINE__) = \
-	new Data::RegisterSerializerHelper(typeid(__serializerType::ClassType), new __serializerType());
-#define UseListSerializer()
-#define RegisterClassMember(__member) AddMember(STRINGIFY(__member), typeid(CONCAT(ClassType,CONCAT(::, __member))), offsetof(ClassType, __member));
-#define RegisterClassMemberNamed(__name, __member) AddMember(__name, typeid(CONCAT(ClassType,CONCAT(::, __member))), offsetof(ClassType, __member));
+	new Data::RegisterSerializerHelper(typeid(__serializerType::SerializedType), new __serializerType());
+#define RegisterClassMember(__member) AddMember(STRINGIFY(__member), typeid(CONCAT(SerializedType,CONCAT(::, __member))), offsetof(SerializedType, __member));
+#define RegisterClassMemberCustomSerializer(__name, __member, __serializer)  AddMember(__name, offsetof(SerializedType, __member), __serializer);
+#define RegisterClassMemberNamed(__name, __member) AddMember(__name, typeid(CONCAT(SerializedType,CONCAT(::, __member))), offsetof(SerializedType, __member));

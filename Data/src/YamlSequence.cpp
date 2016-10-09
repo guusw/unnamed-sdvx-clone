@@ -59,10 +59,14 @@ namespace Yaml
 	{
 		return { m_items.end(), m_items.end() };
 	}
-	Yaml::Node* Sequence::Get(uint32 index)
+	Yaml::Node& Sequence::operator[](size_t index)
+	{
+		return Get((uint32)index);
+	}
+	Yaml::Node& Sequence::Get(uint32 index)
 	{
 		assert(index < m_items.size());
-		return m_items[index];
+		return *m_items[index];
 	}
 	void Sequence::Remove(uint32 index)
 	{
@@ -77,6 +81,7 @@ namespace Yaml
 	}
 	void Sequence::Add(Node* object)
 	{
+		object->IncRef();
 		m_items.push_back(object);
 	}
 	uint32 Sequence::GetSize() const

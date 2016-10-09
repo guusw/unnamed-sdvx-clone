@@ -37,7 +37,7 @@ public:
 		else
 			m_binding = nullptr;
 	}
-	Action& operator=(Action& other)
+	Action& operator=(const Action& other)
 	{
 		Clear();
 		if(other.m_binding)
