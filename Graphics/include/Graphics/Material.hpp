@@ -77,6 +77,8 @@ namespace Graphics
 		static Ref<MaterialRes> Create(class OpenGL* gl);
 		// Create a material that has both a vertex and fragment shader
 		static Ref<MaterialRes> Create(class OpenGL* gl, const String& vsPath, const String& fsPath);
+		// Create a material that has a vertex, fragment and  geometry shader
+		static Ref<MaterialRes> Create(class OpenGL* gl, const String& vsPath, const String& gsPath, const String& fsPath);
 
 		bool opaque = true;
 		MaterialBlendMode blendMode = MaterialBlendMode::Normal;

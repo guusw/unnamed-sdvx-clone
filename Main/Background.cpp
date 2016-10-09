@@ -42,7 +42,7 @@ class TestBackground : public FullscreenBackground
 		if(!FullscreenBackground::Init())
 			return false;
 
-		CheckedLoad(fullscreenMaterial = g_application->LoadMaterial("background"));
+		CheckedLoad(fullscreenMaterial = g_application->LoadMaterial("background", "background"));
 
 		return true;
 	}

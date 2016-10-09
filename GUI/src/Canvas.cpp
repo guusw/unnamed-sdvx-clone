@@ -83,30 +83,49 @@ void Canvas::m_SortChildren()
 		return l->GetZOrder() < r->GetZOrder();
 	});
 }
+Vector2 Canvas::GetDesiredSize(GUIRenderData rd)
+{
+	Vector2 sizeOut = Vector2(0, 0);
+	for(auto s : m_children)
+	{
+		Vector2 elemSize = s->GetDesiredSize(rd);
+		sizeOut.x = Math::Max(sizeOut.x, elemSize.x);
+		sizeOut.y = Math::Max(sizeOut.y, elemSize.y);
+	}
+	return sizeOut;
+}
 
 void Canvas::Slot::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 {
 	// Apply anchor and offset to get the canvas rectangle
 	rd.area = anchor.Apply(rd.area);
 	
-	// Perform auto-sizing
+	// Fixed size mode
+	if(size != Vector2::Zero)
 	{
-		Vector2 size = GetDesiredSize(rd);
-		Rect autoSized = ApplyAlignment(alignment, Rect(Vector2(), size), rd.area);
-		if(autoSizeX)
+		rd.area = ApplyAlignment(alignment, Rect(Vector2(), size), rd.area);
+	}
+	else
+	{
+		// Perform auto-sizing
 		{
-			rd.area.pos.x = autoSized.pos.x;
-			rd.area.size.x = autoSized.size.x;
-		}
-		if(autoSizeY)
-		{
-			rd.area.pos.y = autoSized.pos.y;
-			rd.area.size.y = autoSized.size.y;
+			Vector2 desiredSize = GetDesiredSize(rd) + offset.size;
+			Rect autoSized = ApplyAlignment(alignment, Rect(Vector2(), desiredSize), rd.area);
+			if(autoSizeX)
+			{
+				rd.area.pos.x = autoSized.pos.x;
+				rd.area.size.x = autoSized.size.x;
+			}
+			if(autoSizeY)
+			{
+				rd.area.pos.y = autoSized.pos.y;
+				rd.area.size.y = autoSized.size.y;
+			}
 		}
 	}
 
-	rd.area.pos += offset.pos;
 	rd.area.size += offset.size;
+	rd.area.pos += offset.pos;
 
 	// Apply padding
 	rd.area = padding.Apply(rd.area);
@@ -124,16 +143,4 @@ void Canvas::Slot::Render(GUIRenderData rd)
 	element->Render(rd);
 	if(!allowOverflow)
 		rd.guiRenderer->PopScissorRect();
-}
-
-Vector2 Canvas::GetDesiredSize(GUIRenderData rd)
-{
-	Vector2 sizeOut = Vector2(0, 0);
-	for(auto s : m_children)
-	{
-		Vector2 elemSize = s->GetDesiredSize(rd);
-		sizeOut.x = Math::Max(sizeOut.x, elemSize.x);
-		sizeOut.y = Math::Max(sizeOut.y, elemSize.y);
-	}
-	return sizeOut;
 }

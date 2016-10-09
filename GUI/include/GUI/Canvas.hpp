@@ -24,6 +24,9 @@ public:
 		// Offset from anchored position
 		Rect offset;
 
+		// Fixed Size override, set to (0,0) to ignore
+		Vector2 size;
+
 		// if set to true, the size of the child element will be used instead
 		bool autoSizeX = false;
 		bool autoSizeY = false;

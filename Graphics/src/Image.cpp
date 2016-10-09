@@ -61,16 +61,25 @@ namespace Graphics
 	}
 	Image ImageRes::Create(const String& assetPath)
 	{
+		// Use normalized path for resource manager
+		String normalizedPath = Path::Normalize(Path::Absolute(assetPath));
+
+		auto& resMgr = GetResourceManager<ResourceType::Image>();
+		auto loadedResource = resMgr.Find(normalizedPath);
+		if(loadedResource)
+			return loadedResource;
+
 		Image_Impl* pImpl = new Image_Impl();
 		if(ImageLoader::Load(pImpl, assetPath))
 		{
-			return GetResourceManager<ResourceType::Image>().Register(pImpl);
+			return resMgr.Register(pImpl, normalizedPath);
 		}
 		else
 		{
 			delete pImpl;
 			pImpl = nullptr;
 		}
+
 		return Image();
 	}
 }

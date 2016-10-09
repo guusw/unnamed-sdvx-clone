@@ -517,20 +517,12 @@ Texture Application::LoadTexture(const String& name)
 	Texture ret = TextureRes::Create(g_gl, LoadImage(name));
 	return ret;
 }
-Material Application::LoadMaterial(const String& name)
+Material Application::LoadMaterial(const String& vs, const String& fs, const String& gs)
 {
-	String pathV = String("shaders/") + name + ".vs";
-	String pathF = String("shaders/") + name + ".fs";
-	String pathG = String("shaders/") + name + ".gs";
-	Material ret = MaterialRes::Create(g_gl, pathV, pathF);
-	// Additionally load geometry shader
-	if(Path::FileExists(pathG))
-	{
-		Shader gshader = ShaderRes::Create(g_gl, ShaderType::Geometry, pathG);
-		assert(gshader);
-		ret->AssignShader(ShaderType::Geometry, gshader);
-	}
-	assert(ret);
+	String pathV = String("shaders/") + vs + ".vs";
+	String pathF = String("shaders/") + fs + ".fs";
+	String pathG = (!gs.empty()) ? (String("shaders/") + gs + ".gs") : String();
+	Material ret = MaterialRes::Create(g_gl, pathV, pathG, pathF);
 	return ret;
 }
 Sample Application::LoadSample(const String& name)

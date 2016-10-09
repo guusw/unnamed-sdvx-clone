@@ -227,7 +227,7 @@ public:
 
 		// Load particle material
 		m_particleSystem = ParticleSystemRes::Create(g_gl);
-		CheckedLoad(particleMaterial = g_application->LoadMaterial("particle"));
+		CheckedLoad(particleMaterial = g_application->LoadMaterial("particle", "particle", "particle"));
 		particleMaterial->blendMode = MaterialBlendMode::Additive;
 		particleMaterial->opaque = false;
 
@@ -460,7 +460,7 @@ public:
 			loader.AddTexture(m_scoringGauge->fillTexture, "gauge_fill.png");
 			loader.AddTexture(m_scoringGauge->frameTexture, "gauge_frame.png");
 			loader.AddTexture(m_scoringGauge->bgTexture, "gauge_bg.png");
-			loader.AddMaterial(m_scoringGauge->fillMaterial, "gauge");
+			loader.AddMaterial(m_scoringGauge->fillMaterial, "position_texture_wp", "gauge");
 			m_scoringGauge->barMargin = Margin(36, 34, 33, 34);
 
 			Canvas::Slot* slot = m_canvas->Add(m_scoringGauge.As<GUIElementBase>());

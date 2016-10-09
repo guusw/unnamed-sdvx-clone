@@ -89,7 +89,7 @@ namespace Graphics
 
 			uint32 handle = shader->Handle();
 
-			Logf("Listing shader uniforms for %s", Logger::Info, shader->GetOriginalName());
+			//Logf("Listing shader uniforms for %s", Logger::Info, shader->GetOriginalName());
 			int32 numUniforms;
 			glGetProgramiv(handle, GL_ACTIVE_UNIFORMS, &numUniforms);
 			for(int32 i = 0; i < numUniforms; i++)
@@ -146,8 +146,8 @@ namespace Graphics
 
 				BoundParameterInfo& param = m_boundParameters.FindOrAdd(targetID).Add(BoundParameterInfo(t, type, loc));
 
-				Logf("Uniform [%d, loc=%d, %s] = %s", Logger::Info,
-					i, loc, Utility::Sprintf("Unknown [%d]", type), name);
+				//Logf("Uniform [%d, loc=%d, %s] = %s", Logger::Info,
+				//	i, loc, Utility::Sprintf("Unknown [%d]", type), name);
 			}
 
 			glUseProgramStages(m_pipeline, shaderStageMap[(size_t)t], shader->Handle());
@@ -354,26 +354,47 @@ namespace Graphics
 	}
 	Material MaterialRes::Create(OpenGL* gl, const String& vsPath, const String& fsPath)
 	{
+		return Create(gl, vsPath, String(), fsPath);
+	}
+	Material MaterialRes::Create(class OpenGL* gl, const String& vsPath, const String& gsPath, const String& fsPath)
+	{
 		Material_Impl* impl = new Material_Impl(gl);
-		impl->AssignShader(ShaderType::Vertex, ShaderRes::Create(gl, ShaderType::Vertex, vsPath));
-		impl->AssignShader(ShaderType::Fragment, ShaderRes::Create(gl, ShaderType::Fragment, fsPath));
-#if _DEBUG
-		impl->m_debugNames[(size_t)ShaderType::Vertex] = vsPath;
-		impl->m_debugNames[(size_t)ShaderType::Fragment] = fsPath;
-#endif
-
-		if(!impl->m_shaders[(size_t)ShaderType::Vertex])
+		Shader vs = ShaderRes::Create(gl, ShaderType::Vertex, vsPath);
+		if(!vs)
 		{
 			Logf("Failed to load vertex shader for material from %s", Logger::Error, vsPath);
 			delete impl;
 			return Material();
 		}
-		if(!impl->m_shaders[(size_t)ShaderType::Fragment])
+		impl->AssignShader(ShaderType::Vertex, vs);
+
+		Shader fs = ShaderRes::Create(gl, ShaderType::Fragment, fsPath);
+		if(!fs)
 		{
 			Logf("Failed to load fragment shader for material from %s", Logger::Error, fsPath);
 			delete impl;
 			return Material();
 		}
+		impl->AssignShader(ShaderType::Fragment, fs);
+
+		if(!gsPath.empty())
+		{
+			Shader gs = ShaderRes::Create(gl, ShaderType::Geometry, gsPath);
+			if(!gs)
+			{
+				Logf("Failed to load geometry shader for material from %s", Logger::Error, gsPath);
+				delete impl;
+				return Material();
+			}
+			impl->AssignShader(ShaderType::Geometry, gs);
+		}
+
+#if _DEBUG
+		impl->m_debugNames[(size_t)ShaderType::Vertex] = vsPath;
+		impl->m_debugNames[(size_t)ShaderType::Fragment] = fsPath;
+		if(!gsPath.empty())
+			impl->m_debugNames[(size_t)ShaderType::Geometry] = gsPath;
+#endif
 
 		return GetResourceManager<ResourceType::Material>().Register(impl);
 	}

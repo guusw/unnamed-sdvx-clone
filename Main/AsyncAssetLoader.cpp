@@ -45,9 +45,13 @@ struct AsyncMeshLoadOperation : public AsyncLoadOperation
 struct AsyncMaterialLoadOperation : public AsyncLoadOperation
 {
 	Material& target;
-	AsyncMaterialLoadOperation(Material& target, const String& path) : target(target)
+	String vs, fs, gs;
+	AsyncMaterialLoadOperation(Material& target, const String& vs, const String& fs, const String& gs) : target(target)
 	{
-		name = path;
+		this->vs = vs;
+		this->fs = fs;
+		this->gs = gs;
+		name = "Material";
 	}
 	bool AsyncLoad()
 	{
@@ -55,7 +59,7 @@ struct AsyncMaterialLoadOperation : public AsyncLoadOperation
 	}
 	bool AsyncFinalize()
 	{
-		return (target = g_application->LoadMaterial(name)).IsValid();
+		return (target = g_application->LoadMaterial(vs, fs, gs)).IsValid();
 	}
 };
 struct AsyncWrapperOperation : public AsyncLoadOperation
@@ -105,9 +109,9 @@ void AsyncAssetLoader::AddMesh(Mesh& out, const String& path)
 {
 	m_impl->loadables.Add(new AsyncMeshLoadOperation(out, path));
 }
-void AsyncAssetLoader::AddMaterial(Material& out, const String& path)
+void AsyncAssetLoader::AddMaterial(Material& out, const String& vs, const String& fs, const String& gs)
 {
-	m_impl->loadables.Add(new AsyncMaterialLoadOperation(out, path));
+	m_impl->loadables.Add(new AsyncMaterialLoadOperation(out, vs, fs, gs));
 }
 void AsyncAssetLoader::AddLoadable(IAsyncLoadable& loadable, const String& id /*= "unknown"*/)
 {

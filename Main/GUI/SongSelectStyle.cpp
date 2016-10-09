@@ -34,7 +34,7 @@ SongSelectStyle::SongSelectStyle(Application* application)
 		diffFrames[i] = application->LoadTexture(diffTextures[i]);
 		diffFrames[i]->SetWrap(TextureWrap::Clamp, TextureWrap::Clamp);
 	}
-	diffFrameMaterial = application->LoadMaterial("diffFrame");
+	diffFrameMaterial = application->LoadMaterial("position_texture_wp_uvflip", "diff_frame");
 	diffFrameMaterial->opaque = false;
 }
 SongSelectStyle::~SongSelectStyle()

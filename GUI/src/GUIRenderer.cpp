@@ -19,28 +19,14 @@ bool GUIRenderer::Init(class OpenGL* gl, class Graphics::Window* window)
 	// Font
 	CheckedLoad(font = FontRes::Create(gl, "fonts/segoeui.ttf"));
 
-	auto LoadMaterial = [&](const String& name)
-	{
-		String basePath = String("shaders/");
-		String vs = Path::Normalize(basePath + name + ".vs");
-		String fs = Path::Normalize(basePath + name + ".fs");
-		String gs = Path::Normalize(basePath + name + ".gs");
-		Material ret = MaterialRes::Create(gl, vs, fs);
-		if(ret && Path::FileExists(gs))
-		{
-			ret->AssignShader(ShaderType::Geometry, Graphics::ShaderRes::Create(m_gl, ShaderType::Geometry, gs));
-		}
-		return ret;
-	};
-
 	// Load GUI shaders
-	CheckedLoad(fontMaterial = LoadMaterial("font"));
+	CheckedLoad(fontMaterial = MaterialRes::Create(m_gl, "shaders/position_texture_wp.vs", "shaders/font.fs"));
 	fontMaterial->opaque = false;
-	CheckedLoad(textureMaterial = LoadMaterial("guiTex"));
+	CheckedLoad(textureMaterial = MaterialRes::Create(m_gl, "shaders/position_texture_wp_uvflip.vs", "shaders/texture_colored.fs"));
 	textureMaterial->opaque = false;
-	CheckedLoad(colorMaterial = LoadMaterial("guiColor"));
+	CheckedLoad(colorMaterial = MaterialRes::Create(m_gl, "shaders/position_texture_wp_uvflip.vs", "shaders/colored.fs"));
 	colorMaterial->opaque = false;
-	CheckedLoad(buttonMaterial = LoadMaterial("guiButton"));
+	CheckedLoad(buttonMaterial = MaterialRes::Create(m_gl, "shaders/position_passthrough.vs", "shaders/gui_button.gs", "shaders/texture_colored.fs"));
 	buttonMaterial->opaque = false;
 
 	guiQuad = MeshGenerators::Quad(m_gl, Vector2(0, 0), Vector2(1, 1));

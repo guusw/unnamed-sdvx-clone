@@ -100,6 +100,8 @@ namespace Graphics
 			m_lwt = in.GetLastWriteTime();
 			SetupChangeHandler();
 #endif
+
+			Logf("Loaded shader: %s", Logger::Info, m_sourcePath);
 			return true;
 		}
 		bool UpdateHotReload()
@@ -214,6 +216,14 @@ namespace Graphics
 
 	Shader ShaderRes::Create(class OpenGL* gl, ShaderType type, const String& assetPath)
 	{
+		// Use normalized path for resource manager
+		String normalizedPath = Path::Normalize(Path::Absolute(assetPath));
+
+		auto& resMgr = GetResourceManager<ResourceType::Shader>();
+		auto loadedResource = resMgr.Find(normalizedPath);
+		if(loadedResource)
+			return loadedResource;
+
 		Shader_Impl* pImpl = new Shader_Impl(gl);
 		if(!pImpl->Init(type, assetPath))
 		{
@@ -222,7 +232,7 @@ namespace Graphics
 		}
 		else
 		{
-			return GetResourceManager<ResourceType::Shader>().Register(pImpl);
+			return resMgr.Register(pImpl, normalizedPath);
 		}
 	}
 	void ShaderRes::Unbind(class OpenGL* gl, ShaderType type)

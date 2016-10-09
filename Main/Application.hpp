@@ -44,9 +44,12 @@ public:
 #ifdef LoadImage
 #undef LoadImage
 #endif
+	// Loads an image from the 'textures' folder
 	Image LoadImage(const String& name);
+	// Loads a texture from the 'textures' folder
 	Texture LoadTexture(const String& name);
-	Material LoadMaterial(const String& name);
+	// Loads a material from shaders in the 'shaders' folder
+	Material LoadMaterial(const String& vs, const String& fs, const String& gs = String());
 	Sample LoadSample(const String& name);
 
 	float GetAppTime() const { return m_lastRenderTime; }

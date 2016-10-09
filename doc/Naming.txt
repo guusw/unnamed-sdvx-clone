@@ -1,0 +1,82 @@
+Code naming convention:
+	class and struct names:		UpperCamelCase
+	pimpl classes:				UpperCamelCase_Impl
+	interface classes:			IUpperCamelCase
+	base classes:				UpperCamelCaseBase
+	
+	public functions:			UpperCamelCase()
+	private functions:			m_UpperCamelCase()
+	protected functions:		m_UpperCamelCase()
+	
+	public class members:		lowerCamelCase
+	private class members:		m_lowerCamelCase
+	protected class members:	m_lowerCamelCase
+	
+	argument names:				lowerCamelCase
+	local variables:			lowerCamelCase
+	global variables:			g_lowerCamelCase
+	
+	
+	Don't use hungarian notation for any variable names
+	using something like 'objectPtr' for pointers is okay when you also have another object called 'object'
+	
+Other coding style things:
+	Conditionals:
+		if(value == 1)
+		{
+			// Code...
+		}
+		if(value == 2)
+			// Single Line Code...
+		int a = pointer ? 0 : pointer->a;
+	Loops:
+		for(int i = 0; i < 10; i++)
+		{
+			// Code
+		}
+	Class member ordering:
+		class Test : public Base
+		{
+		public:
+			// Static create functions go separately for clarity
+			static Test* Create();
+		
+		public:
+			Test();
+			~Test();
+			
+			Call();
+			Call1();
+			
+		protected:
+			virtual void m_VirtualProtectedFunction();
+			
+		private:
+			float m_myFloat;
+		}
+	Overriding base class members:
+		// Use override and virtual keyword when overiding something
+		virtual void OverridingBaseClassFunction() override;
+	
+Asset naming convention:
+	- Naming should describe the asset
+	- Keep it as short as possible, use sub-folders to avoid repeating words.
+
+	- Internal asset references should use '/' as a path separator on all OS'es
+	
+	- Lower case naming convention for both filename and extension
+		Separate multiple words using underscores(_)
+		
+		Examples:
+			shaders/background.vs
+			shaders/position_texture_wp.vs
+			
+			textures/ui/vslider_button.png
+	
+	- Default types and extensions for common asset types:
+		Audio Samples: 		.wav (44100kHz, 16-bit)
+		Music:				.ogg (44100kHz, 16-bit)
+		Textures:			.png (RGBA, 8-bit)
+		Vertex Shader		.vs (glsl)
+		Geometry Shader		.gs (glsl)
+		Fragment Shader		.fs (glsl)

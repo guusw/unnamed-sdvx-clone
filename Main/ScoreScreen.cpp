@@ -163,7 +163,7 @@ public:
 			loader.AddTexture(m_gauge->fillTexture, "gauge_fill.png");
 			loader.AddTexture(m_gauge->frameTexture, "gauge_frame.png");
 			loader.AddTexture(m_gauge->bgTexture, "gauge_bg.png");
-			loader.AddMaterial(m_gauge->fillMaterial, "gauge");
+			loader.AddMaterial(m_gauge->fillMaterial, "position_texture_wp_uvflip", "gauge");
 			m_gauge->barMargin = Margin(36, 34, 33, 34);
 			m_gauge->rate = m_finalGaugeValue;
 			{

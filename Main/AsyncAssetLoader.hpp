@@ -17,7 +17,7 @@ public:
 	// Add a mesh to be loaded
 	void AddMesh(Mesh& out, const String& path);
 	// Add a mesh to be loaded
-	void AddMaterial(Material& out, const String& path);
+	void AddMaterial(Material& out, const String& vs, const String& fs, const String& gs = String());
 	// Add a loadable to be loaded, additionaly with a name so it can be identified in logs if it fails loading
 	void AddLoadable(IAsyncLoadable& loadable, const String& id = "unknown");
 

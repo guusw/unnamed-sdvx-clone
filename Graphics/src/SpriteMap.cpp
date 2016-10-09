@@ -53,7 +53,8 @@ namespace Graphics
 			m_widths.clear();
 			m_categoryByWidth.clear();
 			m_usedSize = 0;
-			m_image->SetSize(Vector2i(0));
+			if(m_image)
+				m_image->SetSize(Vector2i(0));
 		}
 
 		virtual Vector2i GetSize() const

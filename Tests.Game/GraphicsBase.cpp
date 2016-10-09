@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "GraphicsBase.hpp"
+#include "Graphics/ResourceManagers.hpp"
 
 GraphicsTestBase::~GraphicsTestBase()
 {
@@ -30,6 +31,9 @@ bool GraphicsTestBase::Run()
 		float dt = t.SecondsAsFloat();
 		t.Restart();
 		Render(dt);
+
+		// Garbage collect resources
+		ResourceManagers::TickAll();
 	}
 
 	return true;

@@ -84,11 +84,11 @@ bool Track::AsyncLoad()
 	loader->AddTexture(comboSpriteSheet, "combo.png");
 
 	// Track materials
-	loader->AddMaterial(trackMaterial, "track");
-	loader->AddMaterial(spriteMaterial, "sprite"); // General purpose material
-	loader->AddMaterial(holdButtonMaterial, "holdbutton");
-	loader->AddMaterial(laserMaterial, "laser");
-	loader->AddMaterial(trackOverlay, "overlay");
+	loader->AddMaterial(trackMaterial, "position_texture_wvp_uvflip", "texture");
+	loader->AddMaterial(spriteMaterial, "position_texture_wvp", "texture_colored"); // General purpose material
+	loader->AddMaterial(holdButtonMaterial, "position_texture_wvp", "hold_button");
+	loader->AddMaterial(laserMaterial, "position_texture_wvp", "laser");
+	loader->AddMaterial(trackOverlay, "position_texture_wvp_uvflip", "texture_colored");
 
 	return loader->Load();
 }

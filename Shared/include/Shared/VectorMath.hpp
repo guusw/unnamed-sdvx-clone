@@ -17,6 +17,10 @@ namespace VectorMath
 		{
 			return memcmp(this, &r, sizeof(T) * num) == 0;
 		}
+		bool operator!=(const VectorComparable& r) const
+		{
+			return !(*this == r);
+		}
 	};
 
 	/* Vector 4 */
@@ -123,7 +127,10 @@ namespace VectorMath
 		T Length() const;
 		T LengthSquared() const;
 		VectorBase Normalized() const;
+
+		static VectorBase<T, 4> Zero;
 	};
+
 	/* Vector 3 */
 	template<typename T>
 	class VectorBase<T, 3> : public VectorComparable<T, 3>
@@ -215,7 +222,10 @@ namespace VectorMath
 		T Length() const;
 		T LengthSquared() const;
 		VectorBase Normalized() const;
+
+		static VectorBase<T, 3> Zero;
 	};
+
 	/* Vector 2 */
 	template<typename T>
 	class VectorBase<T, 2> : public VectorComparable<T, 2>
@@ -296,6 +306,8 @@ namespace VectorMath
 		T Length() const;
 		T LengthSquared() const;
 		VectorBase Normalized() const;
+
+		static VectorBase<T, 2> Zero;
 	};
 
 	// Dot product implementations
@@ -305,9 +317,9 @@ namespace VectorMath
 		static_assert(sizeof(T) == 0, "Invalid vector types for dot product");
 	};
 	template<typename T>
-	static T Dot(const VectorBase<T, 2>& lhs, const VectorBase<T, 2>& rhs)
+	static T Dot(const VectorBase<T, 4>& lhs, const VectorBase<T, 4>& rhs)
 	{
-		return lhs.x * rhs.x + lhs.y * rhs.y;
+		return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
 	}
 	template<typename T>
 	static T Dot(const VectorBase<T, 3>& lhs, const VectorBase<T, 3>& rhs)
@@ -315,9 +327,9 @@ namespace VectorMath
 		return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 	}
 	template<typename T>
-	static T Dot(const VectorBase<T, 4>& lhs, const VectorBase<T, 4>& rhs)
+	static T Dot(const VectorBase<T, 2>& lhs, const VectorBase<T, 2>& rhs)
 	{
-		return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
+		return lhs.x * rhs.x + lhs.y * rhs.y;
 	}
 
 	// Cross product implementation
@@ -407,6 +419,14 @@ namespace VectorMath
 		return Normalize(*this);
 	}
 
+	// Zero
+	template<typename T>
+	VectorMath::VectorBase<T, 4> VectorBase<T, 4>::Zero = VectorBase<T, 4>();
+	template<typename T>
+	VectorMath::VectorBase<T, 3> VectorBase<T, 3>::Zero = VectorBase<T, 3>();
+	template<typename T>
+	VectorMath::VectorBase<T, 2> VectorBase<T, 2>::Zero = VectorBase<T, 2>();
+
 	// Vector lerp
 	template<typename T, size_t Num>
 	VectorBase<T, Num> Lerp(const VectorBase<T, Num>& a, const VectorBase<T, Num>& b, float pos)
@@ -416,9 +436,9 @@ namespace VectorMath
 	}
 }
 
-typedef VectorMath::VectorBase<float, 2> Vector2;
-typedef VectorMath::VectorBase<int32, 2> Vector2i;
-typedef VectorMath::VectorBase<float, 3> Vector3;
-typedef VectorMath::VectorBase<int32, 3> Vector3i;
 typedef VectorMath::VectorBase<float, 4> Vector4;
 typedef VectorMath::VectorBase<int32, 4> Vector4i;
+typedef VectorMath::VectorBase<float, 3> Vector3;
+typedef VectorMath::VectorBase<int32, 3> Vector3i;
+typedef VectorMath::VectorBase<float, 2> Vector2;
+typedef VectorMath::VectorBase<int32, 2> Vector2i;

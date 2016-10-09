@@ -17,8 +17,7 @@ public:
 		auto slot = canvas->Add(test.As<GUIElementBase>());
 		slot->anchor = Anchor(0.5f);
 		slot->alignment = Vector2(0.5f);
-		slot->offset.size = Vector2(100.0f);
-		slot->offset.pos = Vector2(-50.0f);
+		slot->size = Vector2(100);
 
 	}
 	virtual void Render(float deltaTime) override

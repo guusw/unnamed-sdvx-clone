@@ -20,6 +20,8 @@ namespace Graphics
 	}
 	ResourceManagers::~ResourceManagers()
 	{
+		DestroyResourceManager<ResourceType::Image>();
+		DestroyResourceManager<ResourceType::SpriteMap>();
 		for(size_t i = 0; i < (size_t)ResourceType::_Length; i++)
 		{
 			if(managers[i])

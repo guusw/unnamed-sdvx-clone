@@ -21,6 +21,9 @@ endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 # All projects use unicode define
 #	this is mainly for windows functions either being defined to call A or W prefixed functions
 add_definitions(-DUNICODE -D_UNICODE)
+if(MSVC)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif(MSVC)
 
 # Precompiled header macro
 #	src 	= Path to source files

@@ -75,6 +75,9 @@ void utf8toWStr(WString& dest, const String& src)
 	if(bytes)
 		dest.push_back(err);
 }
+
+#pragma warning(push)
+#pragma warning(disable : 4333)
 void wstrToUtf8(String& dest, const WString& src)
 {
 	dest.clear();
@@ -105,3 +108,4 @@ void wstrToUtf8(String& dest, const WString& src)
 			dest.push_back('?');
 	}
 }
+#pragma warning(pop)
