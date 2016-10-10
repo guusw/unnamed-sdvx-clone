@@ -507,7 +507,7 @@ public:
 			m_scoreText->SetFontSize(75);
 			m_scoreText->SetText(Utility::WSprintf(L"%08d", 0));
 			m_scoreText->SetFont(m_fontDivlit);
-			m_scoreText->SetTextOptions(FontRes::Monospace);
+			m_scoreText->SetMonospaced(75.0f);
 			// Padding for this specific font
 			Margin textPadding = Margin(0, -20, 0, 0);
 

@@ -144,3 +144,8 @@ void Canvas::Slot::Render(GUIRenderData rd)
 	if(!allowOverflow)
 		rd.guiRenderer->PopScissorRect();
 }
+void Canvas::Slot::AutoSize(bool enabled)
+{
+	autoSizeX = enabled;
+	autoSizeY = enabled;
+}

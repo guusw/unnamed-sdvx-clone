@@ -5,6 +5,8 @@
 // Label/Text Element
 void Label::Render(GUIRenderData rd)
 {
+	rd.transform = m_renderTransform * rd.transform;
+
 	m_TickAnimations(rd.deltaTime);
 
 	if(visibility != Visibility::Visible)
@@ -15,10 +17,15 @@ void Label::Render(GUIRenderData rd)
 
 	rd.area.pos = Vector2i(rd.area.pos);
 
-	/// DEBUG label draw area
-	//rd.guiRenderer->RenderRect(rd.area, Color(1, 1, 1, 0.1f));
+	Transform2D transform = rd.transform * rd.area.pos;
+	rd.guiRenderer->RenderText(transform, m_text, color);
 
-	rd.guiRenderer->RenderText(m_text, rd.area.pos, color);
+	// Render Debug
+	if(rd.debug)
+	{
+		Rect debug = Rect(m_text->textBounds.pos + rd.area.pos, m_text->textBounds.size);
+		rd.guiRenderer->RenderWireBox(rd.transform * debug.ToTransform(), Color::FromHSV(99.0f, 0.6f, 0.8f));
+	}
 }
 Vector2 Label::GetDesiredSize(GUIRenderData rd)
 {
@@ -44,15 +51,13 @@ void Label::SetFont(Graphics::Font font)
 {
 	m_font = font;
 }
-void Label::SetTextOptions(FontRes::TextOptions options)
+void Label::SetMonospaced(float monospacedWidth /*= 0.0f*/)
 {
-	if(m_textOptions != options)
+	if(m_monospacedWidth != monospacedWidth)
+	{
+		m_monospacedWidth = monospacedWidth;
 		m_dirty = true;
-	m_textOptions = options;
-}
-Graphics::FontRes::TextOptions Label::GetTextOptions() const
-{
-	return m_textOptions;
+	}
 }
 const WString& Label::GetText() const
 {
@@ -72,6 +77,6 @@ void Label::m_UpdateText(class GUIRenderer* renderer)
 	Graphics::Font fontToUse = m_font;
 	if(!fontToUse)
 		fontToUse = renderer->font;
-	m_text = fontToUse->CreateText(m_textString, m_fontSize, m_textOptions);
+	m_text = fontToUse->CreateTextMonospaced(m_textString, m_fontSize, m_monospacedWidth);
 	m_dirty = false;
 }

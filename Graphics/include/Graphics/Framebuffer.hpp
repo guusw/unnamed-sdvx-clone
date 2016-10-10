@@ -18,6 +18,8 @@ namespace Graphics
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
 		virtual uint32 Handle() const = 0;
+		// The size of the Framebuffer texture
+		virtual Vector2i GetSize() const = 0;
 	};
 
 	typedef Ref<FramebufferRes> Framebuffer;

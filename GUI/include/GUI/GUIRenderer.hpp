@@ -23,6 +23,8 @@ public:
 
 	// Loads gui shaders/textures/etc.
 	bool Init(class OpenGL* gl, Graphics::Window* window = nullptr);
+
+	// Updates and renders the GUI
 	void Render(float deltaTime, Rect viewportSize, Ref<class GUIElementBase> rootElement);
 
 	// Use to manually start rendering GUI elements
@@ -48,17 +50,23 @@ public:
 	// Get the text input for the current frame
 	const GUITextInput& GetTextInput() const;
 
-	// Renders text, returns the size of the rendered text
-	Vector2i GetTextSize(const String& str, uint32 fontSize = 16);
-	Vector2i GetTextSize(const WString& str, uint32 fontSize = 16);
 	Vector2i RenderText(const String& str, const Vector2& position, const Color& color = Color(1.0f), uint32 fontSize = 16);
 	Vector2i RenderText(const WString& str, const Vector2& position, const Color& color = Color(1.0f), uint32 fontSize = 16);
 	void RenderText(Text& text, const Vector2& position, const Color& color = Color(1.0f));
-	// Draws a rectangle, either with a texture or just a color
 	void RenderRect(const Rect& rect, const Color& color = Color(1.0f), Texture texture = Texture());
-	// Draws a button using the given edge coordinates to 
-	//	stretch the center over the given area without affecting the border
 	void RenderButton(const Rect& rect, Texture texture, Margini border, const Color& color = Color::White);
+
+	/*** New API ***/
+	// Renders text
+	void RenderText(const Transform2D& transform, Text& text, const Color& color = Color::White);
+	void RenderText(const Transform2D& transform, const Rect& scissorRectangle, Text& text, const Color& color = Color::White);
+	// Renders a rectangle with an optional texture and color
+	void RenderRect(const Transform2D& transform, const Color& color = Color::White, Texture texture = Texture());
+	void RenderRect(const Transform2D& transform, const Rect& scissorRectangle, const Color& color = Color::White, Texture texture = Texture());
+	// Renders a wireframe box
+	void RenderWireBox(const Transform2D& boxTransform, const Color& color = Color::White, float lineWidth = 1.0f);
+	// Renders a single point
+	void RenderPoint(const Transform2D& transform, const Color& color = Color::White, float pointSize = 1.0f);
 
 	const Vector2i& GetMousePos() const;
 	const Vector2i& GetMouseDelta() const;
@@ -88,6 +96,8 @@ public:
 
 	// Quad material for drawing gui elements
 	Mesh guiQuad;
+	// Line box
+	Mesh lineBox;
 	// Used for buttons since they use a geometry shader
 	Mesh pointMesh;
 

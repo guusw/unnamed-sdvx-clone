@@ -9,6 +9,7 @@ uniform vec4 color;
 
 void main()
 {
-	float alpha = texelFetch(mainTex, ivec2(fsTex), 0).a;
+	ivec2 size = textureSize(mainTex, 0);
+	float alpha = texture2D(mainTex, fsTex / vec2(size)).a;
 	target = vec4(color.xyz, alpha * color.a);
 }

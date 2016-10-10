@@ -17,6 +17,7 @@ namespace Graphics
 		Text text;
 		float lastUsage;
 	};
+
 	// Prevents continuous recreation of text that doesn't change
 	class TextCache : public Map<WString, CachedText>
 	{
@@ -62,6 +63,7 @@ namespace Graphics
 	FT_Face fallbackFont;
 	uint32 fallbackFontSize = 0;
 
+	// Initializer handle object for the Freetype library
 	struct FontLibrary
 	{
 		FontLibrary();
@@ -69,16 +71,15 @@ namespace Graphics
 		bool LoadFallbackFont();
 		Buffer loadedFallbackFont;
 	};
+	// Keep freetype statically initialized for application lifetime
 	static FontLibrary _libraryInitializer;
 
-	struct CharInfo
+	struct CharInfo : public GlyphInfo
 	{
 		uint32 glyphID;
-		float advance;
-		int32 leftOffset;
-		int32 topOffset;
-		Recti coords;
 	};
+
+	// A single font size
 	struct FontSize
 	{
 		SpriteMap spriteMap;
@@ -87,7 +88,13 @@ namespace Graphics
 		Vector<CharInfo> infos;
 		Map<wchar_t, uint32> infoByChar;
 		bool bUpdated = false;
-		float lineHeight;
+
+		// See https://www.freetype.org/freetype2/docs/glyphs/glyphs-3.html
+		float ascender;
+		float descender;
+		float lineHeight; // linegap?
+
+		uint32 size;
 		TextCache cache;
 
 		FontSize(OpenGL* gl, FT_Face& face)
@@ -95,6 +102,8 @@ namespace Graphics
 		{
 			spriteMap = SpriteMapRes::Create();
 			textureMap = TextureRes::Create(m_gl);
+			ascender = (float)face->size->metrics.ascender / 64.0f;
+			descender = (float)face->size->metrics.descender / 64.0f;
 			lineHeight = (float)face->size->metrics.height / 64.0f;
 		}
 		~FontSize()
@@ -112,7 +121,10 @@ namespace Graphics
 		{
 			if(bUpdated)
 			{
+				if(textureMap) // Dispose of old texture
+					textureMap.Destroy();
 				textureMap = spriteMap->GenerateTexture(m_gl);
+				textureMap->SetFilter(true, true);
 				bUpdated = false;
 			}
 			return textureMap;
@@ -140,8 +152,9 @@ namespace Graphics
 				FT_Render_Glyph((*pFace)->glyph, FT_RENDER_MODE_NORMAL);
 			}
 
-			ci.topOffset = (*pFace)->glyph->bitmap_top;
-			ci.leftOffset = (*pFace)->glyph->bitmap_left;
+			ci.character = t;
+			ci.offset.x = (*pFace)->glyph->bitmap_left;
+			ci.offset.y = (*pFace)->glyph->bitmap_top;
 			ci.advance = (float)(*pFace)->glyph->advance.x / 64.0f;
 
 			Image img = ImageRes::Create(Vector2i((*pFace)->glyph->bitmap.width, (*pFace)->glyph->bitmap.rows));
@@ -164,14 +177,26 @@ namespace Graphics
 		OpenGL* m_gl;
 	};
 
+	/*
+		Vertex format used for text rendering
+	*/
+	struct TextVertex : public VertexFormat<Vector2, Vector2>
+	{
+		TextVertex(Vector2 point, Vector2 uv) : pos(point), tex(uv) {}
+		Vector2 pos;
+		Vector2 tex;
+	};
 
 	TextRes::~TextRes()
 	{
 	}
-
 	Ref<class TextureRes> TextRes::GetTexture()
 	{
 		return fontSize->GetTextureMap();
+	}
+	Ref<class MeshRes> TextRes::GetMesh()
+	{
+		return mesh;
 	}
 	void TextRes::Draw()
 	{
@@ -193,7 +218,6 @@ namespace Graphics
 	public:
 		Font_Impl(class OpenGL* gl) : m_gl(gl)
 		{
-
 		}
 		~Font_Impl()
 		{
@@ -225,28 +249,104 @@ namespace Graphics
 			return true;
 		}
 
-		FontSize* GetSize(uint32 nSize)
+		FontSize* GetSize(uint32 size)
 		{
-			if(m_currentSize != nSize)
+			if(m_currentSize != size)
 			{
-				FT_Set_Pixel_Sizes(m_face, 0, nSize);
-				m_currentSize = nSize;
+				FT_Set_Pixel_Sizes(m_face, 0, size);
+				m_currentSize = size;
 			}
-			if(fallbackFontSize != nSize)
+			if(fallbackFontSize != size)
 			{
-				FT_Set_Pixel_Sizes(fallbackFont, 0, nSize);
-				fallbackFontSize = nSize;
+				FT_Set_Pixel_Sizes(fallbackFont, 0, size);
+				fallbackFontSize = size;
 			}
 
-			auto it = m_sizes.find(nSize);
+			auto it = m_sizes.find(size);
 			if(it != m_sizes.end())
 				return it->second;
 
-			FontSize* pMap = new FontSize(m_gl, m_face);
-			m_sizes.Add(nSize, pMap);
-			return pMap;
+			FontSize* fontSize = new FontSize(m_gl, m_face);
+			fontSize->size = size;
+			m_sizes.Add(size, fontSize);
+			return fontSize;
 		}
-		Ref<TextRes> CreateText(const WString& str, uint32 nFontSize, TextOptions options)
+		
+		inline GlyphInfo ProcessGlyph(FontSize* size, Vector<TextVertex>& vertices, wchar_t c, 
+			Vector2& pen, Rect& boundary, Vector2& textSize, float monospaceWidth = 0.0f, bool useLineHeight = true)
+		{
+			GlyphInfo ret;
+			bool monospaced = monospaceWidth > 0.0f;
+
+			const CharInfo& info = size->GetCharInfo(c);
+
+			if(info.coords.size.x != 0 && info.coords.size.y != 0)
+			{
+				Vector2 corners[4];
+				corners[0] = Vector2(0, 0);
+				corners[1] = Vector2((float)info.coords.size.x, 0);
+				corners[2] = Vector2((float)info.coords.size.x, (float)info.coords.size.y);
+				corners[3] = Vector2(0, (float)info.coords.size.y);
+
+				Vector2 offset = Vector2(pen.x, pen.y);
+				offset.x += info.offset.x;
+
+				if(useLineHeight)
+					offset.y += size->ascender - info.offset.y;
+				else
+					offset.y += info.offset.y;
+
+				if(monospaced)
+				{
+					offset.x += (monospaceWidth - info.coords.size.x) * 0.5f;
+				}
+				pen.x = floorf(pen.x);
+				pen.y = floorf(pen.y);
+
+				vertices.emplace_back(offset + corners[2],
+					corners[2] + info.coords.pos);
+				vertices.emplace_back(offset + corners[0],
+					corners[0] + info.coords.pos);
+				vertices.emplace_back(offset + corners[1],
+					corners[1] + info.coords.pos);
+
+				vertices.emplace_back(offset + corners[3],
+					corners[3] + info.coords.pos);
+				vertices.emplace_back(offset + corners[0],
+					corners[0] + info.coords.pos);
+				vertices.emplace_back(offset + corners[2],
+					corners[2] + info.coords.pos);
+
+				boundary.Expand(offset + corners[0]);
+				boundary.Expand(offset + corners[2]);
+			}
+
+			if(c == L'\n')
+			{
+				pen.x = 0.0f;
+				pen.y += size->lineHeight;
+				textSize.y = pen.y;
+			}
+			else if(c == L'\t')
+			{
+				const CharInfo& space = size->GetCharInfo(L' ');
+				pen.x += space.advance * 3.0f;
+			}
+			else
+			{
+				if(monospaced)
+				{
+					pen.x += monospaceWidth;
+				}
+				else
+					pen.x += info.advance;
+			}
+			textSize.x = std::max(textSize.x, pen.x);
+
+			return ret;
+		}
+
+		Text CreateTextInternal(const WString& str, uint32 nFontSize, float monospaceWidth)
 		{
 			FontSize* size = GetSize(nFontSize);
 
@@ -254,78 +354,15 @@ namespace Graphics
 			if(cachedText)
 				return cachedText;
 
-			struct TextVertex : public VertexFormat<Vector2, Vector2>
-			{
-				TextVertex(Vector2 point, Vector2 uv) : pos(point), tex(uv) {}
-				Vector2 pos;
-				Vector2 tex;
-			};
-
 			TextRes* ret = new TextRes();
 			ret->mesh = MeshRes::Create(m_gl);
-
-			float monospaceWidth = size->GetCharInfo(L'_').advance;
+			ret->textBounds = Rect::Empty;
 
 			Vector<TextVertex> vertices;
 			Vector2 pen;
 			for(wchar_t c : str)
 			{
-				const CharInfo& info = size->GetCharInfo(c);
-
-				if(info.coords.size.x != 0 && info.coords.size.y != 0)
-				{
-					Vector2 corners[4];
-					corners[0] = Vector2(0, 0);
-					corners[1] = Vector2((float)info.coords.size.x, 0);
-					corners[2] = Vector2((float)info.coords.size.x, (float)info.coords.size.y);
-					corners[3] = Vector2(0, (float)info.coords.size.y);
-
-					Vector2 offset = Vector2(pen.x, pen.y);
-					offset.x += info.leftOffset;
-					offset.y += nFontSize - info.topOffset;
-					if((options & TextOptions::Monospace) != 0)
-					{
-						offset.x += (monospaceWidth - info.coords.size.x) * 0.5f;
-					}
-					pen.x = floorf(pen.x);
-					pen.y = floorf(pen.y);
-
-					vertices.emplace_back(offset + corners[2],
-						corners[2] + info.coords.pos);
-					vertices.emplace_back(offset + corners[0],
-						corners[0] + info.coords.pos);
-					vertices.emplace_back(offset + corners[1],
-						corners[1] + info.coords.pos);
-
-					vertices.emplace_back(offset + corners[3],
-						corners[3] + info.coords.pos);
-					vertices.emplace_back(offset + corners[0],
-						corners[0] + info.coords.pos);
-					vertices.emplace_back(offset + corners[2],
-						corners[2] + info.coords.pos);
-				}
-
-				if(c == L'\n')
-				{
-					pen.x = 0.0f;
-					pen.y += size->lineHeight;
-					ret->size.y = pen.y;
-				}
-				else if(c == L'\t')
-				{
-					const CharInfo& space = size->GetCharInfo(L' ');
-					pen.x += space.advance * 3.0f;
-				}
-				else
-				{
-					if((options & TextOptions::Monospace) != 0)
-					{
-						pen.x += monospaceWidth;
-					}
-					else
-						pen.x += info.advance;
-				}
-				ret->size.x = std::max(ret->size.x, pen.x);
+				ProcessGlyph(size, vertices, c, pen, ret->textBounds, ret->size, monospaceWidth, true);
 			}
 
 			ret->size.y += size->lineHeight;
@@ -338,6 +375,28 @@ namespace Graphics
 			// Insert into cache
 			size->cache.AddText(str, textObj);
 			return textObj;
+		}
+
+		Text CreateText(const WString& str, uint32 fontSize)
+		{
+			return CreateTextInternal(str, fontSize, 0.0f);
+		}
+		Text CreateTextMonospaced(const WString& str, uint32 fontSize, float monospaceWidth)
+		{
+			return CreateTextInternal(str, fontSize, monospaceWidth);
+		}
+		Text CreateSingle(wchar_t c, uint32 fontSize, GlyphInfo& info)
+		{
+			FontSize* size = GetSize(fontSize);
+			//sinfo = ProcessGlyph()
+			//s
+			//sVector<TextVertex> vertices;
+			//sVector2 pen;
+			//sfor(wchar_t c : str)
+			//s{
+			//s	ProcessGlyph(size, vertices, c, pen, ret->size, monospaceWidth);
+			//s}
+			return Text();
 		}
 	};
 

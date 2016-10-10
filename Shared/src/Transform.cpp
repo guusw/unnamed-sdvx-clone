@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Transform.hpp"
+#include "Transform2D.hpp"
 #include <cmath>
 
 Transform ProjectionMatrix::CreatePerspective(float field_of_view, float aspect_ratio, float z_near, float z_far)
@@ -55,6 +56,19 @@ Transform::Transform(const Transform& other)
 Transform::Transform()
 {
 
+}
+Transform::Transform(const class Transform2D& other)
+{
+	mat[0] = other.mat[0];
+	mat[1] = other.mat[1];
+	mat[2] = 0.0f;
+
+	mat[4] = other.mat[3];
+	mat[5] = other.mat[4];
+	mat[6] = 0.0f;
+
+	mat[12] = other.mat[6];
+	mat[13] = other.mat[7];
 }
 float& Transform::operator[](size_t idx)
 {

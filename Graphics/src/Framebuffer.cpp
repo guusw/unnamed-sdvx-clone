@@ -89,12 +89,18 @@ namespace Graphics
 		}
 		virtual bool IsComplete() const
 		{
-			int complete = glCheckNamedFramebufferStatus(m_fb, GL_DRAW_FRAMEBUFFER);
+			if(!glCheckNamedFramebufferStatusEXT)
+				return true; // TODO: Use regular way to check completeness
+			int complete = glCheckNamedFramebufferStatusEXT(m_fb, GL_DRAW_FRAMEBUFFER);
 			return complete == GL_FRAMEBUFFER_COMPLETE;
 		}
 		virtual uint32 Handle() const
 		{
 			return m_fb;
+		}
+		Vector2i GetSize() const
+		{
+			return m_textureSize;
 		}
 	};
 

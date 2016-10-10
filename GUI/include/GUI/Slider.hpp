@@ -1,6 +1,6 @@
 #pragma once
-#include "GUIElement.hpp"
-#include "CommonGUIStyle.hpp"
+#include "GUI/GUISlotBase.hpp"
+#include "GUI/CommonGUIStyle.hpp"
 
 class Slider : public GUIElementBase
 {

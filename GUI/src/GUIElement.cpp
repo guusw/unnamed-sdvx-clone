@@ -80,6 +80,16 @@ void GUIElementBase::m_TickAnimations(float deltaTime)
 		it++;
 	}
 }
+
+const Transform2D& GUIElementBase::GetRenderTransform() const
+{
+	return m_renderTransform;
+}
+void GUIElementBase::SetRenderTransform(const Transform2D& transform)
+{
+	m_renderTransform = transform;
+}
+
 GUISlotBase::~GUISlotBase()
 {
 	if(element)
@@ -106,7 +116,6 @@ void GUISlotBase::Render(GUIRenderData rd)
 	rd.guiRenderer->PushScissorRect(rd.area);
 	element->Render(rd);
 	rd.guiRenderer->PopScissorRect();
-
 }
 
 Vector2 GUISlotBase::GetDesiredSize(GUIRenderData rd)

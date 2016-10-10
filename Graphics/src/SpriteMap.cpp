@@ -30,6 +30,8 @@ namespace Graphics
 		// Used size over the X axis
 		int32 m_usedSize = 0;
 
+		Vector2i m_padding = Vector2i(1);
+
 		// Linear index of al segements
 		Vector<Segment*> m_segments;
 		Vector<Category> m_widths;
@@ -140,14 +142,15 @@ namespace Graphics
 			uint32 nI = (uint32)m_segments.size();
 			Segment* pCurrentSegment = m_segments.Add(new Segment());
 			pCurrentSegment->coords.size = image->GetSize();
+			Vector2i sizeWithPadding = pCurrentSegment->coords.size + m_padding * 2;
 
 			// Get a category that has space
-			Category& cat = AssignCategory(image->GetSize());
+			Category& cat = AssignCategory(sizeWithPadding);
 
 			// Set offset for current segment
-			pCurrentSegment->coords.pos = cat.offset;
+			pCurrentSegment->coords.pos = cat.offset + m_padding;
 			// Add size offset in category
-			cat.offset.y += pCurrentSegment->coords.size.y;
+			cat.offset.y += sizeWithPadding.y;
 
 			// Copy image data
 			CopySubImage(m_image, image, pCurrentSegment->coords.pos);

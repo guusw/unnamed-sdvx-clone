@@ -65,20 +65,24 @@ protected:
 	int32* m_CreateNewCounter();
 
 public:
+	// Explicit ref count initializer
 	explicit Ref(T* data, int32_t* refCount)
 		: m_data(data), m_refCount(refCount)
 	{
 		m_Inc();
 	}
 
+	// Null/Default constructor
 	inline Ref() { m_data = nullptr; m_refCount = nullptr; }
-	explicit inline Ref(T* obj)
+
+	explicit inline Ref(T* data)
 	{
-		m_data = obj;
+		m_data = data;
 		m_refCount = m_CreateNewCounter();
 		m_refCount[0]++;
 		m_AssignCounter();
 	}
+
 	inline ~Ref()
 	{
 		m_Dec();
@@ -236,6 +240,10 @@ public:
 	Ref<T> MakeShared()
 	{
 		return Ref<T>((T*)this, _GetRefCounter());
+	}
+	operator Ref<T>()
+	{
+		return MakeShared();
 	}
 };
 

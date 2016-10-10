@@ -5,23 +5,32 @@ using Utility::Cast;
 
 namespace Graphics
 {
+	RenderState RenderState::Create2DRenderState(Recti viewport)
+	{
+		RenderState guiRs;
+		guiRs.viewportSize = viewport.size;
+		guiRs.projectionTransform = ProjectionMatrix::CreateOrthographic((float)viewport.Left(), (float)viewport.Right(), (float)viewport.Bottom(), (float)viewport.Top(), -1.0f, 100.0f);
+		guiRs.aspectRatio = (float)viewport.size.y / (float)viewport.size.x;
+		return guiRs;
+	}
+
 	RenderQueue::RenderQueue(OpenGL* ogl, const RenderState& rs)
 	{
-		m_ogl = ogl;
+		m_gl = ogl;
 		m_renderState = rs;
 	}
 	RenderQueue::RenderQueue(RenderQueue&& other)
 	{
-		m_ogl = other.m_ogl;
-		other.m_ogl = nullptr;
+		m_gl = other.m_gl;
+		other.m_gl = nullptr;
 		m_orderedCommands = move(other.m_orderedCommands);
 		m_renderState = other.m_renderState;
 	}
 	RenderQueue& RenderQueue::operator=(RenderQueue&& other)
 	{
 		Clear();
-		m_ogl = other.m_ogl;
-		other.m_ogl = nullptr;
+		m_gl = other.m_gl;
+		other.m_gl = nullptr;
 		m_orderedCommands = move(other.m_orderedCommands);
 		m_renderState = other.m_renderState;
 		return *this;
@@ -32,147 +41,17 @@ namespace Graphics
 	}
 	void RenderQueue::Process(bool clearQueue)
 	{
-		assert(m_ogl);
+		assert(m_gl);
 
-		bool scissorEnabled = false;
-		bool blendEnabled = false;
-		MaterialBlendMode activeBlendMode = (MaterialBlendMode)-1;
-
-		Set<Material> initializedShaders;
-		Mesh currentMesh;
-		Material currentMaterial;
-
-		// Create a new list of items
-		for(RenderQueueItem* item : m_orderedCommands)
+		RenderQueueState* state = new RenderQueueState(m_renderState, m_gl);
 		{
-			auto SetupMaterial = [&](Material& mat, MaterialParameterSet& params)
+			// Render all the items
+			for(RenderQueueItem* item : m_orderedCommands)
 			{
-				// Only bind params if material is already bound to context
-				if(currentMaterial == mat)
-					mat->BindParameters(params, m_renderState.worldTransform);
-				else
-				{
-					if(initializedShaders.Contains(mat))
-					{
-						// Only bind params and rebind
-						mat->BindParameters(params, m_renderState.worldTransform);
-						mat->BindToContext();
-						currentMaterial = mat;
-					}
-					else
-					{
-						mat->Bind(m_renderState, params);
-						initializedShaders.Add(mat);
-						currentMaterial = mat;
-					}
-				}
-
-				// Setup Render state for transparent object
-				if(mat->opaque)
-				{
-					if(blendEnabled)
-					{
-						glDisable(GL_BLEND);
-						blendEnabled = false;
-					}
-				}
-				else
-				{
-					if(!blendEnabled)
-					{
-						glEnable(GL_BLEND);
-						blendEnabled = true;
-					}
-					if(activeBlendMode != mat->blendMode)
-					{
-						switch(mat->blendMode)
-						{
-						case MaterialBlendMode::Normal:
-							glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-							break;
-						case MaterialBlendMode::Additive:
-							glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-							break;
-						case MaterialBlendMode::Multiply:
-							glBlendFunc(GL_SRC_ALPHA, GL_SRC_COLOR);
-							break;
-						}
-					}
-				}
-			};
-
-			// Draw mesh helper
-			auto DrawOrRedrawMesh = [&](Mesh& mesh)
-			{
-				if(currentMesh == mesh)
-					mesh->Redraw();
-				else
-				{
-					mesh->Draw();
-					currentMesh = mesh;
-				}
-			};
-
-			if(Cast<SimpleDrawCall>(item))
-			{
-				SimpleDrawCall* sdc = (SimpleDrawCall*)item;
-				m_renderState.worldTransform = sdc->worldTransform;
-				SetupMaterial(sdc->mat, sdc->params);
-
-				// Check if scissor is enabled
-				bool useScissor = (sdc->scissorRect.size.x >= 0);
-				if(useScissor)
-				{
-					// Apply scissor
-					if(!scissorEnabled)
-					{
-						glEnable(GL_SCISSOR_TEST);
-						scissorEnabled = true;
-					}
-					float scissorY = m_renderState.viewportSize.y - sdc->scissorRect.Bottom();
-					glScissor((int32)sdc->scissorRect.Left(), (int32)scissorY,
-						(int32)sdc->scissorRect.size.x, (int32)sdc->scissorRect.size.y);
-				}
-				else
-				{
-					if(scissorEnabled)
-					{
-						glDisable(GL_SCISSOR_TEST);
-						scissorEnabled = false;
-					}
-				}
-
-				DrawOrRedrawMesh(sdc->mesh);
-			}
-			else if(Cast<PointDrawCall>(item))
-			{
-				if(scissorEnabled)
-				{
-					// Disable scissor
-					glDisable(GL_SCISSOR_TEST);
-					scissorEnabled = false;
-				}
-
-				PointDrawCall* pdc = (PointDrawCall*)item;
-				m_renderState.worldTransform = Transform();
-				SetupMaterial(pdc->mat, pdc->params);
-				PrimitiveType pt = pdc->mesh->GetPrimitiveType();
-				if(pt >= PrimitiveType::LineList && pt <= PrimitiveType::LineStrip)
-				{
-					glLineWidth(pdc->size);
-				}
-				else
-				{
-					glPointSize(pdc->size);
-				}
-				
-				DrawOrRedrawMesh(pdc->mesh);
+				item->Draw(*state);
 			}
 		}
-
-		// Disable all states that were on
-		glDisable(GL_BLEND);
-		glDisable(GL_SCISSOR_TEST);
+		delete state;
 
 		if(clearQueue)
 		{
@@ -190,6 +69,11 @@ namespace Graphics
 		m_orderedCommands.clear();
 	}
 
+	void RenderQueue::Add(RenderQueueItem* item)
+	{
+		m_orderedCommands.Add(item);
+	}
+
 	void RenderQueue::Draw(Transform worldTransform, Mesh m, Material mat, const MaterialParameterSet& params)
 	{
 		SimpleDrawCall* sdc = new SimpleDrawCall();
@@ -197,7 +81,7 @@ namespace Graphics
 		sdc->mesh = m;
 		sdc->params = params;
 		sdc->worldTransform = worldTransform;
-		m_orderedCommands.push_back(sdc);
+		Add(sdc);
 	}
 	void RenderQueue::Draw(Transform worldTransform, Ref<class TextRes> text, Material mat, const MaterialParameterSet& params)
 	{
@@ -208,7 +92,7 @@ namespace Graphics
 		// Set Font texture map
 		sdc->params.SetParameter("mainTex", text->GetTexture());
 		sdc->worldTransform = worldTransform;
-		m_orderedCommands.push_back(sdc);
+		Add(sdc);
 	}
 
 	void RenderQueue::DrawScissored(Rect scissor, Transform worldTransform, Mesh m, Material mat, const MaterialParameterSet& params /*= MaterialParameterSet()*/)
@@ -219,7 +103,7 @@ namespace Graphics
 		sdc->params = params;
 		sdc->worldTransform = worldTransform;
 		sdc->scissorRect = scissor;
-		m_orderedCommands.push_back(sdc);
+		Add(sdc);
 	}
 	void RenderQueue::DrawScissored(Rect scissor, Transform worldTransform, Ref<class TextRes> text, Material mat, const MaterialParameterSet& params /*= MaterialParameterSet()*/)
 	{
@@ -231,7 +115,7 @@ namespace Graphics
 		sdc->params.SetParameter("mainTex", text->GetTexture());
 		sdc->worldTransform = worldTransform;
 		sdc->scissorRect = scissor;
-		m_orderedCommands.push_back(sdc);
+		Add(sdc);
 	}
 
 	void RenderQueue::DrawPoints(Mesh m, Material mat, const MaterialParameterSet& params, float pointSize)
@@ -241,7 +125,7 @@ namespace Graphics
 		pdc->mesh = m;
 		pdc->params = params;
 		pdc->size = pointSize;
-		m_orderedCommands.push_back(pdc);
+		Add(pdc);
 	}
 
 	// Initializes the simple draw call structure

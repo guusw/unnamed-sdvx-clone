@@ -1,5 +1,5 @@
 #pragma once
-#include "GUIElement.hpp"
+#include "GUI/GUISlotBase.hpp"
 #include "CommonGUIStyle.hpp"
 
 class ScrollBox : public GUIElementBase

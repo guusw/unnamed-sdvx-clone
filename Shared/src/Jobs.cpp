@@ -175,12 +175,16 @@ private:
 			}
 
 			// Various idle levels
+#ifndef _DEBUG
 			if(myThread->idleDuration.Minutes() > 1)
 				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 			if(myThread->idleDuration.Seconds() > 1)
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			else
+#endif // Shut down faster in debug mode
+			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			}
 		}
 	}
 };

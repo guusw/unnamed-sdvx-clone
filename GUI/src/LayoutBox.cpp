@@ -14,6 +14,8 @@ LayoutBox::~LayoutBox()
 
 void LayoutBox::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 {
+	rd.transform = m_renderTransform * rd.transform;
+
 	m_TickAnimations(rd.deltaTime);
 
 	Rect sourceRect = rd.area;
@@ -43,12 +45,20 @@ void LayoutBox::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 
 void LayoutBox::Render(GUIRenderData rd)
 {
+	rd.transform = m_renderTransform * rd.transform;
+
 	if(visibility != Visibility::Visible)
 		return;
 
 	for(size_t i = 0; i < m_children.size(); i++)
 	{
 		m_children[i]->Render(rd);
+	}
+
+	// Render Debug
+	if(rd.debug)
+	{
+		rd.guiRenderer->RenderWireBox(rd.transform * rd.area.ToTransform(), Color(0.2f, 0.2f, 1.0f, 0.5f));
 	}
 }
 Vector2 LayoutBox::GetDesiredSize(GUIRenderData rd)
@@ -203,9 +213,18 @@ void LayoutBox::Slot::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 void LayoutBox::Slot::Render(GUIRenderData rd)
 {
 	rd.area = m_cachedArea;
+
 	if(!allowOverflow)
 		rd.guiRenderer->PushScissorRect(rd.area);
 	element->Render(rd);
 	if(!allowOverflow)
 		rd.guiRenderer->PopScissorRect();
+
+	// Render Debug
+	if(rd.debug)
+	{
+		Rect debug = rd.area;
+		debug.Offset(-1.0f);
+		rd.guiRenderer->RenderWireBox(rd.transform * debug.ToTransform(), Color::Blue.WithAlpha(0.5f));
+	}
 }

@@ -188,7 +188,7 @@ public:
 			score->SetFont(m_specialFont);
 			score->SetFontSize(140);
 			score->color = Color(0.75f);
-			score->SetTextOptions(FontRes::Monospace);
+			score->SetMonospaced(140.0f);
 			{
 				LayoutBox::Slot* slot = scoreAndGraph->Add(score->MakeShared());
 				slot->padding = Margin(0, 0, 0, 20);
@@ -296,7 +296,7 @@ public:
 			Label* countLabel = new Label();
 			countLabel->SetFont(m_specialFont);
 			countLabel->SetFontSize(64);
-			countLabel->SetTextOptions(FontRes::Monospace);
+			countLabel->SetMonospaced(64.0f);
 			countLabel->color = Color(0.5f);
 			countLabel->SetText(Utility::WSprintf(L"%05d", count));
 			canvasSlot = canvas->Add(countLabel->MakeShared());

@@ -28,6 +28,12 @@ bool GraphicsTestBase::Run()
 	Timer t;
 	while(m_window->Update())
 	{
+		// Clear
+		Vector2 windowSize = m_window->GetWindowSize();
+		m_gl->SetViewport(Recti(Vector2i(), windowSize));
+		glClearColor(0.1f, 0.1f, 0.1f, 0.1f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
 		float dt = t.SecondsAsFloat();
 		t.Restart();
 		Render(dt);

@@ -29,6 +29,17 @@ bool GUIRenderer::Init(class OpenGL* gl, class Graphics::Window* window)
 	CheckedLoad(buttonMaterial = MaterialRes::Create(m_gl, "shaders/position_passthrough.vs", "shaders/gui_button.gs", "shaders/texture_colored.fs"));
 	buttonMaterial->opaque = false;
 
+	lineBox = MeshRes::Create(m_gl);
+	Vector<MeshGenerators::SimpleVertex> lines = { 
+		{ Vector3(0.0f, 0.0f, 0.0f), Vector2(0.0f, 0.0f) },
+		{ Vector3(1.0f, 0.0f, 0.0f), Vector2(1.0f, 0.0f) },
+		{ Vector3(1.0f, 1.0f, 0.0f), Vector2(0.0f, 1.0f) },
+		{ Vector3(0.0f, 1.0f, 0.0f), Vector2(0.0f, 1.0f) },
+		{ Vector3(0.0f, 0.0f, 0.0f), Vector2(0.0f, 0.0f) }, //Loop
+	};
+	lineBox->SetData(lines);
+	lineBox->SetPrimitiveType(PrimitiveType::LineStrip);
+
 	guiQuad = MeshGenerators::Quad(m_gl, Vector2(0, 0), Vector2(1, 1));
 
 	pointMesh = MeshRes::Create(m_gl);
@@ -43,10 +54,10 @@ bool GUIRenderer::Init(class OpenGL* gl, class Graphics::Window* window)
 }
 void GUIRenderer::Render(float deltaTime, Rect viewportSize, Ref<class GUIElementBase> rootElement)
 {
+	Begin();
+
 	m_time += deltaTime;
 	m_viewportSize = viewportSize;
-
-	Begin();
 
 	// Update mouse input
 	Vector2i newMouse = m_window->GetMousePos();
@@ -59,7 +70,6 @@ void GUIRenderer::Render(float deltaTime, Rect viewportSize, Ref<class GUIElemen
 	grd.guiRenderer = this;
 	grd.deltaTime = deltaTime;
 	grd.area = viewportSize;
-	grd.transform = Transform();
 
 	// Handle input focus, position calculation, etc.
 	GUIElementBase* inputElement = nullptr;
@@ -230,15 +240,8 @@ const GUITextInput& GUIRenderer::GetTextInput() const
 {
 	return m_textInput;
 }
-Vector2i GUIRenderer::GetTextSize(const WString& str, uint32 fontSize /*= 16*/)
-{
-	Text text = font->CreateText(str, fontSize);
-	return text->size;
-}
-Vector2i GUIRenderer::GetTextSize(const String& str, uint32 fontSize /*= 16*/)
-{
-	return GetTextSize(Utility::ConvertToWString(str), fontSize);
-}
+
+/*** Old API ***/
 Vector2i GUIRenderer::RenderText(const WString& str, const Vector2& position, const Color& color /*= Color(1.0f)*/, uint32 fontSize /*= 16*/)
 {
 	if(m_scissorRect.size.x == 0 || m_scissorRect.size.y == 0)
@@ -317,6 +320,76 @@ void GUIRenderer::RenderButton(const Rect& rect, Texture texture, Margini border
 	params.SetParameter("texSize", size);
 
 	m_renderQueue->DrawScissored(m_scissorRect, transform, pointMesh, buttonMaterial, params);
+}
+
+/*** New API ***/
+void GUIRenderer::RenderText(const Transform2D& transform, Text& text, const Color& color /*= Color::White*/)
+{
+	MaterialParameterSet params;
+	params.SetParameter("color", color);
+	m_renderQueue->Draw(transform, text, fontMaterial, params);
+}
+void GUIRenderer::RenderText(const Transform2D& transform, const Rect& scissorRectangle, Text& text, const Color& color /*= Color::White*/)
+{
+	if(m_scissorRect.size.x == 0 || m_scissorRect.size.y == 0)
+		return;
+
+	MaterialParameterSet params;
+	params.SetParameter("color", color);
+	m_renderQueue->DrawScissored(m_scissorRect, transform, text, fontMaterial, params);
+}
+
+void GUIRenderer::RenderRect(const Transform2D& transform, const Color& color /*= Color::White*/, Texture texture /*= Texture()*/)
+{
+	MaterialParameterSet params;
+	params.SetParameter("color", color);
+	if(texture)
+	{
+		params.SetParameter("mainTex", texture);
+		m_renderQueue->Draw(transform, guiQuad, textureMaterial, params);
+	}
+	else
+	{
+		m_renderQueue->Draw(transform, guiQuad, colorMaterial, params);
+	}
+}
+void GUIRenderer::RenderRect(const Transform2D& transform, const Rect& scissorRectangle, const Color& color, Texture texture)
+{
+	if(m_scissorRect.size.x == 0 || m_scissorRect.size.y == 0)
+		return;
+
+	MaterialParameterSet params;
+	params.SetParameter("color", color);
+	if(texture)
+	{
+		params.SetParameter("mainTex", texture);
+		m_renderQueue->DrawScissored(m_scissorRect, transform, guiQuad, textureMaterial, params);
+	}
+	else
+	{
+		m_renderQueue->DrawScissored(m_scissorRect, transform, guiQuad, colorMaterial, params);
+	}
+}
+
+void GUIRenderer::RenderWireBox(const Transform2D& transform, const Color& color, float lineWidth)
+{
+	PointDrawCall* pdc = new PointDrawCall();
+	pdc->size = lineWidth;
+	pdc->worldTransform = transform; // 2D to 3D
+	pdc->mesh = lineBox;
+	pdc->mat = colorMaterial;
+	pdc->params.SetParameter("color", color);
+	m_renderQueue->Add(pdc);
+}
+void GUIRenderer::RenderPoint(const Transform2D& transform, const Color& color /*= Color::White*/, float pointSize /*= 1.0f*/)
+{
+	PointDrawCall* pdc = new PointDrawCall();
+	pdc->size = pointSize;
+	pdc->worldTransform = transform; // 2D to 3D
+	pdc->mesh = pointMesh;
+	pdc->mat = colorMaterial;
+	pdc->params.SetParameter("color", color);
+	m_renderQueue->Add(pdc);
 }
 
 const Vector2i& GUIRenderer::GetMousePos() const

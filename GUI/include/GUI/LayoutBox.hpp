@@ -1,5 +1,5 @@
 #pragma once
-#include "GUIElement.hpp"
+#include "GUI/GUISlotBase.hpp"
 
 /*
 Container that arranges elements in a vertical/horizontal list

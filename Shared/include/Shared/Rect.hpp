@@ -1,5 +1,6 @@
 #pragma once
-#include "VectorMath.hpp"
+#include "Shared/VectorMath.hpp"
+#include "Shared/Transform2D.hpp"
 
 /*
 	GUI space rectangle with bottom as y+height
@@ -100,7 +101,56 @@ public:
 			bottom = top;
 		return RectangleBase(left, top, right, bottom);
 	}
+
+	// Converts this rectangle (pos,size) to a 2D transformation matrix
+	Transform2D ToTransform() const
+	{
+		return Transform2D(pos, size);
+	}
+
+	// Expand this bounding rectangle to include the given point
+	void Expand(const Vector2& point)
+	{
+		if(point.x < pos.x)
+		{
+			size.x += pos.x - point.x;
+			pos.x = point.x;
+		}
+		if(point.y < pos.y)
+		{
+			size.y += pos.y - point.y;
+			pos.y = point.y;
+		}
+
+		Vector2 sd = point - pos;
+		if(sd.x > size.x)
+			size.x = sd.x;
+		if(sd.y > size.y)
+			size.y = sd.y;
+	}
+	// Expand this bounding rectangle to include the given rectangle
+	void Expand(const RectangleBase& other)
+	{
+		Expand(other.pos);
+		Expand(other.pos + VectorType(other.size.x, 0));
+		Expand(other.pos + VectorType(0, other.size.y));
+		Expand(other.pos + VectorType(other.size.x, 1));
+	}
+	// Expand this bounding rectangle to include the given rectangle transformed by transform
+	void Expand(const RectangleBase& other, Transform2D transform)
+	{
+		Expand(transform.TransformPoint(other.pos));
+		Expand(transform.TransformPoint(other.pos + VectorType(other.size.x, 0)));
+		Expand(transform.TransformPoint(other.pos + VectorType(0, other.size.y)));
+		Expand(transform.TransformPoint(other.pos + VectorType(other.size.x, 1)));
+	}
+
+	// Initial value for bounding rectangles
+	static RectangleBase Empty;
 };
+
+template<typename T>
+RectangleBase<T> RectangleBase<T>::Empty = RectangleBase<T>(Vector2(FLT_MAX * 0.5f), Vector2(-FLT_MAX));
 
 /* 
 	Same as a normal rectangle but this one has the top as y+height aka world space

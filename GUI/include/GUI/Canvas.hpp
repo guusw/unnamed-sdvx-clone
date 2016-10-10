@@ -18,6 +18,9 @@ public:
 		virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
 		virtual void Render(GUIRenderData rd) override;
 
+		// Sets both autosized properties
+		void AutoSize(bool enabled);
+
 		// Anchor for the element
 		Anchor anchor = Anchors::TopLeft;
 

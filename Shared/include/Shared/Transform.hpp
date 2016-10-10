@@ -26,12 +26,14 @@
 
 /*
 	4x4 Transformation matrix class
+	Column-Major order, Left handed
 */
 class Transform
 {
 public:
 	Transform();
 	Transform(const Transform& other);
+	Transform(const class Transform2D& other);
 	Transform(std::initializer_list<float> values);
 	Transform& operator=(const Transform& right);
 
