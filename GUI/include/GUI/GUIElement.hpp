@@ -1,7 +1,10 @@
 #pragma once
-#include "GUIRenderData.hpp"
-#include "Anchor.hpp"
-#include "GUIAnimation.hpp"
+#include <GUI/GUIRenderData.hpp>
+#include <GUI/GUIUpdateData.hpp>
+#include <GUI/GUIAnimation.hpp>
+#include <GUI/GUIEvents.hpp>
+#include <Shared/Invalidation.hpp>
+#include <Shared/UnorderedMap.hpp>
 
 // GUI Element visiblity
 enum class Visibility
@@ -14,59 +17,101 @@ enum class Visibility
 /*
 	Base class for GUI elements
 */
+class ContainerBase;
 class GUIElementBase : public Unique, public RefCounted<GUIElementBase>
 {
 public:
-	GUIElementBase() = default;
+	GUIElementBase();
 	virtual ~GUIElementBase();
-	// Called to place element and handle input focus
-	virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement);
+
+	// Invalidates the cached render position and transforms
+	void InvalidateArea();
+
+	// Event handlers
+	virtual void OnMouseMove(MouseMovedEvent& event) {};
+	virtual void OnMouseButton(MouseButtonEvent& event) {};
+	virtual void OnInvalidate(InvalidationEvent& event);
+
+	// Called when focus acquired with AcquireMouseFocus was lost
+	// Similar to mouse leave event
+	virtual void OnFocusLost() {};
+	// Called when focused using AcquireMouseFocus
+	// Similar to mouse enter event
+	virtual void OnFocus() {};
+
+	// Updates animations
+	virtual void UpdateAnimations(float deltaTime);
+	// Update function, processes mouse focus
+	virtual void Update(GUIUpdateData data);
 	// Called to draw the GUI element and it's children
-	virtual void Render(GUIRenderData rd) = 0;
-	// Calculates the desired size of this element, or false if it does not
-	virtual Vector2 GetDesiredSize(GUIRenderData rd);
+	virtual void Render(GUIRenderData data) = 0;
+	// Desired size, or zero if collapsed
+	Vector2 GetDesiredSize(GUIUpdateData data);
 
 	// Add an animation related to this element
-	virtual bool AddAnimation(Ref<IGUIAnimation> anim, bool removeOld = false);
-	Ref<IGUIAnimation> GetAnimation(void* target);
-	Ref<IGUIAnimation> GetAnimation(uint32 uid);
+	Ref<GUIAnimation> AddAnimation(Action<void, float> anim, float duration, Interpolation::TimeFunction timeFunction = Interpolation::Linear);
+	void RemoveAnimation(Action<void, float> anim);
+	void RemoveAnimation(Ref<GUIAnimation> anim);
+	Ref<GUIAnimation> FindAnimation(Action<void, float> updater);
 
-	const Transform2D& GetRenderTransform() const;
-	void SetRenderTransform(const Transform2D& transform);
+	// Retrieve the slot this element is placed in
+	class GUISlotBase* GetSlot();
+	template<typename T>
+	T* GetSlot()
+	{
+		return dynamic_cast<T*>(GetSlot());
+	}
 
-	// If this element should receive keyboard input events or not
-	virtual bool HasInputFocus() const;
-
-	static bool OverlapTest(Rect rect, Vector2 point);
-
-	// The slot that contains this element
-	class GUISlotBase* slot = nullptr;
+	// Retrieve the parent element
+	ContainerBase* GetParent();
 
 	// The visiblity of this GUI element
 	Visibility visibility = Visibility::Visible;
+
+	// Local render transform
+	NotifyDirty<Transform2D> renderTransform;
+
 protected:
-	// Template slot creation helper
-	template<typename T> T* CreateSlot(Ref<GUIElementBase> element);
+	// Calculates the desired size of this element
+	virtual Vector2 m_GetDesiredBaseSize(GUIUpdateData data);
+
+	void m_AttachChild(GUIElementBase& element, GUISlotBase* slot);
+
+	// Updates the cached areas and transforms
+	void m_UpdateTransform(Rect area, Transform2D parentTransform);
+	// Updates the cached areas and transforms and stores the new renderTransform in the renderdata
+	void m_UpdateTransform(GUIUpdateData& data);
+	virtual void m_PostAnimationUpdate() {};
+
 	// Handle removal logic
 	void m_OnRemovedFromParent();
 	// Called when added to slot
 	virtual void m_AddedToSlot(GUISlotBase* slot);
-	// Called when the ZOrder of a child slot changed
-	virtual void m_OnZOrderChanged(GUISlotBase* slot);
-	void m_TickAnimations(float deltaTime);
+
+	// Cached world transform
+	Transform2D m_cachedTransform;
+	Transform2D m_cachedInverseTransform;
+	Transform2D m_cachedObjectTransform;
+	Transform2D m_cachedInverseObjectTransform;
+	// Cached target area
+	Rect m_cachedArea;
+	// Handle for above states
+	CachedState m_transformValid;
 
 	// Animation mapped to target
-	Map<void*, Ref<IGUIAnimation>> m_animationMap;
+	Set<Ref<GUIAnimation> > m_animations;
+	UnorderedMap<GUIAnimationUpdater, Ref<GUIAnimation>> m_animationsByUpdater;
 
-	// Set if we got input focus from a renderer
-	// this should then be cleared when this element is destroyed
-	GUIRenderer* m_rendererFocus = nullptr;
-
-	// Local render transform
-	Transform2D m_renderTransform;
+	// Handle to the GUI System
+	class GUI* m_gui;
 
 	friend class GUISlotBase;
-	friend class GUIRenderer;
+	friend class ContainerBase;
+	friend class GUI;
+
+private:
+	// The slot that contains this element
+	class GUISlotBase* m_slot = nullptr;
 };
 
 // Typedef pointer to GUI element objects

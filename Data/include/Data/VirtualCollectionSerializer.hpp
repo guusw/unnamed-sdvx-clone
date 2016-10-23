@@ -48,7 +48,7 @@ namespace Data
 			auto& virtualType = m_types[*typeHashCode];
 
 			TBase*& targetObject = *(TBase**)object;
-			targetObject = virtualType.construct();
+			targetObject = virtualType.construct.Call();
 
 			ITypeSerializer* serializer = Serializer::Find(*typeHashCode);
 			if(!serializer)

@@ -23,7 +23,7 @@ public:
 	}
 
 	// Apply anchor to an input rectangle
-	Rect Apply(const Rect& in)
+	Rect Apply(const Rect& in) const
 	{
 		Vector2 delta = Delta();
 		Vector2 topLeft = in.pos + in.size * TopLeft();

@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <Shared/Handle.hpp>
 
 struct A : public RefCounted<A>
 {
@@ -34,4 +35,43 @@ Test("Ref.RefInitializer")
 	Ref<A> c = *new C();
 	Ref<C> c1 = c.As<C>();
 	TestEnsure(c1.GetRefCount() == 2);
+}
+
+Test("Handle")
+{
+	Handle a = Handle::Create();
+	Handle b;
+
+	TestEnsure(a);
+	TestEnsure(!b);
+
+	TestEnsure(a.GetRefCount() == 1);
+	TestEnsure(b.GetRefCount() == 0);
+
+	b = a;
+	TestEnsure(b);
+	TestEnsure(a.GetRefCount() == 2);
+
+	a.ForceRelease();
+
+	TestEnsure(!a && !b);
+	TestEnsure(a.GetRefCount() == 0);
+	TestEnsure(b.GetRefCount() == 0);
+
+	a = Handle::Create();
+	TestEnsure(a.GetRefCount() == 1);
+	TestEnsure(b.GetRefCount() == 0);
+
+	b = a;
+	TestEnsure(b.GetRefCount() == 2);
+	TestEnsure(a == b);
+
+	a.Release();
+	TestEnsure(!a);
+	TestEnsure(b.GetRefCount() == 1);
+	TestEnsure(a != b);
+
+	b.Release();
+
+	TestEnsure(!a && !b);
 }

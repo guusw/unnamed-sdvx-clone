@@ -1,198 +1,133 @@
 #include "stdafx.h"
 #include "GUI.hpp"
 #include "GUIRenderer.hpp"
+#include <Shared/Color.hpp>
+#include <Shared/Color.hpp>
 
+GUIElementBase::GUIElementBase()
+{
+	renderTransform.Notify = [&]() { m_transformValid.Invalidate(); };
+}
 GUIElementBase::~GUIElementBase()
 {
-	if(m_rendererFocus)
+}
+void GUIElementBase::InvalidateArea()
+{
+	m_transformValid.Invalidate();
+}
+void GUIElementBase::OnInvalidate(InvalidationEvent& event)
+{
+	if(event.invalidateArea)
 	{
-		m_rendererFocus->SetInputFocus(nullptr);
+		InvalidateArea();
 	}
 }
-void GUIElementBase::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
+void GUIElementBase::UpdateAnimations(float deltaTime)
 {
-}
-Vector2 GUIElementBase::GetDesiredSize(GUIRenderData rd)
-{
-	return Vector2();
-}
-bool GUIElementBase::AddAnimation(Ref<IGUIAnimation> anim, bool removeOld)
-{
-	void* target = anim->GetTarget();
-	if(m_animationMap.Contains(target))
+	for(auto it = m_animations.begin(); it != m_animations.end();)
 	{
-		if(!removeOld)
-			return false;
-		m_animationMap.erase(target);
-	}
-
-	m_animationMap.Add(target, anim);
-	return true;
-}
-
-Ref<IGUIAnimation> GUIElementBase::GetAnimation(uint32 uid)
-{
-	size_t suid = (size_t)uid;
-	return GetAnimation((void*)suid);
-}
-Ref<IGUIAnimation> GUIElementBase::GetAnimation(void* target)
-{
-	Ref<IGUIAnimation>* found = m_animationMap.Find(target);
-	if(found)
-		return *found;
-	return Ref<IGUIAnimation>();
-}
-
-bool GUIElementBase::HasInputFocus() const
-{
-	return m_rendererFocus != nullptr;
-}
-
-bool GUIElementBase::OverlapTest(Rect rect, Vector2 point)
-{
-	if(point.x < rect.Left() || point.x > rect.Right())
-		return false;
-	if(point.y < rect.Top() || point.y > rect.Bottom())
-		return false;
-	return true;
-}
-
-void GUIElementBase::m_OnRemovedFromParent()
-{
-	slot = nullptr;
-}
-void GUIElementBase::m_AddedToSlot(GUISlotBase* slot)
-{
-}
-void GUIElementBase::m_OnZOrderChanged(GUISlotBase* slot)
-{
-}
-void GUIElementBase::m_TickAnimations(float deltaTime)
-{
-	for(auto it = m_animationMap.begin(); it != m_animationMap.end();)
-	{
-		bool done = !it->second->Update(deltaTime);
+		auto anim = *it;
+		bool done = !anim->Update(deltaTime);
 		if(done)
 		{
-			it = m_animationMap.erase(it);
+			anim.Destroy();
+			it = m_animations.erase(it);
 			continue;
 		}
 		it++;
 	}
+	m_PostAnimationUpdate();
 }
-
-const Transform2D& GUIElementBase::GetRenderTransform() const
+void GUIElementBase::Update(GUIUpdateData data)
 {
-	return m_renderTransform;
+	m_UpdateTransform(data.area, data.renderTransform);
 }
-void GUIElementBase::SetRenderTransform(const Transform2D& transform)
+Vector2 GUIElementBase::m_GetDesiredBaseSize(GUIUpdateData data)
 {
-	m_renderTransform = transform;
+	return Vector2();
 }
-
-GUISlotBase::~GUISlotBase()
+Vector2 GUIElementBase::GetDesiredSize(GUIUpdateData data)
 {
-	if(element)
+	if(visibility == Visibility::Collapsed)
+		return Vector2();
+	return m_GetDesiredBaseSize(data);
+}
+Ref<GUIAnimation> GUIElementBase::AddAnimation(Action<void, float> anim, float duration, Interpolation::TimeFunction timeFunction)
+{
+	if(m_animationsByUpdater.Contains(anim))
 	{
-		element->m_OnRemovedFromParent();
+		// Remove old animation
+		RemoveAnimation(anim);
+	}
+
+	Ref<GUIAnimation> newAnimation = *new GUIAnimation(anim, duration, timeFunction);
+	m_animations.Add(newAnimation);
+	m_animationsByUpdater.Add(anim, newAnimation);
+	return newAnimation;
+}
+void GUIElementBase::RemoveAnimation(Action<void, float> anim)
+{
+	auto foundAnim = m_animationsByUpdater.Find(anim);
+	if(foundAnim)
+	{
+		m_animations.erase(foundAnim[0]);
+		m_animationsByUpdater.erase(anim);
 	}
 }
-void GUISlotBase::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
+void GUIElementBase::RemoveAnimation(Ref<GUIAnimation> anim)
 {
-	// Apply padding
-	Rect scissorRect = rd.area = padding.Apply(rd.area);
-
-	// Store area
-	m_cachedArea = rd.area;
-
-	element->PreRender(rd, inputElement);
-}
-
-void GUISlotBase::Render(GUIRenderData rd)
-{
-	// Scissor Rectangle
-	rd.area = m_cachedArea;
-
-	rd.guiRenderer->PushScissorRect(rd.area);
-	element->Render(rd);
-	rd.guiRenderer->PopScissorRect();
-}
-
-Vector2 GUISlotBase::GetDesiredSize(GUIRenderData rd)
-{
-	Vector2 size = element->GetDesiredSize(rd);
-	return size + padding.GetSize();
-}
-Rect GUISlotBase::ApplyFill(FillMode fillMode, const Vector2& inSize, const Rect& rect)
-{
-	if(fillMode == FillMode::None)
+	if(m_animations.Contains(anim))
 	{
-		return Rect(rect.pos, inSize);
-	}
-	else if(fillMode == FillMode::Stretch)
-		return rect;
-	else if(fillMode == FillMode::Fit)
-	{
-		float rx = inSize.x / rect.size.x;
-		float ry = inSize.y / rect.size.y;
-		float scale = 1.0f;
-		if(rx > ry)
-		{
-			{
-				scale = 1.0f / rx;
-			}
-		}
-		else // ry is largest
-		{
-			{
-				scale = 1.0f / ry;
-			}
-		}
-
-		Rect ret = rect;
-		{
-			Vector2 newSize = inSize * scale;
-			ret.size = newSize;
-		}
-		return ret;
-	}
-	else // Fill
-	{
-		float rx = inSize.x / rect.size.x;
-		float ry = inSize.y / rect.size.y;
-		float scale = 1.0f;
-		if(rx < ry)
-		{
-			scale = 1.0f / rx;
-		}
-		else // ry is smallest
-		{
-			scale = 1.0f / ry;
-		}
-
-		Rect ret = rect;
-		{
-			Vector2 newSize = inSize * scale;
-			ret.size = newSize;
-		}
-		return ret;
+		m_animationsByUpdater.erase(anim->updater);
+		m_animations.erase(anim);
 	}
 }
-Rect GUISlotBase::ApplyAlignment(const Vector2& alignment, const Rect& rect, const Rect& parent)
+Ref<GUIAnimation> GUIElementBase::FindAnimation(Action<void, float> updater)
 {
-	Vector2 remaining = parent.size - rect.size;
-	remaining.x = remaining.x;
-	remaining.y = remaining.y;
-
-	return Rect(parent.pos + remaining * alignment, rect.size);
+	auto found = m_animationsByUpdater.Find(updater);
+	if(found)
+		return *found;
+	return Ref<GUIAnimation>();
 }
-
-void GUISlotBase::SetZOrder(int32 zorder)
+GUISlotBase* GUIElementBase::GetSlot()
 {
-	m_zorder = zorder;
-	parent->m_OnZOrderChanged(this);
+	return m_slot;
 }
-int32 GUISlotBase::GetZOrder() const
+ContainerBase* GUIElementBase::GetParent()
 {
-	return m_zorder;
+	return m_slot ?  m_slot->parent : nullptr;
+}
+void GUIElementBase::m_AttachChild(GUIElementBase& element, GUISlotBase* slot)
+{
+	element.m_slot = slot;
+	element.m_gui = m_gui;
+}
+void GUIElementBase::m_UpdateTransform(Rect area, Transform2D parentTransform)
+{
+	if(!m_transformValid.IsValid())
+	{
+		m_cachedArea = area;
+		m_cachedTransform = renderTransform.Get() * parentTransform;
+		m_cachedInverseTransform = m_cachedTransform.Inverted();
+
+		m_cachedObjectTransform = Transform2D::Translation(area.pos);
+		m_cachedObjectTransform *= m_cachedTransform;
+		m_cachedObjectTransform *= Transform2D::Scale(area.size);
+		m_cachedInverseObjectTransform = m_cachedObjectTransform.Inverted();
+		m_transformValid.Update();
+	}
+}
+void GUIElementBase::m_UpdateTransform(GUIUpdateData& data)
+{
+	m_UpdateTransform(data.area, data.renderTransform);
+	data.renderTransform = m_cachedTransform;
+	data.area = m_cachedArea;
+}
+void GUIElementBase::m_AddedToSlot(GUISlotBase* slot)
+{
+}
+void GUIElementBase::m_OnRemovedFromParent()
+{
+	m_slot = nullptr;
+	m_gui = nullptr;
 }

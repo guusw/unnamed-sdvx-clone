@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CommonGUIStyle.hpp"
+using namespace Graphics;
 
 CommonGUIStyle::CommonGUIStyle(class OpenGL* gl)
 {

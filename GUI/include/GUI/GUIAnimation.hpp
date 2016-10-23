@@ -1,140 +1,41 @@
 #pragma once
 #include <Shared/Interpolation.hpp>
+#include <Shared/Action.hpp>
 
 using Interpolation::TimeFunction;
 
+// void func(float time); where time [0,1]
+typedef Action<void, float> GUIAnimationUpdater;
+
 // GUI Animation object
-class IGUIAnimation : public RefCounted<IGUIAnimation>
+class GUIAnimation : public RefCounted<GUIAnimation>
 {
 public:
-	virtual ~IGUIAnimation() = default;
+	GUIAnimation(GUIAnimationUpdater updater, float duration, Interpolation::TimeFunction timeFunction);
+
 	// Return false when done
-	virtual bool Update(float deltaTime) = 0;
-	// Target value of the animation
-	virtual void* GetTarget() = 0;
+	bool Update(float deltaTime);
+
+	float GetDuration() const;
+	void SetDuration(float time);
+
+	float GetPhase() const;
+	void SetPhase(float time);
+
+	float GetTime() const;
+	void SetTime(float time);
+
+	// Reversed animation
+	bool reversed = false;
 
 	// Timing function used
 	TimeFunction timeFunction = Interpolation::Linear;
 
-	template<typename T, typename Lambda>
-	static Ref<IGUIAnimation> CreateCallback(T next, T last, float duration, Lambda&& l, uint32 identifier);
-	template<typename T>
-	static Ref<IGUIAnimation> Create(T* target, T next, float duration);
-	template<typename T>
-	static Ref<IGUIAnimation> Create(T* target, T next, T last, float duration);
-};
+	// Updater function
+	// Input = Time [0,1], already remapped to new time function
+	GUIAnimationUpdater updater;
 
-// A templated animation of a single vector/float/color variable
-template<typename T>
-class GUIAnimation : public IGUIAnimation
-{
-public:
-	// A->B animation with A set to the current value
-	GUIAnimation(T* target, T newValue, float duration)
-	{
-		assert(target);
-		m_target = target;
-		m_duration = duration;
-		m_last = m_target[0];
-		m_next = newValue;
-	}
-	// A->B animation with A and B provided
-	GUIAnimation(T* target, T newValue, T lastValue, float duration)
-	{
-		assert(target);
-		m_target = target;
-		m_duration = duration;
-		m_last = lastValue;
-		m_next = newValue;
-	}
-	virtual bool Update(float deltaTime) override
-	{
-		if(m_time >= m_duration)
-			return false;
-
-		m_time += deltaTime;
-		float r = m_time / m_duration;
-		if(m_time >= m_duration)
-		{
-			r = 1.0f;
-			m_time = m_duration;
-		}
-
-		T current = Interpolation::Lerp(m_last, m_next, r, timeFunction);
-		m_target[0] = current;
-
-		return r < 1.0f;
-	}
-	// Target of the animation
-	virtual void* GetTarget() override
-	{
-		return m_target;
-	}
 private:
-	T m_last;
-	T m_next;
-	T* m_target;
 	float m_time = 0.0f;
 	float m_duration;
 };
-
-// A templated animation of a single vector/float/color variable
-template<typename T, typename Lambda>
-class GUICallbackAnimation : public IGUIAnimation
-{
-public:
-	// A->B animation with A and B provided, calls l on every update
-	GUICallbackAnimation(Lambda&& l, T newValue, T lastValue, float duration, uint32 identifier) : m_lambda(l)
-	{
-		m_identifier = identifier;
-		m_duration = duration;
-		m_last = lastValue;
-		m_next = newValue;
-	}
-	virtual bool Update(float deltaTime) override
-	{
-		if(m_time >= m_duration)
-			return false;
-
-		m_time += deltaTime;
-		float r = m_time / m_duration;
-		if(m_time >= m_duration)
-		{
-			r = 1.0f;
-			m_time = m_duration;
-		}
-
-		T current = Interpolation::Lerp(m_last, m_next, r, timeFunction);
-		m_lambda(current);
-
-		return r < 1.0f;
-	}
-	// Target of the animation
-	virtual void* GetTarget() override
-	{
-		return (void*)m_identifier;
-	}
-private:
-	size_t m_identifier;
-	Lambda m_lambda;
-	T m_last;
-	T m_next;
-	float m_time = 0.0f;
-	float m_duration;
-};
-
-template<typename T, typename Lambda>
-Ref<IGUIAnimation> IGUIAnimation::CreateCallback(T next, T last, float duration, Lambda&& l, uint32 identifier)
-{
-	return Ref<IGUIAnimation>(new GUICallbackAnimation<T, Lambda>(std::forward<Lambda>(l), next, last, duration, identifier));
-}
-template<typename T>
-Ref<IGUIAnimation> IGUIAnimation::Create(T* target, T next, float duration)
-{
-	return Ref<IGUIAnimation>(new GUIAnimation<T>(target, next, duration));
-}
-template<typename T>
-Ref<IGUIAnimation> IGUIAnimation::Create(T* target, T next, T last, float duration)
-{
-	return Ref<IGUIAnimation>(new GUIAnimation<T>(target, next, last, duration));
-}

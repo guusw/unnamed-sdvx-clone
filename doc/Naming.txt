@@ -54,9 +54,20 @@ Other coding style things:
 		private:
 			float m_myFloat;
 		}
+		
+		Note: For PImpl's the private fields are sometimes placed on top, before the constructor
 	Overriding base class members:
 		// Use override and virtual keyword when overiding something
 		virtual void OverridingBaseClassFunction() override;
+		
+	Includes from the same library in headers or 
+	from other libraries in source files:
+		#include <GUI/GUIEvents.hpp>
+		#include <Shared/Handle.hpp>
+		#include <Graphics/GL.hpp>
+		
+	Includes from the same library in source files (e.g Graphics/GL.cpp):
+		#include "GL.hpp"
 	
 Asset naming convention:
 	- Naming should describe the asset

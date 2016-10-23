@@ -1,5 +1,6 @@
 #pragma once
-#include "GUI/GUIElement.hpp"
+#include <GUI/GUIElement.hpp>
+#include <Shared/Invalidation.hpp>
 
 // Fill mode for gui elements
 enum class FillMode
@@ -18,54 +19,57 @@ enum class FillMode
 Base class used for slots that can contain child elements inside an existing element.
 The slot class contains specific properties of how to layout the child element in its parent
 */
+class ContainerBase;
 class GUISlotBase : public Unique
 {
 public:
+	// Constant for a vector of {-1,-1} to indicate the value should not be used
+	static const Vector2 MinusOne;
+
+public:
+	GUISlotBase();
 	virtual ~GUISlotBase();
 
-	// Evaluate positioning, etc.
-	virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement);
-	// Fill RenderQueue with render commands and process input
-	virtual void Render(GUIRenderData rd);
+	void InvalidateArea();
+
+	virtual void Update(GUIUpdateData data);
 
 	// Aquire desired element size
-	virtual Vector2 GetDesiredSize(GUIRenderData rd);
+	virtual Vector2 GetDesiredSize(GUIUpdateData data);
 
 	// Applies filling logic based on the selected fill mode
 	static Rect ApplyFill(FillMode fillMode, const Vector2& inSize, const Rect& rect);
 	// Applies alignment to an input rectangle
 	static Rect ApplyAlignment(const Vector2& alignment, const Rect& rect, const Rect& parent);
 
-	// Element that contains this slot
-	GUIElementBase* parent = nullptr;
 	// Padding that is applied to the element after it is fully placed
-	Margin padding;
+	NotifyDirty<Margin> padding;
+
+	// Allow overflow of content outside of this slot
+	NotifyDirty<bool> allowOverflow = false;
+
+	// Alignment of the element in the parent.
+	//	a value of (0,0) places the widget starting from the top-left corner extending to bottom-right
+	//	a value of(1,0) places the widget starting from the top-right corner extending to bottom-left
+	NotifyDirty<Vector2> alignment;
+
+	// Fill horizontally to parent
+	NotifyDirty<bool> fillX = false;
+
+	// Fill vertically to parent
+	NotifyDirty<bool> fillY = false;
+
+	// Z-Order of the element
+	NotifyDirty<int> zOrder = 0;
+
+	// Element that contains this slot
+	// only GUIContainer elements may contain child elements
+	ContainerBase* parent = nullptr;
+
 	// The element contained in this slot
 	GUIElement element;
-	// Allow overflow of content outside of this slot
-	bool allowOverflow = false;
-
-	void SetZOrder(int32 zorder);
-	int32 GetZOrder() const;
-
 protected:
-	// Cached placement of item
-	Rect m_cachedArea;
+	void m_UpdateArea(Rect area);
 
-private:
-	// Depth sorting for this slot, if applicable
-	int32 m_zorder = 0;
+	Cached<Rect> m_cachedArea;
 };
-
-// Slot creation helper
-template<typename T> T* GUIElementBase::CreateSlot(Ref<GUIElementBase> element)
-{
-	static_assert(std::is_base_of<GUISlotBase, T>::value, "Class does not inherit from GUISlotBase");
-
-	assert(element->slot == nullptr);
-	T* newSlot = new T();
-	newSlot->parent = this;
-	newSlot->element = element;
-	element->slot = newSlot;
-	return newSlot;
-}

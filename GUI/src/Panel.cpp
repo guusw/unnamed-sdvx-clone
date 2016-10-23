@@ -77,7 +77,7 @@ Panel::Slot* Panel::GetContentSlot()
 
 void Panel::Slot::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 {
-	rd.area = padding.Apply(rd.area);
+	rd.area = padding->Apply(rd.area);
 
 	Vector2 size = GetDesiredSize(rd);
 

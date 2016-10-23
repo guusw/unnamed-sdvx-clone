@@ -1,43 +1,32 @@
 #pragma once
-#include "GUIElement.hpp"
+#include <GUI/ContainerBase.hpp>
+#include <GUI/Anchor.hpp>
+#include <Shared/Color.hpp>
 
 /*
 Canvas that sorts elements by depth and anchors them to the screen
 */
-class Canvas : public GUIElementBase
+class Canvas : public ContainerBase
 {
 public:
 	~Canvas();
-	void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
-	void Render(GUIRenderData rd) override;
-	virtual Vector2 GetDesiredSize(GUIRenderData rd) override;
+
+	virtual void UpdateAnimations(float deltaTime) override;
+	virtual void Update(GUIUpdateData data) override;
+	virtual void Render(GUIRenderData data) override;
 
 	class Slot : public GUISlotBase
 	{
 	public:
-		virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
-		virtual void Render(GUIRenderData rd) override;
+		Slot();
 
-		// Sets both autosized properties
-		void AutoSize(bool enabled);
+		virtual void Update(GUIUpdateData data) override;
 
 		// Anchor for the element
-		Anchor anchor = Anchors::TopLeft;
+		NotifyDirty<Anchor> anchor = Anchors::TopLeft;
 
 		// Offset from anchored position
-		Rect offset;
-
-		// Fixed Size override, set to (0,0) to ignore
-		Vector2 size;
-
-		// if set to true, the size of the child element will be used instead
-		bool autoSizeX = false;
-		bool autoSizeY = false;
-
-		// Alignment of the element in the parent.
-		//	a value of (0,0) places the widget starting from the top-left corner extending to bottom-right
-		//	a value of(1,0) places the widget starting from the top-right corner extending to bottom-left
-		Vector2 alignment;
+		NotifyDirty<Rect> offset;
 	};
 
 	class Canvas::Slot* Add(GUIElement element);
@@ -46,10 +35,16 @@ public:
 	const Vector<Canvas::Slot*>& GetChildren();
 
 protected:
-	virtual void m_OnZOrderChanged(GUISlotBase* slot);
+	void m_OnChildSlotChanged(GUISlotBase* slot) override;
+	void m_OnChildZOrderChanged(GUISlotBase* slot) override;
+	void m_PropagateEventToChildren(GUIEvent& event) override;
+	void m_InvalidateSlotAreas() override;
+	virtual Vector2 m_GetDesiredBaseSize(GUIUpdateData data) override;
 
 private:
 	void m_SortChildren();
 
+private:
+	CachedState m_sortingOrder;
 	Vector<Slot*> m_children;
 };

@@ -3,9 +3,6 @@
 #include "Rect.hpp"
 #include <cmath>
 
-Transform2D::Transform2D()
-{
-}
 Transform2D::Transform2D(Vector2 translation, Vector2 scale /*= Vector2(1.0f, 1.0f)*/)
 {
 	mat[6] = translation.x;
@@ -25,76 +22,9 @@ Transform2D::Transform2D(Vector2 translation, Vector2 scale, float rotation)
 	mat[3] = sin(rotation) * scale.y;
 	mat[4] = cos(rotation)  * scale.y;
 }
-Transform2D& Transform2D::operator=(const Transform2D& right)
+Transform2D::Transform2D(const Matrix3x3& mat)
 {
-	memcpy(this, &right, sizeof(mat));
-	return *this;
-}
-Transform2D::Transform2D(std::initializer_list<float> values)
-{
-	auto it = values.begin();
-	for(size_t i = 0; i < Math::Max<size_t>(values.size(), 9); i++)
-	{
-		mat[i] = *it++;
-	}
-}
-Transform2D::Transform2D(const Transform2D& other)
-{
-	memcpy(this, &other, sizeof(mat));
-}
-float& Transform2D::operator[](size_t idx)
-{
-	return mat[idx];
-}
-const float& Transform2D::operator[](size_t idx) const
-{
-	return mat[idx];
-}
-Transform2D& Transform2D::operator*=(const Transform2D& other)
-{
-	Transform2D result;
-
-	size_t index = 0;
-	for(size_t x = 0; x < 3; x++)
-	{
-		for(size_t y = 0; y < 3; y++)
-		{
-			result[index] = 0;
-			size_t left = y;
-			size_t top = x * 3;
-			for(size_t i = 0; i < 3; i++)
-			{
-				result[index] += mat[left] * other.mat[top];
-				left += 3, top++;
-			}
-			index++;
-		}
-	}
-
-	return *this = result;
-}
-Transform2D Transform2D::operator*(const Transform2D& other) const
-{
-	Transform2D result;
-
-	size_t index = 0;
-	for(size_t x = 0; x < 3; x++)
-	{
-		for(size_t y = 0; y < 3; y++)
-		{
-			result[index] = 0;
-			size_t left = y;
-			size_t top = x * 3;
-			for(size_t i = 0; i < 3; i++)
-			{
-				result[index] += mat[left] * other.mat[top];
-				left += 3, top++;
-			}
-			index++;
-		}
-	}
-
-	return result;
+	*(Matrix3x3*)this = mat;
 }
 void Transform2D::ScaleTransform(const Vector2& scale)
 {
@@ -128,7 +58,7 @@ Transform2D Transform2D::Rotation(float rotation)
 	ret.mat[4] = cos(rotation);
 	return ret;
 }
-Transform2D Transform2D::RotateAround(float rotation, Vector2 pivot)
+Transform2D Transform2D::RotationAround(float rotation, Vector2 pivot)
 {
 	return Translation(pivot) * Rotation(rotation) * Translation(-pivot);
 }
@@ -166,6 +96,7 @@ Vector2 Transform2D::GetRight() const
 	Vector2& x = *(Vector2*)(mat + 0);
 	return x.Normalized();
 }
+
 Vector2 Transform2D::TransformPoint(const Vector2& position) const
 {
 	const float w = this->mat[2] * position.x + this->mat[5] * position.y + this->mat[8];

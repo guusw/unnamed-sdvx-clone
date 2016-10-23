@@ -1,6 +1,6 @@
 #pragma once
-#include "LayoutBox.hpp"
-#include "CommonGUIStyle.hpp"
+#include <GUI/LayoutBox.hpp>
+#include <GUI/CommonGUIStyle.hpp>
 
 /* Field that allows text input when focused */
 class TextInputField : public LayoutBox
@@ -8,7 +8,7 @@ class TextInputField : public LayoutBox
 public:
 	TextInputField(Ref<CommonGUIStyle> style);
 	virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
-	virtual void Render(GUIRenderData rd) override;
+	virtual void Render(GUIRenderData data) override;
 
 	virtual Vector2 GetDesiredSize(GUIRenderData rd);
 

@@ -12,3 +12,9 @@
 #endif
 
 #include "Shared/Types.hpp"
+#include <algorithm>
+#include <string>
+#include <vector>
+#include <map>
+#include <set>
+#include <unordered_map>

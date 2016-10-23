@@ -34,7 +34,7 @@ void Button::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 	}
 
 	m_cachedInnerRect = m_style->buttonBorder.Apply(rd.area);
-	m_hovered = rd.OverlapTest(m_cachedInnerRect);
+	//m_hovered = rd.OverlapTest(m_cachedInnerRect);
 
 	if(!m_animation)
 	{
@@ -61,27 +61,12 @@ void Button::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 }
 void Button::Render(GUIRenderData rd)
 {
-	m_TickAnimations(rd.deltaTime);
+	//m_TickAnimations(rd.deltaTime);
 
 	// Render BG
 	Margini padding = (int32)m_animationPadding;
 	rd.area = padding.Apply(rd.area);
 	rd.guiRenderer->RenderButton(rd.area, (m_hovered) ? m_style->buttonHighlightTexture : m_style->buttonTexture, m_style->buttonBorder);
-
-	if(m_hovered && rd.guiRenderer->GetMouseButtonPressed(MouseButton::Left))
-	{
-		m_held = true;
-		rd.guiRenderer->SetInputFocus(nullptr);
-		OnPressed.Call();
-	}
-
-	if(m_held)
-	{
-		if(!rd.guiRenderer->GetMouseButton(MouseButton::Left))
-			m_held = false;
-		else
-			rd.area.pos += Vector2(1.0f);
-	}
 
 	// Render content(Text) but clipped to button insides
 	rd.guiRenderer->PushScissorRect(m_cachedInnerRect);

@@ -25,15 +25,15 @@ void ScrollBox::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 	Rect sourceRect = rd.area;
 
 	// Apply scroll wheel scroll
-	m_hovered = rd.OverlapTest(sourceRect);
-	if(m_content && m_hovered && !m_vscroll->IsHeld())
-	{
-		int32 mouseScroll = rd.guiRenderer->GetMouseScroll() * 64;
-		if(mouseScroll != 0)
-		{
-			m_AnimateScrollDelta(mouseScroll);
-		}
-	}
+	//m_hovered = rd.OverlapTest(sourceRect);
+	//if(m_content && m_hovered && !m_vscroll->IsHeld())
+	//{
+	//	int32 mouseScroll = rd.guiRenderer->GetMouseScroll() * 64;
+	//	if(mouseScroll != 0)
+	//	{
+	//		m_AnimateScrollDelta(mouseScroll);
+	//	}
+	//}
 
 	m_cachedSliderRect = Rect(Vector2(), m_vscroll->GetDesiredSize(rd));
 	m_cachedContentRect = sourceRect;

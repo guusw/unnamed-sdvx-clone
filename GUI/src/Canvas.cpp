@@ -1,36 +1,55 @@
 #include "stdafx.h"
 #include "GUI.hpp"
 #include "GUIRenderer.hpp"
+#include <Shared/Color.hpp>
 
 // Canvas
-
 Canvas::~Canvas()
 {
-	for(auto& c : m_children)
+	for(auto c : m_children)
 	{
 		delete c;
 	}
 }
-
-void Canvas::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
+void Canvas::UpdateAnimations(float deltaTime)
 {
-	for(auto& c : m_children)
+	GUIElementBase::UpdateAnimations(deltaTime);
+	for(auto c : m_children)
 	{
-		c->PreRender(rd, inputElement);
+		c->element->UpdateAnimations(deltaTime);
 	}
 }
-void Canvas::Render(GUIRenderData rd)
+void Canvas::Update(GUIUpdateData data)
 {
-	m_TickAnimations(rd.deltaTime);
-
 	if(visibility != Visibility::Visible)
 		return;
 
-	for(auto& c : m_children)
+	m_UpdateTransform(data);
+
+	for(auto c : m_children)
 	{
-		c->Render(rd);
+		c->Update(data);
 	}
 }
+void Canvas::Render(GUIRenderData data)
+{
+	if(visibility != Visibility::Visible)
+		return;
+
+	// Update sorting order?
+	//	this should only have a visual effect, move to update if needed
+	if(!m_sortingOrder.IsValid())
+	{
+		m_SortChildren();
+		m_sortingOrder.Update();
+	}
+
+	for(auto& c : m_children)
+	{
+		c->element->Render(data);
+	}
+}
+
 class Canvas::Slot* Canvas::Add(GUIElement element)
 {
 	bool found = false;
@@ -42,7 +61,8 @@ class Canvas::Slot* Canvas::Add(GUIElement element)
 
 	Slot* slot = CreateSlot<Canvas::Slot>(element);
 	m_children.AddUnique(slot);
-	m_SortChildren();
+	m_sortingOrder.Invalidate();
+
 	return slot;
 }
 void Canvas::Remove(GUIElement element)
@@ -61,8 +81,7 @@ void Canvas::Remove(GUIElement element)
 }
 void Canvas::Clear()
 {
-
-	for(auto& c : m_children)
+	for(auto c : m_children)
 	{
 		delete c;
 	}
@@ -72,80 +91,82 @@ const Vector<Canvas::Slot*>& Canvas::GetChildren()
 {
 	return m_children;
 }
-void Canvas::m_OnZOrderChanged(GUISlotBase* slot)
+void Canvas::m_OnChildSlotChanged(GUISlotBase* slot)
 {
-	m_SortChildren();
+}
+void Canvas::m_OnChildZOrderChanged(GUISlotBase* slot)
+{
+	m_sortingOrder.Invalidate();
+}
+void Canvas::m_PropagateEventToChildren(GUIEvent& event)
+{
+	for(auto c : m_children)
+	{
+		event.Propagate(*c->element);
+	}
+}
+void Canvas::m_InvalidateSlotAreas()
+{
+	for(auto c : m_children)
+	{
+		c->InvalidateArea();
+	}
 }
 void Canvas::m_SortChildren()
 {
 	m_children.Sort([](const GUISlotBase* l, const GUISlotBase* r)
 	{
-		return l->GetZOrder() < r->GetZOrder();
+		return l->zOrder < r->zOrder;
 	});
 }
-Vector2 Canvas::GetDesiredSize(GUIRenderData rd)
+Vector2 Canvas::m_GetDesiredBaseSize(GUIUpdateData data)
 {
 	Vector2 sizeOut = Vector2(0, 0);
 	for(auto s : m_children)
 	{
-		Vector2 elemSize = s->GetDesiredSize(rd);
+		Vector2 elemSize = s->GetDesiredSize(data);
 		sizeOut.x = Math::Max(sizeOut.x, elemSize.x);
 		sizeOut.y = Math::Max(sizeOut.y, elemSize.y);
 	}
 	return sizeOut;
 }
 
-void Canvas::Slot::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
+Canvas::Slot::Slot()
 {
-	// Apply anchor and offset to get the canvas rectangle
-	rd.area = anchor.Apply(rd.area);
-	
-	// Fixed size mode
-	if(size != Vector2::Zero)
-	{
-		rd.area = ApplyAlignment(alignment, Rect(Vector2(), size), rd.area);
-	}
-	else
-	{
-		// Perform auto-sizing
-		{
-			Vector2 desiredSize = GetDesiredSize(rd) + offset.size;
-			Rect autoSized = ApplyAlignment(alignment, Rect(Vector2(), desiredSize), rd.area);
-			if(autoSizeX)
-			{
-				rd.area.pos.x = autoSized.pos.x;
-				rd.area.size.x = autoSized.size.x;
-			}
-			if(autoSizeY)
-			{
-				rd.area.pos.y = autoSized.pos.y;
-				rd.area.size.y = autoSized.size.y;
-			}
-		}
-	}
+	auto invalidateArea = &GUISlotBase::InvalidateArea;
 
-	rd.area.size += offset.size;
-	rd.area.pos += offset.pos;
+	// Area changes
+	offset.Notify.Bind(this, invalidateArea);
+	anchor.Notify.Bind(this, invalidateArea);
 
-	// Apply padding
-	rd.area = padding.Apply(rd.area);
-	// Cache area
-	m_cachedArea = rd.area;
-	
-	element->PreRender(rd, inputElement);
-
+	// Default fill
+	fillX = true;
+	fillY = true;
 }
-void Canvas::Slot::Render(GUIRenderData rd)
+void Canvas::Slot::Update(GUIUpdateData data)
 {
-	rd.area = m_cachedArea;
-	if(!allowOverflow)
-		rd.guiRenderer->PushScissorRect(m_cachedArea);
-	element->Render(rd);
-	if(!allowOverflow)
-		rd.guiRenderer->PopScissorRect();
-}
-void Canvas::Slot::AutoSize(bool enabled)
-{
-	autoSizeX = enabled;
-	autoSizeY = enabled;
+	if(!m_cachedArea.IsValid())
+	{
+		data.area = anchor->Apply(data.area);
+
+		data.area.pos += offset->pos;
+		data.area.size += offset->size;
+
+		Vector2 childSize;
+		if(!fillX || !fillY)
+			childSize = element->GetDesiredSize(data);
+
+		if(fillX)
+			childSize.x = data.area.size.x;
+		if(fillY)
+			childSize.y = data.area.size.y;
+
+		Rect childRect = Rect(Vector2(), childSize);
+		data.area = ApplyAlignment(alignment, childRect, data.area);
+		data.area = padding->Apply(data.area);
+		m_UpdateArea(data.area);
+	}
+	data.area = m_cachedArea;
+
+	element->Update(data);
 }

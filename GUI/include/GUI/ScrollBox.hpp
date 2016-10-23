@@ -1,6 +1,7 @@
 #pragma once
-#include "GUI/GUISlotBase.hpp"
-#include "CommonGUIStyle.hpp"
+#include <GUI/GUISlotBase.hpp>
+#include <GUI/CommonGUIStyle.hpp>
+#include "Canvas.hpp"
 
 class ScrollBox : public GUIElementBase
 {
@@ -8,10 +9,10 @@ public:
 	ScrollBox(Ref<CommonGUIStyle> style);
 	~ScrollBox();
 	virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
-	virtual void Render(GUIRenderData rd) override;
+	virtual void Render(GUIRenderData data) override;
 
 	// Calculates the image size if set
-	Vector2 GetDesiredSize(GUIRenderData rd) override;
+	Vector2 m_GetDesiredBaseSize(GUIRenderData rd) override;
 
 	class Slot : public GUISlotBase
 	{

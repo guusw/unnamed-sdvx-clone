@@ -1,6 +1,7 @@
 #pragma once
-#include "GUI/GUISlotBase.hpp"
-#include "GUI/CommonGUIStyle.hpp"
+#include <GUI/GUISlotBase.hpp>
+#include <GUI/CommonGUIStyle.hpp>
+#include "Canvas.hpp"
 
 class Button : public GUIElementBase
 {
@@ -8,8 +9,8 @@ public:
 	Button(Ref<CommonGUIStyle> style);
 
 	virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
-	virtual void Render(GUIRenderData rd) override;
-	virtual Vector2 GetDesiredSize(GUIRenderData rd) override;
+	virtual void Render(GUIRenderData data) override;
+	virtual Vector2 m_GetDesiredBaseSize(GUIRenderData rd) override;
 
 	// Set the text shown on the button
 	void SetText(const WString& text);

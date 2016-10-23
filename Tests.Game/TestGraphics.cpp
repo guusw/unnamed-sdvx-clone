@@ -9,7 +9,7 @@ public:
 	virtual void Render(float deltaTime) override
 	{
 		Vector2 windowSize = m_window->GetWindowSize();
-		RenderQueue& rq = guiRenderer->Begin();
+		RenderQueue& rq = guiRenderer->Begin(Rect(Vector2(), windowSize));
 		{
 			PointDrawCall* box = new PointDrawCall();
 			box->mesh = guiRenderer->lineBox;
@@ -36,8 +36,6 @@ public:
 			rq.Add(drawTexture);
 		}
 		guiRenderer->End();
-
-		m_gl->SwapBuffers();
 	}
 
 	virtual void Init() override

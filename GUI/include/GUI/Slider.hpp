@@ -1,6 +1,7 @@
 #pragma once
-#include "GUI/GUISlotBase.hpp"
-#include "GUI/CommonGUIStyle.hpp"
+#include <GUI/GUISlotBase.hpp>
+#include <GUI/CommonGUIStyle.hpp>
+#include "Canvas.hpp"
 
 class Slider : public GUIElementBase
 {
@@ -8,8 +9,8 @@ public:
 	Slider(Ref<CommonGUIStyle> style);
 
 	virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
-	virtual void Render(GUIRenderData rd) override;
-	virtual Vector2 GetDesiredSize(GUIRenderData rd) override;
+	virtual void Render(GUIRenderData data) override;
+	virtual Vector2 m_GetDesiredBaseSize(GUIRenderData rd) override;
 
 	float GetValue() const;
 	void SetValue(float val, bool callHandlers = true);

@@ -35,12 +35,21 @@ bool GraphicsTestBase::Run()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		float dt = t.SecondsAsFloat();
+		if(dt > 1.0f / 60.0f)
+			dt = 1.0f / 60.0f; // Limit delta-time for step debugging
 		t.Restart();
 		Render(dt);
+
+		m_gl->SwapBuffers();
 
 		// Garbage collect resources
 		ResourceManagers::TickAll();
 	}
 
 	return true;
+}
+void GUITestBase::Render(float deltaTime)
+{
+	gui->Update(deltaTime);
+	gui->Render(guiRenderer.GetData());
 }

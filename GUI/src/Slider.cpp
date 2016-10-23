@@ -29,51 +29,51 @@ void Slider::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 
 	m_cachedButtonRect = m_CalculateButtonRect(m_value);
 
-	bool lastHovered = m_hovered;
-	m_hovered = rd.OverlapTest(m_cachedButtonRect);
-	if(m_hovered && rd.guiRenderer->GetMouseButtonPressed(MouseButton::Left) && showButton)
-	{
-		m_held = true;
-		m_dragStart = rd.guiRenderer->GetMousePos();
-		rd.guiRenderer->SetInputFocus(nullptr);
-	}
+	//bool lastHovered = m_hovered;
+	//m_hovered = rd.OverlapTest(m_cachedButtonRect);
+	//if(m_hovered && rd.guiRenderer->GetMouseButtonPressed(MouseButton::Left) && showButton)
+	//{
+	//	m_held = true;
+	//	m_dragStart = rd.guiRenderer->GetMousePos();
+	//	rd.guiRenderer->SetInputFocus(nullptr);
+	//}
+	//
+	//if(!m_animation)
+	//{
+	//	if(m_hovered || m_held)
+	//	{
+	//		AddAnimation(Ref<IGUIAnimation>(
+	//			new GUIAnimation<float>(&m_buttonScale, 1.1f, 0.2f)), true);
+	//		m_animation = true;
+	//	}
+	//}
+	//else 
+	//{
+	//	if(!m_hovered && !m_held)
+	//	{
+	//		AddAnimation(Ref<IGUIAnimation>(
+	//			new GUIAnimation<float>(&m_buttonScale, 1.0f, 0.3f)), true);
+	//		m_animation = false;
+	//	}
+	//}
 
-	if(!m_animation)
-	{
-		if(m_hovered || m_held)
-		{
-			AddAnimation(Ref<IGUIAnimation>(
-				new GUIAnimation<float>(&m_buttonScale, 1.1f, 0.2f)), true);
-			m_animation = true;
-		}
-	}
-	else 
-	{
-		if(!m_hovered && !m_held)
-		{
-			AddAnimation(Ref<IGUIAnimation>(
-				new GUIAnimation<float>(&m_buttonScale, 1.0f, 0.3f)), true);
-			m_animation = false;
-		}
-	}
 
-
-	if(m_held)
-	{
-		if(rd.guiRenderer->GetMouseButtonReleased(MouseButton::Left) || !showButton)
-		{
-			OnSliding.Call(m_newValue);
-			OnValueSet.Call(m_newValue);
-			m_value = m_newValue;
-			m_held = false;
-			m_cachedButtonRect = m_CalculateButtonRect(m_value);
-		}
-		else
-		{
-			// Set input element
-			inputElement = this;
-		}
-	}
+	//if(m_held)
+	//{
+	//	if(rd.guiRenderer->GetMouseButtonReleased(MouseButton::Left) || !showButton)
+	//	{
+	//		OnSliding.Call(m_newValue);
+	//		OnValueSet.Call(m_newValue);
+	//		m_value = m_newValue;
+	//		m_held = false;
+	//		m_cachedButtonRect = m_CalculateButtonRect(m_value);
+	//	}
+	//	else
+	//	{
+	//		// Set input element
+	//		inputElement = this;
+	//	}
+	//}
 
 	m_cachedSliderRect = baseSize;
 }

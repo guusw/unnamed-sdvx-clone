@@ -1,20 +1,5 @@
 #pragma once
-
-struct GUITextInput
-{
-public:
-	// Apply text input to a string
-	WString Apply(const WString& in) const;
-	bool HasChanges() const;
-
-	class GUIElementBase* elementFocus = nullptr;
-	// Input string that was entered since last frame
-	WString input;
-	// Number of backspaces last frame
-	uint32 backspaceCount = 0;
-	// IME Composition string
-	WString composition;
-};
+#include <GUI/GUIRenderData.hpp>
 
 class GUIRenderer
 {
@@ -22,113 +7,60 @@ public:
 	~GUIRenderer();
 
 	// Loads gui shaders/textures/etc.
-	bool Init(class OpenGL* gl, Graphics::Window* window = nullptr);
+	bool Init(class Graphics::OpenGL* gl);
 
-	// Updates and renders the GUI
-	void Render(float deltaTime, Rect viewportSize, Ref<class GUIElementBase> rootElement);
-
-	// Use to manually start rendering GUI elements
-	RenderQueue& Begin();
-	// Use to manually stop rendering GUI elements
+	// Use to start rendering GUI
+	// fill the render queue with draw commands using any of the render functions on the GUIRenderer
+	Graphics::RenderQueue& Begin(const Rect& viewport);
+	// Use to stop rendering GUI
 	void End();
-
-	void SetWindow(Graphics::Window* window);
-	Graphics::Window* GetWindow() const;
 
 	void PushScissorRect(const Rect& scissor);
 	void PopScissorRect();
 	Rect GetScissorRect() const;
 
-	// The element that the mouse hovers over
-	GUIElementBase* GetHoveredElement();
-
-	// Set current input focus, this element receives keyboard text events
-	void SetInputFocus(class GUIElementBase* element);
-	// Get currently focused element
-	class GUIElementBase* GetInputFocus() const;
-
-	// Get the text input for the current frame
-	const GUITextInput& GetTextInput() const;
-
-	Vector2i RenderText(const String& str, const Vector2& position, const Color& color = Color(1.0f), uint32 fontSize = 16);
-	Vector2i RenderText(const WString& str, const Vector2& position, const Color& color = Color(1.0f), uint32 fontSize = 16);
-	void RenderText(Text& text, const Vector2& position, const Color& color = Color(1.0f));
-	void RenderRect(const Rect& rect, const Color& color = Color(1.0f), Texture texture = Texture());
-	void RenderButton(const Rect& rect, Texture texture, Margini border, const Color& color = Color::White);
-
-	/*** New API ***/
 	// Renders text
-	void RenderText(const Transform2D& transform, Text& text, const Color& color = Color::White);
-	void RenderText(const Transform2D& transform, const Rect& scissorRectangle, Text& text, const Color& color = Color::White);
+	void RenderText(const Transform2D& transform, Graphics::Text text, const Color& color = Color::White);
+	void RenderText(const Transform2D& transform, const Rect& scissorRectangle, Graphics::Text text, const Color& color = Color::White);
 	// Renders a rectangle with an optional texture and color
-	void RenderRect(const Transform2D& transform, const Color& color = Color::White, Texture texture = Texture());
-	void RenderRect(const Transform2D& transform, const Rect& scissorRectangle, const Color& color = Color::White, Texture texture = Texture());
+	void RenderRect(const Transform2D& transform, const Color& color = Color::White, Graphics::Texture texture = Graphics::Texture());
+	void RenderRect(const Transform2D& transform, const Rect& scissorRectangle, const Color& color = Color::White, Graphics::Texture texture = Graphics::Texture());
 	// Renders a wireframe box
 	void RenderWireBox(const Transform2D& boxTransform, const Color& color = Color::White, float lineWidth = 1.0f);
 	// Renders a single point
 	void RenderPoint(const Transform2D& transform, const Color& color = Color::White, float pointSize = 1.0f);
-
-	const Vector2i& GetMousePos() const;
-	const Vector2i& GetMouseDelta() const;
-
-	// Check if a mouse button is currently pressed
-	bool GetMouseButton(MouseButton btn) const;
-	// Check if mouse button was pressed since last frame
-	bool GetMouseButtonPressed(MouseButton btn) const;
-	// Check if mouse button was released since last frame
-	bool GetMouseButtonReleased(MouseButton btn) const;
-
-	// Vertical Mouse scroll
-	//	Positive for scroll down
-	//	Negative for scroll up
-	int32 GetMouseScroll() const;
+	// Renders a line
+	void RenderLine(const Transform2D& transform, const Color& color = Color::White, float pointSize = 1.0f);
+	void RenderLine(const Vector2& a, const Vector2& b, const Color& color = Color::White, float pointSize = 1.0f);
 
 	// Default used font
 	Graphics::Font font;
 	// Material used for rendering fonts
-	Material fontMaterial;
+	Graphics::Material fontMaterial;
 
 	// Textured/Color-Only materials
-	Material textureMaterial;
-	Material colorMaterial; 
+	Graphics::Material textureMaterial;
+	Graphics::Material colorMaterial;
 	// Button material
-	Material buttonMaterial;
+	Graphics::Material buttonMaterial;
 
 	// Quad material for drawing gui elements
-	Mesh guiQuad;
+	Graphics::Mesh guiQuad;
 	// Line box
-	Mesh lineBox;
+	Graphics::Mesh lineBox;
 	// Used for buttons since they use a geometry shader
-	Mesh pointMesh;
+	Graphics::Mesh pointMesh;
+	// Line segment
+	Graphics::Mesh lineMesh;
 
 private:
-	void m_OnTextInput(const WString& input);
-	void m_OnTextComposition(const TextComposition& input);
-	void m_OnKeyRepeat(Key key);
-	void m_OnKeyPressed(Key key);
-	void m_OnMousePressed(MouseButton btn);
-	void m_OnMouseReleased(MouseButton btn);
-	void m_OnMouseScroll(int32 scroll);
-	// Call to reset text input state after render frame
-	void m_ResetTextInput();
-
-	GUITextInput m_textInput;
-	OpenGL* m_gl;
-	Graphics::Window* m_window = nullptr;
-	RenderQueue* m_renderQueue = nullptr;
-	GUIElementBase* m_hoveredElement = nullptr;
-
-	bool m_mouseButtonState[3] = { 0 };
-	bool m_mouseButtonStateLast[3] = { 0 };
+	Graphics::OpenGL* m_gl;
+	Graphics::RenderQueue* m_renderQueue = nullptr;
 
 	// Internal timer for sending to shaders that use it and maybe other uses
 	float m_time;
 
-	Vector2i m_mousePos;
-	Vector2i m_mouseDelta;
-	int32 m_mouseScrollDelta = 0;
-
-	Rect m_viewportSize;
+	Rect m_viewport;
 
 	// Size.x < 0 means disabled
 	Rect m_scissorRect;

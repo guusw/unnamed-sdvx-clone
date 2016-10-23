@@ -1,19 +1,20 @@
 #pragma once
-#include "GUI/GUISlotBase.hpp"
+#include <GUI/ContainerBase.hpp>
 
 /*
 Container that arranges elements in a vertical/horizontal list
 */
-class LayoutBox : public GUIElementBase
+class LayoutBox : public ContainerBase
 {
 public:
 	~LayoutBox();
-	virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
-	virtual void Render(GUIRenderData rd) override;
-	virtual Vector2 GetDesiredSize(GUIRenderData rd) override;
+
+	virtual void UpdateAnimations(float deltaTime) override;
+	virtual void Update(GUIUpdateData data) override;
+	virtual void Render(GUIRenderData data) override;
 
 	// Calculates child element sizes based on the current settings
-	Vector<float> CalculateSizes(const GUIRenderData& rd) const;
+	Vector<float> CalculateSizes(const GUIUpdateData& data) const;
 
 	enum LayoutDirection
 	{
@@ -27,19 +28,14 @@ public:
 	class Slot : public GUISlotBase
 	{
 	public:
-		// If true will stretch all the elements to take up equal space
-		//	otherwise they will get put after each other
-		bool fillX = false;
-		bool fillY = false;
+		Slot();
 		// The amount of space to fill
 		//	0.5 would take up half of what it would normally
 		//	this only works if this slot is set to fill in the container's direction
-		float fillAmount = 1.0f;
+		NotifyDirty<float> fillAmount = 1.0f;
 
-		Vector2 alignment = Vector2(0.0f, 0.0f);
-
-		virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement);
-		virtual void Render(GUIRenderData rd) override;
+		virtual void Update(GUIUpdateData data) override;
+		void Render(GUIRenderData rd);
 	};
 
 	Slot* Add(GUIElement element);
@@ -47,6 +43,16 @@ public:
 	void Clear();
 
 	const Vector<LayoutBox::Slot*>& GetChildren();
+
+protected:
+	void m_PropagateEventToChildren(GUIEvent& event) override;
+	void m_InvalidateSlotAreas() override;
+	void m_OnChildSlotChanged(GUISlotBase* slot) override;
+	virtual Vector2 m_GetDesiredBaseSize(GUIUpdateData data) override;
+
 private:
+	// Used to prevent m_OnChildSlotChanged to keep being called while calling invalidateArea on children
+	bool m_alreadyInvalidatingChildren = false;
 	Vector<Slot*> m_children;
+	CachedState m_composition;
 };

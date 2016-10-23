@@ -2,7 +2,8 @@
 #include <assert.h>
 #include <type_traits>
 
-template<typename T> class RefCounted;
+template<typename T>
+class RefCounted;
 
 /*
 	Basic shared pointer class
@@ -14,7 +15,7 @@ class Ref
 {
 protected:
 	T* m_data;
-	int32_t* m_refCount;
+	int32* m_refCount;
 	void m_Dec()
 	{
 		if(m_refCount)
@@ -73,9 +74,13 @@ public:
 	}
 
 	// Null/Default constructor
-	inline Ref() { m_data = nullptr; m_refCount = nullptr; }
+	Ref()
+	{
+		m_data = nullptr;
+		m_refCount = nullptr;
+	}
 
-	explicit inline Ref(T* data)
+	explicit Ref(T* data)
 	{
 		m_data = data;
 		m_refCount = m_CreateNewCounter();
@@ -83,23 +88,23 @@ public:
 		m_AssignCounter();
 	}
 
-	inline ~Ref()
+	~Ref()
 	{
 		m_Dec();
 	}
-	inline Ref(const Ref& other)
+	Ref(const Ref& other)
 	{
 		m_data = other.m_data;
 		m_refCount = other.m_refCount;
 		m_Inc();
 	}
-	inline Ref(Ref&& other)
+	Ref(Ref&& other)
 	{
 		m_data = other.m_data;
 		m_refCount = other.m_refCount;
 		other.m_refCount = nullptr;
 	}
-	inline Ref& operator=(const Ref& other)
+	Ref& operator=(const Ref& other)
 	{
 		m_Dec();
 		m_data = other.m_data;
@@ -107,7 +112,7 @@ public:
 		m_Inc();
 		return *this;
 	}
-	inline Ref& operator=(Ref&& other)
+	Ref& operator=(Ref&& other)
 	{
 		m_Dec();
 		m_data = other.m_data;
@@ -115,20 +120,36 @@ public:
 		other.m_refCount = nullptr;
 		return *this;
 	}
-	inline T& operator*() { assert(IsValid()); return *m_data; }
-	inline const T& operator*() const { assert(IsValid()); return *m_data; }
-	inline T* operator->() { assert(IsValid()); return m_data; }
-	inline const T* operator->() const { assert(IsValid()); return m_data; }
+	T& operator*()
+	{
+		assert(IsValid());
+		return *m_data;
+	}
+	const T& operator*() const
+	{
+		assert(IsValid());
+		return *m_data;
+	}
+	T* operator->()
+	{
+		assert(IsValid());
+		return m_data;
+	}
+	const T* operator->() const
+	{
+		assert(IsValid());
+		return m_data;
+	}
 
 	template<typename Target>
-	inline Target* Cast()
+	Target* Cast()
 	{
 		if(!m_refCount)
 			return nullptr;
 		return dynamic_cast<Target*>(m_data);
 	}
 	template<typename Target>
-	inline const Target* Cast() const
+	const Target* Cast() const
 	{
 		if(!m_refCount)
 			return nullptr;
@@ -136,7 +157,7 @@ public:
 	}
 	// Casts the reference to a different type while not breaking the reference counting
 	template<typename Target>
-	inline Ref<Target> As()
+	Ref<Target> As()
 	{
 		Target* castData = dynamic_cast<Target*>(m_data);
 		if(!m_refCount || !castData)
@@ -144,28 +165,28 @@ public:
 		return Ref<Target>(castData, m_refCount);
 	}
 
-	inline bool operator<(const Ref& other) const
+	bool operator<(const Ref& other) const
 	{
 		return m_refCount < other.m_refCount;
 	}
-	inline bool operator==(const Ref& other) const
+	bool operator==(const Ref& other) const
 	{
 		return m_refCount == other.m_refCount;
 	}
-	inline bool operator!=(const Ref& other) const
+	bool operator!=(const Ref& other) const
 	{
 		return m_refCount != other.m_refCount;
 	}
-	inline bool operator==(const T* other) const
+	bool operator==(const T* other) const
 	{
 		return m_refCount && m_data == other;
 	}
-	inline bool operator!=(const T* other) const
+	bool operator!=(const T* other) const
 	{
 		return m_refCount && m_data != other;
 	}
 
-	inline void Destroy()
+	void Destroy()
 	{
 		assert(IsValid());
 		assert(m_refCount[0] > 0);
@@ -173,19 +194,33 @@ public:
 		m_refCount = nullptr;
 		delete m_data;
 	}
-	inline void Release()
+	void Release()
 	{
 		m_Dec();
 		m_refCount = nullptr;
 	}
 
-	inline bool IsValid() const { return m_refCount != nullptr && m_refCount[0] > 0; }
-	inline operator bool() const { return IsValid(); }
+	bool IsValid() const { return m_refCount != nullptr && m_refCount[0] > 0; }
+	operator bool() const { return IsValid(); }
 
-	inline int32_t GetRefCount() const { if(m_refCount && m_refCount[0] > 0) return m_refCount[0]; else return 0; }
+	int32_t GetRefCount() const
+	{
+		if(m_refCount && m_refCount[0] > 0)
+			return m_refCount[0];
+		else
+			return 0;
+	}
 
-	inline T* GetData() { assert(IsValid()); return m_data; }
-	inline const T* GetData() const { assert(IsValid()); return m_data; }
+	T* GetData()
+	{
+		assert(IsValid());
+		return m_data;
+	}
+	const T* GetData() const
+	{
+		assert(IsValid());
+		return m_data;
+	}
 };
 
 namespace Utility
@@ -208,7 +243,7 @@ protected:
 	int32* m_refCount = (int32*)0;
 public:
 #if _DEBUG
-	~IRefCounted()
+	virtual ~IRefCounted()
 	{
 		// Should never happen, object will always 
 		assert(!m_refCount || m_refCount[0] <= 0);
@@ -231,6 +266,7 @@ public:
 		return m_refCount;
 	}
 };
+
 // Same as above but typed version
 template<typename T>
 class RefCounted : public IRefCounted
@@ -247,9 +283,9 @@ public:
 	}
 };
 
-
 // Possibly assign reference counter in RefCounted object
-template<typename T, bool> struct RefCounterHelper
+template<typename T, bool>
+struct RefCounterHelper
 {
 	static void Assign(T* obj, int32* counter)
 	{
@@ -259,7 +295,9 @@ template<typename T, bool> struct RefCounterHelper
 		return new int32(0);
 	}
 };
-template<typename T> struct RefCounterHelper<T, true>
+
+template<typename T>
+struct RefCounterHelper<T, true>
 {
 	static void Assign(T* obj, int32* counter)
 	{
@@ -270,12 +308,15 @@ template<typename T> struct RefCounterHelper<T, true>
 		return obj->_GetRefCounter();
 	}
 };
-template<typename T> void Ref<T>::m_AssignCounter()
+
+template<typename T>
+void Ref<T>::m_AssignCounter()
 {
 	assert(m_data);
 	RefCounterHelper<T, std::is_base_of<IRefCounted, T>::value>::Assign((T*)m_data, m_refCount);
 }
-template<typename T> int32* Ref<T>::m_CreateNewCounter()
+template<typename T>
+int32* Ref<T>::m_CreateNewCounter()
 {
 	assert(m_data);
 	return RefCounterHelper<T, std::is_base_of<IRefCounted, T>::value>::CreateCounter((T*)m_data);

@@ -10,10 +10,10 @@ using namespace std;
 static String testSamplePath = Path::Normalize("audio/laser_slam1.wav");
 
 // Test for music player
-//static String testSongPath = Path::Normalize("songs/CHNLDiVR/mix1.ogg");
-//static uint32 testSongOffset = 180000;
-static String testSongPath = Path::Normalize("songs/noise/noise.ogg");
-static uint32 testSongOffset = 0;
+static String testSongPath = Path::Normalize("songs/CHNLDiVR/mix1.ogg");
+static uint32 testSongOffset = 180000;
+//static String testSongPath = Path::Normalize("songs/noise/noise.ogg");
+//static uint32 testSongOffset = 0;
 
 Test("Audio.Playback")
 {
@@ -190,7 +190,7 @@ Test("Audio.Music.LPFMix")
 			float freq = 400.0f;
 			float q = 4.0f;
 			float mix = filterSetting;
-			printf("%08d > mix:%f f:%f", playbackTime, mix, freq, q);
+			printf("%08d > mix:%f f:%f q:%f", playbackTime, mix, freq, q);
 
 			filter->mix = mix;
 			filter->SetLowPass(q, freq);

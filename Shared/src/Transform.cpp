@@ -36,28 +36,11 @@ Transform ProjectionMatrix::CreateOrthographic(float left, float right, float bo
 	return result;
 }
 
-Transform& Transform::operator=(const Transform& right)
+Transform::Transform(const Matrix4x4& other)
 {
-	memcpy(this, &right, sizeof(mat));
-	return *this;
+	*(Matrix4x4*)this = other;
 }
-Transform::Transform(std::initializer_list<float> values)
-{
-	auto it = values.begin();
-	for(size_t i = 0; i < Math::Max<size_t>(values.size(), 16); i++)
-	{
-		mat[i] = *it++;
-	}
-}
-Transform::Transform(const Transform& other)
-{
-	memcpy(this, &other, sizeof(mat));
-}
-Transform::Transform()
-{
-
-}
-Transform::Transform(const class Transform2D& other)
+Transform::Transform(const Matrix3x3& other)
 {
 	mat[0] = other.mat[0];
 	mat[1] = other.mat[1];
@@ -70,60 +53,7 @@ Transform::Transform(const class Transform2D& other)
 	mat[12] = other.mat[6];
 	mat[13] = other.mat[7];
 }
-float& Transform::operator[](size_t idx)
-{
-	return mat[idx];
-}
-const float& Transform::operator[](size_t idx) const
-{
-	return mat[idx];
-}
-Transform& Transform::operator*=(const Transform& other)
-{
-	Transform result;
 
-	size_t index = 0;
-	for(size_t x = 0; x < 4; x++)
-	{
-		for(size_t y = 0; y < 4; y++)
-		{
-			result[index] = 0;
-			size_t left = y;
-			size_t top = x * 4;
-			for(size_t i = 0; i < 4; i++)
-			{
-				result[index] += mat[left] * other.mat[top];
-				left += 4, top++;
-			}
-			index++;
-		}
-	}
-
-	return *this = result;
-}
-Transform Transform::operator*(const Transform& other) const
-{
-	Transform result;
-
-	size_t index = 0;
-	for(size_t x = 0; x < 4; x++)
-	{
-		for(size_t y = 0; y < 4; y++)
-		{
-			result[index] = 0;
-			size_t left = y;
-			size_t top = x * 4;
-			for(size_t i = 0; i < 4; i++)
-			{
-				result[index] += mat[left] * other.mat[top];
-				left += 4, top++;
-			}
-			index++;
-		}
-	}
-
-	return result;
-}
 void Transform::ScaleTransform(const Vector3& scale)
 {
 	Transform factor;
@@ -131,14 +61,6 @@ void Transform::ScaleTransform(const Vector3& scale)
 	factor[5] = scale.y;
 	factor[10] = scale.z;
 	*this *= factor;
-}
-void Transform::SetIdentity()
-{
-	Utility::MemsetZero(mat);
-	mat[0] = 1.0f;
-	mat[5] = 1.0f;
-	mat[10] = 1.0f;
-	mat[15] = 1.0f;
 }
 Transform Transform::Translation(const Vector3& pos)
 {

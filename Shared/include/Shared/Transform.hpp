@@ -15,37 +15,26 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Modified version of 
-//	(http://jlib.nl/index.php?file=./code/include/jlib/transform) and
-//	(http://jlib.nl/index.php?file=./code/include/jlib/matrix)
+//	(http://jlib.nl/index.php?file=./code/include/jlib/transform)
 
 #pragma once
-#include "Shared/Utility.hpp"
-#include "Shared/Math.hpp"
-#include "Shared/VectorMath.hpp"
-#include <initializer_list>
+#include "Shared/Matrix.hpp"
 
 /*
 	4x4 Transformation matrix class
 	Column-Major order, Left handed
 */
-class Transform
+class Transform : public Matrix4x4
 {
 public:
-	Transform();
-	Transform(const Transform& other);
-	Transform(const class Transform2D& other);
-	Transform(std::initializer_list<float> values);
-	Transform& operator=(const Transform& right);
+	using Matrix4x4::Matrix;
+	using Matrix4x4::mat;
 
-	const float& operator[](size_t idx) const;
-	float& operator[](size_t idx);
-
-	Transform operator*(const Transform& other) const;
-	Transform& operator*=(const Transform& other);
+	Transform() = default;
+	Transform(const Matrix4x4& other);
+	Transform(const Matrix3x3& other);
 
 	void ScaleTransform(const Vector3& scale);
-
-	void SetIdentity();
 
 	static Transform Translation(const Vector3& pos);
 	static Transform Rotation(const Vector3& euler);
@@ -63,13 +52,6 @@ public:
 
 	Vector3 TransformPoint(const Vector3& position) const;
 	Vector3 TransformDirection(const Vector3& direction) const;
-
-	float mat[16] = {
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1,
-	};
 };
 
 namespace ProjectionMatrix

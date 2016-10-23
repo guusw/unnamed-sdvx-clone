@@ -30,6 +30,16 @@ public:
 		: pos(pos), size(size)
 	{
 	}
+
+	bool operator==(const RectangleBase& other) const
+	{
+		return pos == other.pos && size == other.size;
+	}
+	bool operator!=(const RectangleBase& other) const
+	{
+		return pos != other.pos || size != other.size;
+	}
+
 	T Left() const
 	{
 		return pos.x;
@@ -108,6 +118,12 @@ public:
 		return Transform2D(pos, size);
 	}
 
+	// The center of this rectangle
+	VectorType Center() const
+	{
+		return pos + size * 0.5f;
+	}
+
 	// Expand this bounding rectangle to include the given point
 	void Expand(const Vector2& point)
 	{
@@ -143,6 +159,19 @@ public:
 		Expand(transform.TransformPoint(other.pos + VectorType(other.size.x, 0)));
 		Expand(transform.TransformPoint(other.pos + VectorType(0, other.size.y)));
 		Expand(transform.TransformPoint(other.pos + VectorType(other.size.x, 1)));
+	}
+
+	bool ContainsPoint(const VectorType& point) const
+	{
+		if(point.x < pos.x)
+			return false;
+		if(point.y < pos.y)
+			return false;
+		if(point.x > (pos.x + size.x))
+			return false;
+		if(point.y > (pos.y + size.y))
+			return false;
+		return true;
 	}
 
 	// Initial value for bounding rectangles

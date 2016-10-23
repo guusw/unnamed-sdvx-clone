@@ -23,10 +23,10 @@ TextInputField::TextInputField(Ref<CommonGUIStyle> style)
 void TextInputField::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 {
 	Rect inner = m_style->textfieldBorder.Apply(rd.area);
-	m_hovered = rd.OverlapTest(inner);
-
-	if(m_hovered)
-		inputElement = this;
+	//m_hovered = rd.OverlapTest(inner);
+	//
+	//if(m_hovered)
+	//	inputElement = this;
 
 	Rect inner1 = m_style->textfieldPadding.Apply(inner);
 	rd.area = inner1;
@@ -48,37 +48,39 @@ void TextInputField::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
 }
 void TextInputField::Render(GUIRenderData rd)
 {
-	rd.guiRenderer->RenderButton(rd.area, HasInputFocus() ? m_style->textfieldHighlightTexture : m_style->textfieldTexture,
-		m_style->textfieldBorder, m_hovered ? Color::White : Color(0.7f));
+	//rd.guiRenderer->RenderButton(rd.area, HasInputFocus() ? m_style->textfieldHighlightTexture : m_style->textfieldTexture,
+	//	m_style->textfieldBorder, m_hovered ? Color::White : Color(0.7f));
+	rd.guiRenderer->RenderButton(rd.area, m_style->textfieldTexture,
+		m_style->textfieldBorder,Color(0.7f));
 
-	if(m_hovered && rd.guiRenderer->GetMouseButtonPressed(MouseButton::Left))
-	{
-		rd.guiRenderer->SetInputFocus(this);
-	}
-
-	if(HasInputFocus())
-	{
-		const GUITextInput& input = rd.guiRenderer->GetTextInput();
-		WString newText = input.Apply(GetText());
-		SetText(newText);
-
-		// Update IME String
-		composition->visibility = (input.composition.empty()) ? Visibility::Collapsed : Visibility::Visible;
-		composition->SetText(input.composition);
-
-		// Draw caret
-		float caretOffset = text->GetDesiredSize(rd).x + composition->GetDesiredSize(rd).x;
-		caretOffset += m_cachedTextRect.pos.x - m_cachedInnerRect.pos.x;
-		Vector2 caretSize = Vector2(0, (float)text->GetFontSize());
-		caretSize.x = caretSize.y * 0.1f;
-		m_caretBlinkTimer += rd.deltaTime;
-		int32 caretBlink = (int32)(m_caretBlinkTimer * 2) % 2;
-		Rect caretRect = Rect(m_cachedInnerRect.pos + Vector2(caretOffset, 0.0f), caretSize);
-		// Center vertically
-		caretRect.pos.y += (m_cachedInnerRect.size.y - caretSize.y) * 0.5f;
-		rd.guiRenderer->RenderRect(caretRect, Color::White.WithAlpha((caretBlink == 0) ? 1.0f : 0.2f), Texture());
-	}
-	else
+	//if(m_hovered && rd.guiRenderer->GetMouseButtonPressed(MouseButton::Left))
+	//{
+	//	rd.guiRenderer->SetInputFocus(this);
+	//}
+	//
+	//if(HasInputFocus())
+	//{
+	//	const GUITextInput& input = rd.guiRenderer->GetTextInput();
+	//	WString newText = input.Apply(GetText());
+	//	SetText(newText);
+	//
+	//	// Update IME String
+	//	composition->visibility = (input.composition.empty()) ? Visibility::Collapsed : Visibility::Visible;
+	//	composition->SetText(input.composition);
+	//
+	//	// Draw caret
+	//	float caretOffset = text->GetDesiredSize(rd).x + composition->GetDesiredSize(rd).x;
+	//	caretOffset += m_cachedTextRect.pos.x - m_cachedInnerRect.pos.x;
+	//	Vector2 caretSize = Vector2(0, (float)text->GetFontSize());
+	//	caretSize.x = caretSize.y * 0.1f;
+	//	m_caretBlinkTimer += rd.deltaTime;
+	//	int32 caretBlink = (int32)(m_caretBlinkTimer * 2) % 2;
+	//	Rect caretRect = Rect(m_cachedInnerRect.pos + Vector2(caretOffset, 0.0f), caretSize);
+	//	// Center vertically
+	//	caretRect.pos.y += (m_cachedInnerRect.size.y - caretSize.y) * 0.5f;
+	//	rd.guiRenderer->RenderRect(caretRect, Color::White.WithAlpha((caretBlink == 0) ? 1.0f : 0.2f), Texture());
+	//}
+	//else
 	{
 		composition->visibility = Visibility::Collapsed;
 	}

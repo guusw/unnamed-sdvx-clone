@@ -90,6 +90,11 @@ Test("Action.Assignment")
 	};
 	b.Call();
 	TestEnsure(localCallCounter == 1);
+
+	// This should copy the action instead of trying to construct a lambda action from the other action
+	Action<> c = a;
+	c.Call();
+	TestEnsure(callCounter == 2);
 }
 
 float ConstantValue()

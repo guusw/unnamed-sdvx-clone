@@ -1,8 +1,8 @@
 #pragma once
-#include "GUIElement.hpp"
-#include "LayoutBox.hpp"
-#include "ScrollBox.hpp"
-#include "CommonGUIStyle.hpp"
+#include <GUI/GUIElement.hpp>
+#include <GUI/LayoutBox.hpp>
+#include <GUI/ScrollBox.hpp>
+#include <GUI/CommonGUIStyle.hpp>
 
 struct SettingBarSetting
 {
@@ -37,7 +37,7 @@ public:
 	~SettingsBar();
 
 	virtual void PreRender(GUIRenderData rd, GUIElementBase*& inputElement) override;
-	virtual void Render(GUIRenderData rd) override;
+	virtual void Render(GUIRenderData data) override;
 
 	void AddSetting(float* target, float min, float max, const String& name);
 	void ClearSettings();
