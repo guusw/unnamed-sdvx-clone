@@ -75,7 +75,7 @@ void LayoutBox::Render(GUIRenderData data)
 	// Render Debug
 	if(data.debug)
 	{
-		data.guiRenderer->RenderWireBox(m_cachedArea.ToTransform(), Color(0.2f, 0.2f, 1.0f, 0.5f));
+		data.guiRenderer->RenderWireBox(m_area.ToTransform(), Color(0.2f, 0.2f, 1.0f, 0.5f));
 	}
 }
 Vector2 LayoutBox::m_GetDesiredBaseSize(GUIUpdateData data)

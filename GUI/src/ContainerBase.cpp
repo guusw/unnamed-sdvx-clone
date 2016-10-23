@@ -18,3 +18,8 @@ void ContainerBase::OnInvalidate(InvalidationEvent& event)
 	}
 	m_PropagateEventToChildren(event);
 }
+void ContainerBase::OnAssignGUI(AssignGUIEvent& event)
+{
+	GUIElementBase::OnAssignGUI(event);
+	m_PropagateEventToChildren(event);
+}

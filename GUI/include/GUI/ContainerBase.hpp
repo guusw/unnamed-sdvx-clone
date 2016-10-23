@@ -9,6 +9,7 @@ public:
 	virtual void OnMouseMove(MouseMovedEvent& event) override;
 	virtual void OnMouseButton(MouseButtonEvent& event) override;
 	virtual void OnInvalidate(InvalidationEvent& event) override;
+	virtual void OnAssignGUI(AssignGUIEvent& event) override;
 
 protected:
 	virtual ~ContainerBase() = default;

@@ -19,3 +19,7 @@ InvalidationEvent::InvalidationEvent()
 {
 	m_SetEventHandlerFunction(&GUIElementBase::OnInvalidate);
 }
+AssignGUIEvent::AssignGUIEvent()
+{
+	m_SetEventHandlerFunction(&GUIElementBase::OnAssignGUI);
+}

@@ -6,7 +6,11 @@
 
 GUIElementBase::GUIElementBase()
 {
-	renderTransform.Notify = [&]() { m_transformValid.Invalidate(); };
+	renderTransform.Notify = [&]()
+	{
+		InvalidationEvent evt;
+		evt.Propagate(*this);
+	};
 }
 GUIElementBase::~GUIElementBase()
 {
@@ -21,6 +25,10 @@ void GUIElementBase::OnInvalidate(InvalidationEvent& event)
 	{
 		InvalidateArea();
 	}
+}
+void GUIElementBase::OnAssignGUI(AssignGUIEvent& event)
+{
+	m_gui = event.gui;
 }
 void GUIElementBase::UpdateAnimations(float deltaTime)
 {
@@ -100,28 +108,28 @@ ContainerBase* GUIElementBase::GetParent()
 void GUIElementBase::m_AttachChild(GUIElementBase& element, GUISlotBase* slot)
 {
 	element.m_slot = slot;
-	element.m_gui = m_gui;
+	AssignGUIEvent evt;
+	evt.gui = m_gui;
+	evt.Propagate(element);
 }
 void GUIElementBase::m_UpdateTransform(Rect area, Transform2D parentTransform)
 {
 	if(!m_transformValid.IsValid())
 	{
-		m_cachedArea = area;
-		m_cachedTransform = renderTransform.Get() * parentTransform;
-		m_cachedInverseTransform = m_cachedTransform.Inverted();
+		m_area = area;
+		m_renderTransform = renderTransform.Get() * parentTransform;
 
-		m_cachedObjectTransform = Transform2D::Translation(area.pos);
-		m_cachedObjectTransform *= m_cachedTransform;
-		m_cachedObjectTransform *= Transform2D::Scale(area.size);
-		m_cachedInverseObjectTransform = m_cachedObjectTransform.Inverted();
+		m_objectTransform = Transform2D::Translation(area.pos);
+		m_objectTransform *= m_renderTransform;
+		m_objectTransform *= Transform2D::Scale(area.size);
 		m_transformValid.Update();
 	}
 }
 void GUIElementBase::m_UpdateTransform(GUIUpdateData& data)
 {
 	m_UpdateTransform(data.area, data.renderTransform);
-	data.renderTransform = m_cachedTransform;
-	data.area = m_cachedArea;
+	data.renderTransform = m_renderTransform;
+	data.area = m_area;
 }
 void GUIElementBase::m_AddedToSlot(GUISlotBase* slot)
 {
@@ -129,5 +137,7 @@ void GUIElementBase::m_AddedToSlot(GUISlotBase* slot)
 void GUIElementBase::m_OnRemovedFromParent()
 {
 	m_slot = nullptr;
-	m_gui = nullptr;
+	AssignGUIEvent evt;
+	evt.gui = nullptr;
+	evt.Propagate(*this);
 }

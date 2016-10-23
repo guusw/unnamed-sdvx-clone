@@ -13,16 +13,15 @@ public:
 		ButtonBase::Render(data);
 
 		Color c = m_hovered ? Color::Green : Color::White;
-		data.guiRenderer->RenderWireBox(m_cachedObjectTransform, c);
+		data.guiRenderer->RenderWireBox(m_objectTransform, c);
 	}
 
 	void Anim_Hover(float time)
 	{
 		Transform2D zoom;
-		zoom *= Transform2D::Translation(Vector2(0.5f) * m_cachedArea.size);
-		zoom *= Transform2D::Rotation(-time * 180.0f);
-		//zoom *= Transform2D::Scale(Vector2(1.0f + time * 0.05f));
-		zoom *= Transform2D::Translation(Vector2(-0.5f) * m_cachedArea.size);
+		zoom *= Transform2D::Translation(Vector2(0.5f) * m_area.size);
+		zoom *= Transform2D::Scale(Vector2(1.0f + time * 0.05f));
+		zoom *= Transform2D::Translation(Vector2(-0.5f) * m_area.size);
 		m_hoverTransform = zoom; 
 		m_animationUpdated.Invalidate();
 	}
@@ -32,9 +31,9 @@ public:
 		float bounce = bounceLerp.Sample(time);
 
 		Transform2D zoom;
-		zoom *= Transform2D::Translation(Vector2(0.5f) * m_cachedArea.size);
+		zoom *= Transform2D::Translation(Vector2(0.5f) * m_area.size);
 		zoom *= Transform2D::Scale(Vector2(1.0f + bounce * 0.05f));
-		zoom *= Transform2D::Translation(Vector2(-0.5f) * m_cachedArea.size);
+		zoom *= Transform2D::Translation(Vector2(-0.5f) * m_area.size);
 		m_clickTransform = zoom;
 		m_animationUpdated.Invalidate();
 	}
@@ -99,16 +98,16 @@ public:
 		ButtonBase::Render(data);
 
 		Color c = m_hovered ? Color::Green : Color::White;
-		data.guiRenderer->RenderWireBox(m_cachedObjectTransform, c);
+		data.guiRenderer->RenderWireBox(m_objectTransform, c);
 	}
 	void Anim_Hover(float time)
 	{
 		GetSlot<LayoutBox::Slot>()->fillAmount = 1.0f + time;
 		Transform2D zoom;
-		zoom *= Transform2D::Translation(Vector2(0.5f, 0.5f) * m_cachedArea.size);
+		zoom *= Transform2D::Translation(Vector2(0.5f, 0.5f) * m_area.size);
 		zoom *= Transform2D::Scale(Vector2(1.0f + time * 0.2f));
 		zoom *= Transform2D::Rotation(-time * 10.0f);
-		zoom *= Transform2D::Translation(Vector2(-0.5f, -0.5f) * m_cachedArea.size);
+		zoom *= Transform2D::Translation(Vector2(-0.5f, -0.5f) * m_area.size);
 		renderTransform = zoom;
 	}
 	virtual void OnFocusLost() override
@@ -234,6 +233,48 @@ Test("GUI.GUILayoutBox")
 	test.Run();
 }
 
+class GUILayoutBoxTest1 : public GUITestBase
+{
+public:
+	virtual void Init() override
+	{
+		GUITestBase::Init();
+
+		{
+			auto box = new LayoutBox();
+			auto boxSlot = canvas->Add(*box);
+			boxSlot->anchor = Anchor(0.5f);
+			boxSlot->alignment = Vector2(0.5f);
+			boxSlot->fillX = false;
+			boxSlot->fillY = false;
+			box->layoutDirection = LayoutBox::Vertical;
+			
+			// Some buttons in a layout box
+			for(uint32 i = 0; i < 8; i++)
+			{
+				auto btn = new TestButton();
+				auto slot = box->Add(*btn);
+				slot->fillX = true;
+				slot->padding = Margin(0,2,0,2);
+			
+				auto text = new Label();
+				text->text = L"Hoi";
+				text->font = guiRenderer->font;
+				text->fontSize = 20;
+				auto textSlot = btn->SetContent(*text);
+				textSlot->alignment = Vector2(0.5f);
+			}
+		}
+	}
+
+	Timer timer;
+};
+Test("GUI.GUILayoutBox1")
+{
+	GUILayoutBoxTest1 test;
+	test.Run();
+}
+
 class Transform2DTest : public GUITestBase
 {
 public:
@@ -293,5 +334,43 @@ public:
 Test("GUI.Transform2D")
 {
 	Transform2DTest test;
+	test.Run();
+}
+
+class GUIFocusTest : public GUITestBase
+{
+public:
+	void Init() override
+	{
+		GUITestBase::Init();
+
+		LayoutBox* box = new LayoutBox();
+		box->layoutDirection = LayoutBox::Vertical;
+
+		// Some buttons in a layout box
+		for(uint32 i = 0; i < 8; i++)
+		{
+			auto btn = new TestButton();
+			auto slot = box->Add(*btn);
+			slot->fillX = true;
+			slot->padding = Margin(0, 2, 0, 2);
+
+			auto text = new Label();
+			text->text = Utility::WSprintf(L"Buttons %d", i);
+			text->font = guiRenderer->font;
+			text->fontSize = 32;
+			auto textSlot = btn->SetContent(*text);
+			textSlot->alignment = Vector2(0.5f);
+		}
+
+		auto slot = canvas->Add(*box);
+		slot->offset = Rect(0, 0, 400, 0);
+		slot->padding = Margin(10, 10, 0, 0);
+		slot->fillY = false;
+	}
+};
+Test("GUI.Focus")
+{
+	GUIFocusTest test;
 	test.Run();
 }

@@ -25,12 +25,13 @@ public:
 	virtual ~GUIElementBase();
 
 	// Invalidates the cached render position and transforms
-	void InvalidateArea();
+	virtual void InvalidateArea();
 
 	// Event handlers
 	virtual void OnMouseMove(MouseMovedEvent& event) {};
 	virtual void OnMouseButton(MouseButtonEvent& event) {};
 	virtual void OnInvalidate(InvalidationEvent& event);
+	virtual void OnAssignGUI(AssignGUIEvent& event);
 
 	// Called when focus acquired with AcquireMouseFocus was lost
 	// Similar to mouse leave event
@@ -70,7 +71,6 @@ public:
 
 	// Local render transform
 	NotifyDirty<Transform2D> renderTransform;
-
 protected:
 	// Calculates the desired size of this element
 	virtual Vector2 m_GetDesiredBaseSize(GUIUpdateData data);
@@ -78,7 +78,7 @@ protected:
 	void m_AttachChild(GUIElementBase& element, GUISlotBase* slot);
 
 	// Updates the cached areas and transforms
-	void m_UpdateTransform(Rect area, Transform2D parentTransform);
+	virtual void m_UpdateTransform(Rect area, Transform2D parentTransform);
 	// Updates the cached areas and transforms and stores the new renderTransform in the renderdata
 	void m_UpdateTransform(GUIUpdateData& data);
 	virtual void m_PostAnimationUpdate() {};
@@ -88,13 +88,12 @@ protected:
 	// Called when added to slot
 	virtual void m_AddedToSlot(GUISlotBase* slot);
 
-	// Cached world transform
-	Transform2D m_cachedTransform;
-	Transform2D m_cachedInverseTransform;
-	Transform2D m_cachedObjectTransform;
-	Transform2D m_cachedInverseObjectTransform;
-	// Cached target area
-	Rect m_cachedArea;
+	// Cached Render Transform including all parent transforms
+	Transform2D m_renderTransform;
+	// Combined render transform and area rectangle to transform a (0,0,1,1) rectangle to the target position
+	Transform2D m_objectTransform;
+	// The cached area of this gui element
+	Rect m_area;
 	// Handle for above states
 	CachedState m_transformValid;
 

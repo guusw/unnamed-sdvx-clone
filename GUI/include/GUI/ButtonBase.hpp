@@ -16,6 +16,7 @@ public:
 	virtual void Update(GUIUpdateData data) override;
 	virtual void Render(GUIRenderData data) override;
 
+	void InvalidateArea() override;
 	bool IsHovered() const;
 	bool IsHeld() const;
 
@@ -31,6 +32,9 @@ protected:
 	void m_UpdateHoverState(Vector2 mousePosition);
 	void m_PostAnimationUpdate() override;
 
+	// Overriden to calculate inverse transforms for buttons
+	void m_UpdateTransform(Rect area, Transform2D parentTransform) override;
+
 	// Button hit test
 	virtual bool m_HitTest(const Vector2& point);
 	virtual void m_OnPressed() {};
@@ -42,4 +46,5 @@ private:
 	Handle m_hoveredHandle;
 	Handle m_held;
 
+	Cached<Transform2D> m_inverseObjectTransform;
 };

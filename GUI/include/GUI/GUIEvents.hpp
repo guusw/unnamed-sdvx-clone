@@ -47,3 +47,9 @@ struct InvalidationEvent : public GUIEvent
 	InvalidationEvent();
 	bool invalidateArea = true;
 };
+
+struct AssignGUIEvent : public GUIEvent
+{
+	AssignGUIEvent();
+	class GUI* gui;
+};

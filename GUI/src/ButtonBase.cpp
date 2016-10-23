@@ -51,7 +51,7 @@ void ButtonBase::OnFocus()
 void ButtonBase::Update(GUIUpdateData data)
 {
 	// Update transformations
-	m_UpdateTransform(data);
+	GUIElementBase::m_UpdateTransform(data);
 
 	if(m_slot)
 	{
@@ -64,6 +64,11 @@ void ButtonBase::Render(GUIRenderData data)
 	{
 		m_slot->element->Render(data);
 	}
+}
+void ButtonBase::InvalidateArea()
+{
+	ContainerBase::InvalidateArea();
+	m_inverseObjectTransform.Invalidate();
 }
 bool ButtonBase::IsHovered() const
 {
@@ -123,10 +128,18 @@ void ButtonBase::m_PostAnimationUpdate()
 	ContainerBase::m_PostAnimationUpdate();
 	m_UpdateHoverState(m_gui->GetMousePos());
 }
+void ButtonBase::m_UpdateTransform(Rect area, Transform2D parentTransform)
+{
+	GUIElementBase::m_UpdateTransform(area, parentTransform);
+	if(!m_inverseObjectTransform.IsValid())
+	{
+		m_inverseObjectTransform = m_objectTransform.Inverted();
+	}
+}
 bool ButtonBase::m_HitTest(const Vector2& point)
 {
 	// From world to local
-	Vector2 localPosition = Transform2D(m_cachedInverseObjectTransform).TransformPoint(point);
+	Vector2 localPosition = Transform2D(m_inverseObjectTransform).TransformPoint(point);
 	static Rect unitRectangle = Rect(Vector2(), Vector2(1.0f));
 	return unitRectangle.ContainsPoint(localPosition);
 }
