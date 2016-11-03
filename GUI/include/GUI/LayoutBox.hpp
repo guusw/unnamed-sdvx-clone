@@ -18,7 +18,7 @@ public:
 
 	enum LayoutDirection
 	{
-		Horizontal,
+		Horizontal = 0,
 		Vertical
 	};
 
@@ -44,6 +44,8 @@ public:
 
 	const Vector<LayoutBox::Slot*>& GetChildren();
 
+	GUIElementBase* SelectNext(GUIElementBase* from, GUIElementBase* item, int dir, int layoutDirection) override;
+
 protected:
 	void m_PropagateEventToChildren(GUIEvent& event) override;
 	void m_InvalidateSlotAreas() override;
@@ -51,6 +53,7 @@ protected:
 	virtual Vector2 m_GetDesiredBaseSize(GUIUpdateData data) override;
 
 private:
+
 	// Used to prevent m_OnChildSlotChanged to keep being called while calling invalidateArea on children
 	bool m_alreadyInvalidatingChildren = false;
 	Vector<Slot*> m_children;

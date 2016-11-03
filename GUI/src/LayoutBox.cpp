@@ -194,7 +194,55 @@ const Vector<LayoutBox::Slot*>& LayoutBox::GetChildren()
 {
 	return m_children;
 }
-
+GUIElementBase* LayoutBox::SelectNext(GUIElementBase* from, GUIElementBase* item, int dir, int layoutDirection)
+{
+	if(layoutDirection == 2 || this->layoutDirection == (LayoutDirection)layoutDirection)
+	{
+		int idx = m_children.IndexOf((Slot*)item->GetSlot());
+		if(idx != -1)
+		{
+			int next = idx;
+			while(true)
+			{
+				next += dir;
+				if(next < 0 || next >= m_children.size())
+					break;
+				auto elem = m_children[next]->element.GetData();
+				if(dynamic_cast<Focusable*>(elem))
+					return elem;
+				auto container = dynamic_cast<ContainerBase*>(elem);
+				if(container)
+				{
+					elem = container->SelectNext(from, this, dir, 2);
+				}
+				if(dynamic_cast<Focusable*>(elem))
+					return elem;
+			}
+		}
+		else if(!m_children.empty())
+		{
+			// Select closest
+			auto centerTarget = from->GetCachedArea().Center();
+			float distLast = FLT_MAX;
+			GUIElementBase* elemTarget = nullptr;
+			for(int i = 0; i < m_children.size(); i++)
+			{
+				auto elem = m_children[i]->element.GetData();
+				if(!dynamic_cast<Focusable*>(elem))
+					continue;
+				auto center = elem->GetCachedArea().Center();
+				float dist = (center - centerTarget).LengthSquared();
+				if(dist > distLast)
+					break;
+				elemTarget = elem;
+				distLast = dist;
+			}
+			return elemTarget;
+		}
+		return nullptr;
+	}
+	return GetParent()->SelectNext(from, this, dir, layoutDirection);
+}
 void LayoutBox::m_PropagateEventToChildren(GUIEvent& event)
 {
 	for(auto s : m_children)

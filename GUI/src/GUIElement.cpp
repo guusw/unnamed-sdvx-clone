@@ -32,6 +32,7 @@ void GUIElementBase::OnAssignGUI(AssignGUIEvent& event)
 }
 void GUIElementBase::UpdateAnimations(float deltaTime)
 {
+	bool update = false;
 	for(auto it = m_animations.begin(); it != m_animations.end();)
 	{
 		auto anim = *it;
@@ -43,8 +44,10 @@ void GUIElementBase::UpdateAnimations(float deltaTime)
 			continue;
 		}
 		it++;
+		update = true;
 	}
-	m_PostAnimationUpdate();
+	if(update)
+		m_PostAnimationUpdate();
 }
 void GUIElementBase::Update(GUIUpdateData data)
 {
@@ -59,6 +62,10 @@ Vector2 GUIElementBase::GetDesiredSize(GUIUpdateData data)
 	if(visibility == Visibility::Collapsed)
 		return Vector2();
 	return m_GetDesiredBaseSize(data);
+}
+Rect GUIElementBase::GetCachedArea() const
+{
+	return m_area;
 }
 Ref<GUIAnimation> GUIElementBase::AddAnimation(Action<void, float> anim, float duration, Interpolation::TimeFunction timeFunction)
 {

@@ -34,6 +34,8 @@ public:
 	void Clear();
 	const Vector<Canvas::Slot*>& GetChildren();
 
+	GUIElementBase* SelectNext(GUIElementBase* from, GUIElementBase* item, int dir, int layoutDirection) override;
+
 protected:
 	void m_OnChildSlotChanged(GUISlotBase* slot) override;
 	void m_OnChildZOrderChanged(GUISlotBase* slot) override;

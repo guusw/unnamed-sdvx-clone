@@ -1,4 +1,5 @@
 #pragma once
+#include <Graphics/Keys.hpp>
 
 /*
 	Base class for GUI events
@@ -52,4 +53,12 @@ struct AssignGUIEvent : public GUIEvent
 {
 	AssignGUIEvent();
 	class GUI* gui;
+};
+
+// Single element key event
+struct KeyEvent
+{
+	Graphics::Key key;
+	bool keyState;
+	bool repeated;
 };

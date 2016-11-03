@@ -3,6 +3,7 @@
 #include "GUIRenderer.hpp"
 #include "GUIRenderData.hpp"
 #include "GUIUpdateData.hpp"
+#include "Focusable.hpp"
 using namespace Graphics;
 
 GUI::~GUI()
@@ -26,7 +27,7 @@ void GUI::Render(GUIRenderer* renderer)
 {
 	// Render
 	GUIRenderData renderData;
-	renderData.debug = true; // Turn this on for debug visuals
+	renderData.debug = false; // Turn this on for debug visuals
 	renderData.guiRenderer = renderer;
 	renderData.rq = &renderer->Begin(m_viewport);
 	m_rootCanvas->Render(renderData);
@@ -72,15 +73,31 @@ void GUI::Update(float deltaTime, Rect viewportSize /*= Rect::Empty*/)
 			evt.button = (MouseButton)i;
 			evt.state = m_mouseButtonState[i];
 
+
+			// Release keyboard focus on click
+			if(evt.button == MouseButton::Left && evt.state)
+			{
+				// Release input focus when clicking somewhere else
+				if(m_inputFocusHandle && (!m_focusHandle || m_focusHandle->element != m_inputFocusHandle->element))
+				{
+					m_ReleaseInputFocus();
+				}
+				if(m_focusHandle && m_focusHandle->keyboard)
+				{
+					// Release keyboard focus
+					m_ReleaseFocus();
+				}
+			}
+
 			if(evt.button == MouseButton::Left && !evt.state && m_mouseDownHandle)
 			{
-				auto focusElement = m_mouseDownHandle.GetData<GUIElementBase>();
+				auto focusElement = m_mouseDownHandle->element;
 				evt.Propagate(*focusElement);
 				m_mouseDownHandle.Release();
 			}
-			else if(m_mouseFocusHandle)
+			else if(m_focusHandle)
 			{
-				auto focusElement = m_mouseFocusHandle.GetData<GUIElementBase>();
+				auto focusElement = m_focusHandle->element;
 				evt.Propagate(*focusElement);
 			}
 		}
@@ -88,23 +105,18 @@ void GUI::Update(float deltaTime, Rect viewportSize /*= Rect::Empty*/)
 
 	if(m_mouseDownHandle.GetRefCount() == 1)
 	{
-		m_mouseFocusHandle.Release();
+		m_focusHandle.Release();
 	}
 
 	// Reset focus handles
-	if(m_mouseFocusHandle.GetRefCount() == 1)
+	if(m_focusHandle.GetRefCount() == 1)
 	{
-		auto focusElement = m_mouseFocusHandle.GetData<GUIElementBase>();
-
-		focusElement->OnFocusLost();
-		m_mouseFocusHandle.Release();
+		m_ReleaseFocus();
 	}
 
 	if(m_inputFocusHandle.GetRefCount() == 1)
 	{
-		// Stop accepting IME input
-		m_window->StopTextInput();
-		m_inputFocusHandle.Release();
+		m_ReleaseInputFocus();
 	}
 
 	// Update animations on GUI
@@ -139,6 +151,7 @@ void GUI::SetWindow(Graphics::Window* window)
 		m_window->OnTextInput.RemoveAll(this);
 		m_window->OnTextComposition.RemoveAll(this);
 		m_window->OnKeyPressed.RemoveAll(this);
+		m_window->OnKeyReleased.RemoveAll(this);
 		m_window->OnMousePressed.RemoveAll(this);
 		m_window->OnMouseReleased.RemoveAll(this);
 		m_window->OnMouseScroll.RemoveAll(this);
@@ -154,6 +167,7 @@ void GUI::SetWindow(Graphics::Window* window)
 		m_window->OnTextInput.Add(this, &GUI::m_OnTextInput);
 		m_window->OnTextComposition.Add(this, &GUI::m_OnTextComposition);
 		m_window->OnKeyPressed.Add(this, &GUI::m_OnKeyPressed);
+		m_window->OnKeyReleased.Add(this, &GUI::m_OnKeyReleased);
 		m_window->OnMousePressed.Add(this, &GUI::m_OnMousePressed);
 		m_window->OnMouseReleased.Add(this, &GUI::m_OnMouseReleased);
 		m_window->OnMouseScroll.Add(this, &GUI::m_OnMouseScroll);
@@ -191,86 +205,196 @@ int32 GUI::GetMouseScroll() const
 {
 	return m_mouseScrollDelta;
 }
-Handle GUI::AcquireMouseFocus(GUIElementBase* element)
+void GUI::SetFocusedElement(GUIElementBase* element)
 {
+	Focusable* focusable = dynamic_cast<Focusable*>(element);
+	if(!focusable)
+	{
+		// Cant' focus this element
+		return;
+	}
+
+	m_ReleaseFocus();
+
+	focusable->Focus();
+}
+void GUI::SetLastSelectedElement(GUIElementBase* element)
+{
+	m_lastSelectedElement = element ? element->MakeShared() : GUIElement();
+}
+GUIElementBase* GUI::GetFocusedElement()
+{
+	if(m_focusHandle)
+	{
+		return m_focusHandle->element;
+	}
+	return nullptr;
+}
+void GUI::Navigate(int dir, int layoutDirection)
+{
+	GUIElementBase* selection = GetFocusedElement();
+	if(!selection)
+	{
+		NavigateLast();
+		return;
+	}
+
+	auto container = selection->GetParent();
+	assert(container);
+	GUIElementBase* next = selection;
+	while(next != nullptr)
+	{
+		next = container->SelectNext(selection, selection, dir, layoutDirection);
+		if(dynamic_cast<Focusable*>(next))
+		{
+			// Select new element
+			SetFocusedElement(next);
+			break;
+		}
+		if(next == selection)
+			break; // Abort selection if next element doesn't change anymore
+	}
+}
+void GUI::NavigateLast()
+{
+	if(!m_lastSelectedElement)
+		return;
+
+	// Make sure this element is still in the hierarchy
+	if(m_lastSelectedElement.GetRefCount() == 1)
+		return;
+	if(m_lastSelectedElement->m_gui != this)
+		return;
+
+	SetFocusedElement(m_lastSelectedElement.GetData());
+}
+FocusHandle GUI::AcquireFocus(GUIElementBase* element, bool isKeyboardFocus)
+{
+	Focusable* focusable = dynamic_cast<Focusable*>(element);
+	if(!focusable)
+	{
+		// Cant' focus this element
+		return FocusHandle();
+	}
+
 	if(!element)
-		return Handle();
+		return FocusHandle();
 
 	// Lock handle if mouse down is in progress
-	if(m_mouseDownHandle && element != m_mouseDownHandle.GetData<GUIElementBase>())
-		return Handle();
+	if(m_mouseDownHandle && element != m_mouseDownHandle->element)
+		return FocusHandle();
 
 	// Release previous
-	if(m_mouseFocusHandle)
+	if(m_focusHandle)
 	{
-		GUIElementBase* existingHandle = m_mouseFocusHandle.GetData<GUIElementBase>();
-
-		// Check if new element is a child of the current focus element, in that case allow selection
-		GUIElementBase* findParent = element;
 		bool allowFocus = false;
-		while(findParent)
+
+		// Allow focus break when the current selection is a keyboard selection and the new selection is also a keyboard selection
+		if(m_focusHandle->keyboard && isKeyboardFocus)
 		{
-			if(findParent == existingHandle)
+			allowFocus = true;
+		}
+		else
+		{
+			// Check if new element is a child of the current focus element, in that case allow selection
+			GUIElementBase* findParent = element;
+			while(findParent)
 			{
-				allowFocus = true;
-				break;
+				if(findParent == m_focusHandle->element)
+				{
+					allowFocus = true;
+					break;
+				}
+				findParent = findParent->GetParent();
 			}
-			findParent = findParent->GetParent();
 		}
 
 		if(!allowFocus)
-			return Handle(); // Don't switch focus
+			return FocusHandle(); // Don't switch focus
 
-		m_mouseFocusHandle.GetData<GUIElementBase>()->OnFocusLost();
-		m_mouseFocusHandle.ForceRelease();
+		m_ReleaseFocus();
 	}
 
+	// Store last selected
+	m_lastSelectedElement = element->MakeShared();
+
 	// New handle
-	m_mouseFocusHandle = Handle::Create(element);
-	element->OnFocus();
-	return m_mouseFocusHandle;
+	m_focusHandle = Utility::MakeRef(new  FocusHandleData{isKeyboardFocus, element, focusable});
+	focusable->OnFocus();
+	return m_focusHandle;
 }
-Handle GUI::AcquireMouseDown(GUIElementBase* element)
+FocusHandle GUI::AcquireMouseDown(GUIElementBase* element)
 {
+	Focusable* focusable = dynamic_cast<Focusable*>(element);
+	if(!focusable)
+	{
+		// Cant' focus this element
+		return FocusHandle();
+	}
+
 	if(!element)
-		return Handle();
+		return FocusHandle();
 
 	// Can't aquire twice
 	if(m_mouseDownHandle)
 	{
-		return Handle();
+		return FocusHandle();
 	}
 
 	// New handle
-	m_mouseDownHandle = Handle::Create(element);
+	m_mouseDownHandle = Utility::MakeRef(new  FocusHandleData{false, element, focusable});
 	return m_mouseDownHandle;
 }
-GUIElementBase* GUI::GetFocusedElement()
+void GUI::ConfirmSelection()
 {
-	if(m_mouseFocusHandle)
+	if(m_focusHandle)
 	{
-		return m_mouseFocusHandle.GetData<GUIElementBase>();
+		if(m_focusHandle->focusable->CanEngage() && !m_inputFocusHandle)
+		{
+			// Engage element
+			m_focusHandle->focusable->Engage();
+			return;
+		}
+		return m_focusHandle->focusable->OnConfirm();
 	}
-	return nullptr;
 }
-Handle GUI::AcquireInputFocus(GUIElementBase* element)
+void GUI::CancelSelection()
 {
+	if(m_focusHandle)
+	{
+		if(m_inputFocusHandle)
+		{
+			// Disengage element
+			m_ReleaseInputFocus();
+			return;
+		}
+		return m_focusHandle->focusable->OnCancel();
+	}
+}
+FocusHandle GUI::AcquireInputFocus(GUIElementBase* element)
+{
+	Focusable* focusable = dynamic_cast<Focusable*>(element);
+	if(!focusable)
+	{
+		// Cant' focus this element
+		return FocusHandle();
+	}
+
 	if(!element)
-		return Handle();
+		return FocusHandle();
 
 	// Release previous
 	if(m_inputFocusHandle)
 	{
-		m_inputFocusHandle.ForceRelease();
-		m_window->StopTextInput(); // Reset IME state
+		m_ReleaseInputFocus();
 	}
 
 	// Start allowing IME text input
 	m_window->StartTextInput();
 
 	// New handle
-	m_inputFocusHandle = Handle::Create(element);
-	element->OnFocus();
+	m_inputFocusHandle = Utility::MakeRef(new FocusHandleData{true, element, focusable});
+	focusable->OnFocus();
 	return m_inputFocusHandle;
 }
 void GUI::m_OnTextInput(const WString& input)
@@ -294,19 +418,77 @@ void GUI::m_OnKeyRepeat(Key key)
 			m_textInput.input.erase(it);
 		}
 	}
+
+	if(m_inputFocusHandle)
+	{
+		KeyEvent event;
+		event.key = key;
+		event.keyState = true;
+		event.repeated = true;
+		m_inputFocusHandle->focusable->OnKeyEvent(event);
+	}
+	else
+	{
+		if(key == Key::ArrowUp)
+		{
+			Navigate(-1, 1);
+		}
+		else if(key == Key::ArrowDown)
+		{
+			Navigate(1, 1);
+		}
+		else if(key == Key::ArrowLeft)
+		{
+			Navigate(-1, 0);
+		}
+		else if(key == Key::ArrowRight)
+		{
+			Navigate(1, 0);
+		}
+	}
 }
 void GUI::m_OnKeyPressed(Key key)
 {
-	if(key == Key::V)
+	if(m_inputFocusHandle)
 	{
-		if(m_window->GetModifierKeys() == ModifierKeys::Ctrl)
+		KeyEvent event;
+		event.key = key;
+		event.keyState = true;
+		event.repeated = false;
+		m_inputFocusHandle->focusable->OnKeyEvent(event);
+	}
+	else
+	{
+		if(key == Key::V)
 		{
-			if(m_window->GetTextComposition().composition.empty())
+			if(m_window->GetModifierKeys() == ModifierKeys::Ctrl)
 			{
-				// Paste clipboard text into input buffer
-				m_textInput.input += m_window->GetClipboard();
+				if(m_window->GetTextComposition().composition.empty())
+				{
+					// Paste clipboard text into input buffer
+					m_textInput.input += m_window->GetClipboard();
+				}
 			}
 		}
+		else if(key == Key::Return)
+		{
+			ConfirmSelection();
+		}
+		else if(key == Key::Escape)
+		{
+			CancelSelection();
+		}
+	}
+}
+void GUI::m_OnKeyReleased(Graphics::Key key)
+{
+	if(m_inputFocusHandle)
+	{
+		KeyEvent event;
+		event.key = key;
+		event.keyState = false;
+		event.repeated = false;
+		m_inputFocusHandle->focusable->OnKeyEvent(event);
 	}
 }
 void GUI::m_OnMousePressed(MouseButton btn)
@@ -320,6 +502,26 @@ void GUI::m_OnMouseReleased(MouseButton btn)
 void GUI::m_OnMouseScroll(int32 scroll)
 {
 	m_mouseScrollDelta += scroll;
+}
+void GUI::m_ReleaseInputFocus()
+{
+	// Release previous input focus
+	if(m_inputFocusHandle)
+	{
+		// Stop accepting IME input
+		m_window->StopTextInput();
+		m_inputFocusHandle->focusable->OnInputFocusLost();
+		m_inputFocusHandle.Destroy();
+	}
+}
+void GUI::m_ReleaseFocus()
+{
+	// Release previous focus
+	if(m_focusHandle)
+	{
+		m_focusHandle->focusable->OnFocusLost();
+		m_focusHandle.Destroy();
+	}
 }
 void GUI::m_ResetTextInput()
 {

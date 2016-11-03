@@ -37,6 +37,22 @@ public:
 		m_clickTransform = zoom;
 		m_animationUpdated.Invalidate();
 	}
+	void Anim_ClickSingle(float time)
+	{
+		time = time * 2;
+		if(time > 1)
+			time = 1 - (time - 1);
+
+		static Interpolation::CubicBezier bounceLerp(.38, 1.55, .84, 1.43);
+		float bounce = bounceLerp.Sample(time);
+
+		Transform2D zoom;
+		zoom *= Transform2D::Translation(Vector2(0.5f) * m_area.size);
+		zoom *= Transform2D::Scale(Vector2(1.0f + bounce * 0.05f));
+		zoom *= Transform2D::Translation(Vector2(-0.5f) * m_area.size);
+		m_clickTransform = zoom;
+		m_animationUpdated.Invalidate();
+	}
 
 	virtual void OnFocusLost() override
 	{
@@ -64,8 +80,13 @@ public:
 		m_focusAnimation->SetPhase(start);
 	}
 protected:
-	void m_OnPressed() override
+	void m_OnPressed(bool isKeyboard) override
 	{
+		if(isKeyboard)
+		{
+			AddAnimation(GUIAnimationUpdater::FromObject(this, &TestButton::Anim_ClickSingle), 0.2f);
+			return;
+		}
 		auto anim = AddAnimation(GUIAnimationUpdater::FromObject(this, &TestButton::Anim_Click), 0.2f);
 	}
 	void m_OnReleased() override
@@ -344,28 +365,41 @@ public:
 	{
 		GUITestBase::Init();
 
-		LayoutBox* box = new LayoutBox();
-		box->layoutDirection = LayoutBox::Vertical;
-
-		// Some buttons in a layout box
-		for(uint32 i = 0; i < 8; i++)
+		LayoutBox* box0 = new LayoutBox();
+		box0->layoutDirection = LayoutBox::Horizontal;
+		for(int j = 0; j < 4; j++)
 		{
-			auto btn = new TestButton();
-			auto slot = box->Add(*btn);
-			slot->fillX = true;
-			slot->padding = Margin(0, 2, 0, 2);
+			LayoutBox* box1 = new LayoutBox();
+			box1->layoutDirection = LayoutBox::Vertical;
 
-			auto text = new Label();
-			text->text = Utility::WSprintf(L"Buttons %d", i);
-			text->font = guiRenderer->font;
-			text->fontSize = 32;
-			auto textSlot = btn->SetContent(*text);
-			textSlot->alignment = Vector2(0.5f);
+			// Some buttons in a layout box
+			for(int i = 0; i < (8-j); i++)
+			{
+				auto btn = new TestButton();
+				auto slot = box1->Add(*btn);
+				slot->fillX = true;
+				slot->fillY = true;
+				slot->padding = Margin(0, 2, 0, 2);
+
+				auto text = new Label();
+				text->text = Utility::WSprintf(L"Buttons %d", i);
+				text->font = guiRenderer->font;
+				text->fontSize = 32;
+				auto textSlot = btn->SetContent(*text);
+				textSlot->alignment = Vector2(0.5f);
+
+				if(i == 0)
+					gui->SetLastSelectedElement(btn); // Initial selection
+			}
+
+			auto slot = box0->Add(*box1);
+			slot->fillY = true;
 		}
 
-		auto slot = canvas->Add(*box);
-		slot->offset = Rect(0, 0, 400, 0);
+		auto slot = canvas->Add(*box0);
+		slot->offset = Rect(0, 0, 0, 0);
 		slot->padding = Margin(10, 10, 0, 0);
+		slot->fillX = false;
 		slot->fillY = false;
 	}
 };

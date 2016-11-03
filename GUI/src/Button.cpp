@@ -6,90 +6,37 @@ Button::Button(Ref<CommonGUIStyle> style)
 {
 	m_style = style;
 }
-void Button::SetText(const WString& text)
+void Button::m_OnPressed(bool isKeyboard)
 {
-	if(m_textString != text)
-	{
-		m_textString = text;
-		m_dirty = true;
-	}
+	auto anim = AddAnimation(GUIAnimationUpdater::FromObject(this, &Button::Anim_Click), 0.2f);
 }
-uint32 Button::GetFontSize() const
+void Button::m_OnReleased()
 {
-	return m_fontSize;
+	auto anim = AddAnimation(GUIAnimationUpdater::FromObject(this, &Button::Anim_Click), 0.15f);
+	anim->reversed = true;
 }
-void Button::SetFontSize(uint32 size)
+void Button::Update(GUIUpdateData data)
 {
-	if(size != m_fontSize)
-	{
-		m_fontSize = size;
-		m_dirty = true;
-	}
-}
-void Button::PreRender(GUIRenderData rd, GUIElementBase*& inputElement)
-{
-	if(m_dirty)
-	{
-		m_text = rd.guiRenderer->font->CreateText(m_textString, m_fontSize);
-	}
-
-	m_cachedInnerRect = m_style->buttonBorder.Apply(rd.area);
-	//m_hovered = rd.OverlapTest(m_cachedInnerRect);
-
-	if(!m_animation)
-	{
-		if(m_hovered || m_held)
-		{
-			AddAnimation(Ref<IGUIAnimation>(
-				new GUIAnimation<float>(&m_animationPadding, -2.0f, 0.1f)), true);
-			m_animation = true;
-		}
-	}
-	else
-	{
-		if(!m_hovered && !m_held)
-		{
-			AddAnimation(Ref<IGUIAnimation>(
-				new GUIAnimation<float>(&m_animationPadding, 0.0f, 0.2f)), true);
-			m_animation = false;
-		}
-	}
-
-	if(m_hovered)
-		inputElement = this;
-
+	Margini padding = m_style->buttonBorder + (int32)m_animationPadding;
+	data.area = padding.Apply(data.area);
+	ButtonBase::Update(data);
 }
 void Button::Render(GUIRenderData rd)
 {
-	//m_TickAnimations(rd.deltaTime);
-
 	// Render BG
 	Margini padding = (int32)m_animationPadding;
-	rd.area = padding.Apply(rd.area);
-	rd.guiRenderer->RenderButton(rd.area, (m_hovered) ? m_style->buttonHighlightTexture : m_style->buttonTexture, m_style->buttonBorder);
+	rd.guiRenderer->RenderBorder(m_objectTransform, (m_hovered) ? m_style->buttonHighlightTexture : m_style->buttonTexture, m_style->buttonBorder);
 
-	// Render content(Text) but clipped to button insides
-	rd.guiRenderer->PushScissorRect(m_cachedInnerRect);
-
-	// Render text
-	Rect textRect = GUISlotBase::ApplyAlignment(Vector2(0.5f), Rect(Vector2(), m_text->size), rd.area);
-	Color color = Color::White;
-	rd.guiRenderer->RenderText(m_text, textRect.pos, color);
-
-	rd.guiRenderer->PopScissorRect();
+	// Render content
+	ButtonBase::Render(rd);
 }
-Vector2 Button::GetDesiredSize(GUIRenderData rd)
+Vector2 Button::m_GetDesiredBaseSize(GUIUpdateData data)
 {
-	if(m_dirty)
-	{
-		m_text = rd.guiRenderer->font->CreateText(m_textString, m_fontSize);
-	}
-
-	Vector2 sizeOut;
-	if(m_text)
-	{
-		sizeOut = m_text->size;
-		sizeOut += m_style->buttonBorder.GetSize() + m_style->buttonPadding.GetSize();
-	}
-	return sizeOut;
+	Vector2 baseSize = ButtonBase::GetDesiredSize(data);
+	return baseSize + m_style->buttonBorder.GetSize() + m_style->buttonPadding.GetSize();
+}
+void Button::Anim_Click(float time)
+{
+	m_animationPadding = time * -2.0f;
+	InvalidateArea();
 }

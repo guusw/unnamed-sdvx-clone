@@ -33,13 +33,6 @@ public:
 	virtual void OnInvalidate(InvalidationEvent& event);
 	virtual void OnAssignGUI(AssignGUIEvent& event);
 
-	// Called when focus acquired with AcquireMouseFocus was lost
-	// Similar to mouse leave event
-	virtual void OnFocusLost() {};
-	// Called when focused using AcquireMouseFocus
-	// Similar to mouse enter event
-	virtual void OnFocus() {};
-
 	// Updates animations
 	virtual void UpdateAnimations(float deltaTime);
 	// Update function, processes mouse focus
@@ -48,6 +41,8 @@ public:
 	virtual void Render(GUIRenderData data) = 0;
 	// Desired size, or zero if collapsed
 	Vector2 GetDesiredSize(GUIUpdateData data);
+	// Returns the cached area of this element
+	Rect GetCachedArea() const;
 
 	// Add an animation related to this element
 	Ref<GUIAnimation> AddAnimation(Action<void, float> anim, float duration, Interpolation::TimeFunction timeFunction = Interpolation::Linear);

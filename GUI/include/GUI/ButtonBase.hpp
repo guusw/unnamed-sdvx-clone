@@ -1,11 +1,11 @@
 #pragma once
 #include <GUI/ContainerBase.hpp>
-#include <Shared/Handle.hpp>
+#include "Focusable.hpp"
 
 /*
 	Non-Visual button, just the event handling
 */
-class ButtonBase : public ContainerBase
+class ButtonBase : public ContainerBase, public Focusable
 {
 public:
 	~ButtonBase();
@@ -13,12 +13,16 @@ public:
 	virtual void OnMouseButton(MouseButtonEvent& event) override;
 	virtual void OnFocusLost() override;
 	virtual void OnFocus() override;
+	virtual void OnConfirm() override;
 	virtual void Update(GUIUpdateData data) override;
 	virtual void Render(GUIRenderData data) override;
 
 	void InvalidateArea() override;
 	bool IsHovered() const;
 	bool IsHeld() const;
+
+	GUIElementBase* SelectNext(GUIElementBase* from, GUIElementBase* item, int dir, int layoutDirection) override;
+	void Focus() override;
 
 	GUISlotBase* SetContent(GUIElement content);
 	GUISlotBase* GetContent();
@@ -37,14 +41,15 @@ protected:
 
 	// Button hit test
 	virtual bool m_HitTest(const Vector2& point);
-	virtual void m_OnPressed() {};
+	// Occurs when pressed, when isKeyboard is true, a released event is never sent
+	virtual void m_OnPressed(bool isKeyboard) {};
 	virtual void m_OnReleased() {};
 	bool m_hovered = false;
 
 private:
 	GUISlotBase* m_slot = nullptr;
-	Handle m_hoveredHandle;
-	Handle m_held;
+	FocusHandle m_focusHandle;
+	FocusHandle m_held;
 
 	Cached<Transform2D> m_inverseObjectTransform;
 };

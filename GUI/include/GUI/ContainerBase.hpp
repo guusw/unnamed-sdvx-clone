@@ -11,6 +11,13 @@ public:
 	virtual void OnInvalidate(InvalidationEvent& event) override;
 	virtual void OnAssignGUI(AssignGUIEvent& event) override;
 
+	// Select the next element vertically relative from the given element
+	// from = the elment that was selected
+	// item = the item in the current container that owns the previous selection
+	// dir = direction to navigate (-1,1) (Left,Right) (Up,Down)
+	// layoutDirection = direction of the navigation 0 = Horizontal, 1 = Vertical, 2 = Any
+	virtual GUIElementBase* SelectNext(GUIElementBase* from, GUIElementBase* item, int dir, int layoutDirection) = 0;
+
 protected:
 	virtual ~ContainerBase() = default;
 

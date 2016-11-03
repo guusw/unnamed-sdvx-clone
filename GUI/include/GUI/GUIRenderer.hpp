@@ -32,6 +32,8 @@ public:
 	// Renders a line
 	void RenderLine(const Transform2D& transform, const Color& color = Color::White, float pointSize = 1.0f);
 	void RenderLine(const Vector2& a, const Vector2& b, const Color& color = Color::White, float pointSize = 1.0f);
+	// Renders a border texture, a texture that stretches the sides and middle to match the total size of the object
+	void RenderBorder(const Transform2D& transform, Graphics::Texture texture, const Margini& border, const Color& color = Color::White);
 
 	// Default used font
 	Graphics::Font font;

@@ -226,3 +226,33 @@ void GUIRenderer::RenderLine(const Vector2& a, const Vector2& b, const Color& co
 	Transform2D t = Transform2D::Translation(a) * Transform2D::Rotation(r * Math::radToDeg) * Transform2D::Scale(Vector2(l, 1.0f));
 	RenderLine(t, color, pointSize);
 }
+void GUIRenderer::RenderBorder(const Transform2D& transform, Graphics::Texture texture, const Margini& border, const Color& color)
+{
+	MaterialParameterSet params;
+	params.SetParameter("color", color);
+	params.SetParameter("mainTex", texture);
+
+	Rect rect = Rect(transform.GetPosition(), transform.GetScale());
+
+	// Calculate border offsets
+	Rect r2 = border.Apply(Recti(rect));
+	Vector2 size = texture->GetSize();
+
+	Vector2 tl = (r2.pos - rect.pos) / rect.size;
+	Vector2 br = (r2.size + r2.pos - rect.pos) / rect.size;
+	Vector4 borderCoords = Vector4(tl.x, tl.y, br.x, br.y);
+
+	// Texture border coords
+	Vector2 textl = Vector2((float)border.left, (float)border.top) / size;
+	Vector2 texbr = Vector2(1.0f) - Vector2((float)border.right, (float)border.bottom) / size;
+	Vector4 texBorderCoords = Vector4(textl.x, textl.y, texbr.x, texbr.y);
+
+	params.SetParameter("border", borderCoords);
+	params.SetParameter("texBorder", texBorderCoords);
+	params.SetParameter("size", rect.size);
+	params.SetParameter("texSize", size);
+
+	// TODO: Clean this up a bit, so the transform doesn't have to be split
+	Transform2D rotationOnly = Transform2D::Rotation(transform.GetRotation());
+	m_renderQueue->Draw(rotationOnly, pointMesh, buttonMaterial, params);
+}

@@ -19,13 +19,13 @@ void ButtonBase::OnMouseButton(MouseButtonEvent& event)
 	{
 		if(event.state)
 		{
-			if(m_hoveredHandle)
+			if(m_focusHandle && !m_focusHandle->keyboard)
 			{
 				m_held = m_gui->AcquireMouseDown(this);
 				if(m_held)
 				{
 					Logf("Pressed", Logger::Info);
-					m_OnPressed();
+					m_OnPressed(false);
 					OnPressed.Call();
 				}
 			}
@@ -47,6 +47,12 @@ void ButtonBase::OnFocus()
 {
 	Logf("Mouse Enter", Logger::Info);
 	m_hovered = true;
+}
+void ButtonBase::OnConfirm()
+{
+	Logf("Pressed", Logger::Info);
+	m_OnPressed(true);
+	OnPressed.Call();
 }
 void ButtonBase::Update(GUIUpdateData data)
 {
@@ -74,7 +80,16 @@ bool ButtonBase::IsHovered() const
 {
 	return m_hovered;
 }
-
+GUIElementBase* ButtonBase::SelectNext(GUIElementBase* from, GUIElementBase* item, int dir, int layoutDirection)
+{
+	// Use parent navigation
+	return GetParent()->SelectNext(from, this, dir, layoutDirection);
+}
+void ButtonBase::Focus()
+{
+	// Acquire keyboard focus
+	m_focusHandle = m_gui->AcquireFocus(this, true);
+}
 GUISlotBase* ButtonBase::SetContent(GUIElement content)
 {
 	if(m_slot)
@@ -107,26 +122,28 @@ void ButtonBase::m_InvalidateSlotAreas()
 }
 void ButtonBase::m_UpdateHoverState(Vector2 mousePosition)
 {
-	if(!m_hoveredHandle)
+	if(!m_focusHandle)
 	{
 		if(m_HitTest(mousePosition))
 		{
 			assert(m_gui);
-			m_hoveredHandle = m_gui->AcquireMouseFocus(this);
+			m_focusHandle = m_gui->AcquireFocus(this, false);
 		}
 	}
 	else
 	{
 		if(!m_HitTest(mousePosition))
 		{
-			m_hoveredHandle.Release();
+			// Release handle if not a keyboard handle
+			if(!m_focusHandle->keyboard)
+				m_focusHandle.Release();
 		}
 	}
 }
 void ButtonBase::m_PostAnimationUpdate()
 {
 	ContainerBase::m_PostAnimationUpdate();
-	m_UpdateHoverState(m_gui->GetMousePos());
+	//m_UpdateHoverState(m_gui->GetMousePos());
 }
 void ButtonBase::m_UpdateTransform(Rect area, Transform2D parentTransform)
 {

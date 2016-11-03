@@ -18,7 +18,7 @@ public:
 	using std::vector<I>::push_back;
 	
 	// Adds a new element and returns it
-	I& Add(const I& obj = I()) { push_back(obj); return back(); };
+	I& Add(const I& obj = I()) { push_back(obj); return back(); }
 	I& AddZeroed() { push_back(I()); memset(&back(), 0, sizeof(I)); return back(); };
 	void AddUnique(const I& obj)
 	{
@@ -51,6 +51,19 @@ public:
 				return true;
 		}
 		return false;
+	}
+
+	// Returns the index of an element or -1 if it is not in this vector
+	int IndexOf(const I& element) const
+	{
+		for(size_t i = 0; i < this->size(); i++)
+		{
+			if((*this)[i] == element)
+			{
+				return (int)i;
+			}
+		}
+		return -1;
 	}
 
 	// Find first item that matches Predicate

@@ -1,7 +1,7 @@
 #pragma once
 #include <GUI/GUITextInput.hpp>
 #include <GUI/GUIRenderData.hpp>
-#include <Shared/Handle.hpp>
+#include <GUI/Focusable.hpp>
 
 /*
 	Class that manages the state of a GUI composition,
@@ -29,16 +29,28 @@ public:
 	Graphics::Window* GetWindow() const;
 
 	// Mouse focus handle (hover)
-	Handle AcquireMouseFocus(class GUIElementBase* element);
+	FocusHandle AcquireFocus(GUIElementBase* element, bool isKeyboardFocus = false);
 
 	// Mouse down handle (clicked/held)
-	Handle AcquireMouseDown(class GUIElementBase* element);
+	FocusHandle AcquireMouseDown(GUIElementBase* element);
 
-	// The element that has mouse focus
+	// The element that has focus
 	GUIElementBase* GetFocusedElement();
 
-	// Input focus handle (for text events)
-	Handle AcquireInputFocus(class GUIElementBase* element);
+	// Set keyboard focus on an element
+	void SetFocusedElement(GUIElementBase* element);
+
+	// Set the last selected element, which is also the element that will get keyboard focus when navigating and no element is currently focused
+	void SetLastSelectedElement(GUIElementBase* element);
+
+	// Sends confirm selection (Enter, Confirm Button) to the focused gui element
+	void ConfirmSelection();
+
+	// Sends cancel selection (Esc, Back Button) to the focused gui element
+	void CancelSelection();
+
+	// Input focus handle (for text events and activated controls like sliders)
+	FocusHandle AcquireInputFocus(GUIElementBase* element);
 
 	// Get the text input for the current frame
 	const struct GUITextInput& GetTextInput() const;
@@ -58,14 +70,27 @@ public:
 	//	Negative for scroll up
 	int32 GetMouseScroll() const;
 
+	// Navigate the focus Left/Right(layoutDirection=0) or Up/Down(layoutDirection=1) where dir = (-1,1) 
+	void Navigate(int dir, int layoutDirection);
+	// Navigate to the lastly focused element or the element set with SetLastSelectedElement
+	void NavigateLast();
+
 private:
 	void m_OnTextInput(const WString& input);
 	void m_OnTextComposition(const Graphics::TextComposition& input);
 	void m_OnKeyRepeat(Graphics::Key key);
 	void m_OnKeyPressed(Graphics::Key key);
+	void m_OnKeyReleased(Graphics::Key key);
 	void m_OnMousePressed(Graphics::MouseButton btn);
 	void m_OnMouseReleased(Graphics::MouseButton btn);
 	void m_OnMouseScroll(int32 scroll);
+
+	// Releases the input focus on the current element, if any
+	void m_ReleaseInputFocus();
+
+	// Releases the focus on and element, if any
+	void m_ReleaseFocus();
+
 	// Call to reset text input state after render frame
 	void m_ResetTextInput();
 
@@ -74,6 +99,9 @@ private:
 	GUITextInput m_textInput;
 	Graphics::Window* m_window = nullptr;
 	GUIElementBase* m_hoveredElement = nullptr;
+
+	// The last focused element, to enable keyboard focus
+	Ref<GUIElementBase> m_lastSelectedElement;
 
 	bool m_mouseButtonState[3] = { 0 };
 	bool m_mouseButtonStateLast[3] = { 0 };
@@ -87,7 +115,7 @@ private:
 
 	Rect m_viewport;
 
-	Handle m_mouseFocusHandle;
-	Handle m_mouseDownHandle;
-	Handle m_inputFocusHandle;
+	FocusHandle m_mouseDownHandle;
+	FocusHandle m_focusHandle;
+	FocusHandle m_inputFocusHandle;
 };

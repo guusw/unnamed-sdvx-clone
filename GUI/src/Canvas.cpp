@@ -91,6 +91,11 @@ const Vector<Canvas::Slot*>& Canvas::GetChildren()
 {
 	return m_children;
 }
+GUIElementBase* Canvas::SelectNext(GUIElementBase* from, GUIElementBase* item, int dir, int layoutDirection)
+{
+	// TODO: Implement canvas navigation
+	return nullptr;
+}
 void Canvas::m_OnChildSlotChanged(GUISlotBase* slot)
 {
 }
