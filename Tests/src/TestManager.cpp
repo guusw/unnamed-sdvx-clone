@@ -77,7 +77,7 @@ bool TestManager::m_Begin()
 	};
 
 	void(*oldSigHandler)(int) = 0;
-	if(!Debug::IsDebuggerAttached())
+//	if(!Debug::IsDebuggerAttached())
 	{
 		m_oldSigHandler = signal(SIGSEGV, SignalHandler);
 	}
@@ -105,7 +105,7 @@ void TestManager::m_End()
 	Path::DeleteDir(m_testBasePath);
 
 	// Restore signal handler
-	if(!Debug::IsDebuggerAttached())
+//	if(!Debug::IsDebuggerAttached())
 		signal(SIGSEGV, m_oldSigHandler);
 }
 
@@ -117,12 +117,12 @@ int32 TestManager::m_RunTest(TestEntry* test)
 
 	TestContext context(test->m_name, this);
 
-	if(Debug::IsDebuggerAttached())
+//	if(Debug::IsDebuggerAttached())
 	{
 		// Don't catch any exceptions while debugging
 		test->m_function(context);
 	}
-	else
+    //else
 	{
 		try
 		{
