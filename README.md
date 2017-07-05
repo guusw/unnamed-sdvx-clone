@@ -4,8 +4,6 @@ A game based on [KShoot](http://kshoot.client.jp/) and [SDVX](https://www.youtub
 ### Download
 [![Build](https://ci.appveyor.com/api/projects/status/github/guusw/unnamed-sdvx-clone?branch=master&svg=true&retina=true)](https://ci.appveyor.com/project/guusw/unnamed-sdvx-clone)
 
-[Download latest build](http://tdrz.nl/sdvx-releases/bin/artifacts.zip)
-
 Demo Videos (Song Select/ Gameplay / Realtime effects):
 
 [![Song Select Video](http://img.youtube.com/vi/GYOHy5CY2pU/1.jpg)](https://www.youtube.com/watch?v=GYOHy5CY2pU)
