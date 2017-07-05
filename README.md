@@ -1,7 +1,6 @@
 # Unnamed SDVX clone
 A game based on [KShoot](http://kshoot.client.jp/) and [SDVX](https://www.youtube.com/watch?v=JBHKNl87juA).
 
-### Download
 [![Build](https://ci.appveyor.com/api/projects/status/github/guusw/unnamed-sdvx-clone?branch=master&svg=true&retina=true)](https://ci.appveyor.com/project/guusw/unnamed-sdvx-clone)
 
 Demo Videos (Song Select/ Gameplay / Realtime effects):
